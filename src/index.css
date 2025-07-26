@@ -1,8 +1,43 @@
 head,body,#root{
-  background-color: rgb(245, 235, 198);
+  background-color: #fefee0;
   padding:0px;
   font-family: "Dosis", sans-serif;
   font-optical-sizing: auto;
   font-weight: 400;
   font-style: normal;
+}
+/* src/styles/App.css */
+
+/* ... (Your existing header and main-content styles) ... */
+
+.overlay {
+    position: fixed; /* Position it relative to the viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Black with 50% opacity */
+    
+    z-index: 999; /* Ensure it's above main content but below the cart sidebar */
+    transition: opacity 0.3s ease; /* Smooth transition for appearance/disappearance */
+    opacity: 1; /* Default opacity when rendered */
+}
+
+:root {
+    /* Main application colors from your header and main content */
+    --primary-green: #a1cb8a; /* The green from your header */
+    --primary-yellow: #fcb900; /* The yellow from your header cart button */
+    --main-bg-beige: #fefee0; /* The light yellowish background of your main content */
+
+    /* Derived colors for consistency */
+    --darker-green-hover: #628744; /* A slightly darker shade of primary-green for hover effects */
+    --darker-yellow-hover: #f5e8a4; /* A slightly darker shade of primary-yellow for hover effects */
+    --light-green-info-box: #e8f5e9; /* Keeping the existing light green for the delivery info box, as it's distinct */
+
+    /* Text and Border Colors */
+    --dark-text: #171616;
+    --medium-text: #555;
+    --light-text: #666;
+    --border-light-gray: #eee;
+    --border-dark-gray: #ccc;
 }

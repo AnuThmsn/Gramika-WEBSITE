@@ -1,8 +1,10 @@
+// src/components/Header.js
 import { HiUserCircle } from 'react-icons/hi';
 import { BsCart3 } from "react-icons/bs";
 import './Header.css';
 
-function Header() {
+// Accept an 'onCartClick' prop
+function Header({ onCartClick }) {
   return (
     <>
       <div className='navbar'>
@@ -16,13 +18,13 @@ function Header() {
           <a href="#about">ABOUT</a>
         </div>
         <div className="right-group">
-          <div className="cart-icon">
+          {/* Add onClick handler to the cart-icon div */}
+          <div className="cart-icon" onClick={onCartClick}>
             <BsCart3 size={32} color="#5b5b5aff" style={{ padding: '0px 0px 5px 0px' }} /> CART
           </div>
           <div className="profile">
             <HiUserCircle size={49} className="profile-icon" />
           </div>
-          
         </div>
       </div>
     </>
