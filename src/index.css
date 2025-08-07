@@ -1,3 +1,4 @@
+
 head,body,#root{
   background-color: #fefee0;
   padding:0px;
@@ -6,6 +7,7 @@ head,body,#root{
   font-weight: 400;
   font-style: normal;
 }
+
 /* src/styles/App.css */
 
 /* ... (Your existing header and main-content styles) ... */
@@ -41,3 +43,4 @@ head,body,#root{
     --border-light-gray: #eee;
     --border-dark-gray: #ccc;
 }
+

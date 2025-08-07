@@ -1,0 +1,137 @@
+body {
+ background-color: var(--light-cream);
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ margin: 0;
+ padding: 0;
+}
+.dashboard-container {
+ padding: 20px;
+}
+.orders-list {
+ display: flex;
+ flex-direction: column;
+ gap: 20px;
+}
+/* CARD DESIGN with left green border */
+.order-card {
+ background: #ffffff;
+ border-radius: 12px;
+ padding: 20px;
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+ border-left: 6px solid var(--primary-green); /* Green line on left */
+ transition: transform 0.2s ease;
+}
+.order-card:hover {
+ transform: scale(1.01);
+}
+/* Status Label Styling */
+.status-label {
+ font-weight: bold;
+ padding: 6px 12px;
+ border-radius: 6px;
+ font-size: 13px;
+}
+/* Ordered */
+.status-label.ordered {
+ background-color: #fff8e1; /* Soft Lemon */
+ color: #8d6e63;
+}
+/* Packed */
+.status-label.packed {
+ background-color: #ffecb3; /* Warm Yellow */
+ color: #6d4c41;
+}
+/* Delivered */
+.status-label.delivered {
+ background-color: #dcedc8; /* Soft Green */
+ color: #33691e;
+}
+/* MAP SECTION */
+.map-container {
+ margin-top: 30px;
+ height: 300px;
+ position: relative;
+ cursor: pointer;
+ border-radius: 10px;
+ overflow: hidden;
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+ border-left: 6px solid var(--primary-green); /* Consistent green line */
+}
+.map-container.expanded {
+ height: 500px;
+}
+.map-overlay {
+ position: absolute;
+ bottom: 10px;
+ left: 10px;
+ background-color: rgba(255, 255, 255, 0.8);
+ padding: 6px 10px;
+ border-radius: 5px;
+ font-weight: bold;
+}
+/* Dashboard.css */
+.dashboard-container {
+ padding: 20px;
+ background-color: var(--light-cream, #F8F3E0);
+}
+.orders-list {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 20px;
+}
+.order-card {
+ background-color: white;
+ padding: 20px;
+ border-radius: 10px;
+ border-left: 6px solid green; /* ✅ Green vertical line on left */
+ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+ flex: 1 1 250px;
+ transition: transform 0.2s ease;
+}
+.order-card:hover {
+ transform: translateY(-5px);
+}
+.status-label {
+ font-weight: bold;
+ padding: 4px 10px;
+ border-radius: 5px;
+}
+.status-label.ordered {
+ background-color: #ffeb3b;
+ color: #333;
+}
+.status-label.packed {
+ background-color: #4caf50;
+ color: white;
+}
+.status-label.delivered {
+ background-color: #2e7d32;
+ color: white;
+}
+/* Map section */
+.map-container {
+ margin-top: 30px;
+ border-radius: 10px;
+ overflow: hidden;
+ height: 200px;
+ cursor: pointer;
+ position: relative;
+}
+.map-container.expanded {
+ height: 500px;
+}
+.map-overlay {
+ position: absolute;
+ top: 0;
+ left: 0;
+ right: 0;
+ bottom: 0;
+ background: rgba(255, 255, 255, 0.7);
+ display: flex;
+ justify-content: center;
+ align-items: center;
+ font-weight: bold;
+ font-size: 20px;
+ color: #333;
+ pointer-events: none;
+}

@@ -15,7 +15,7 @@ function Header({ onCartClick }) {
           <a href="#buy">SHOP</a>
           <a href="#sell">SELL</a>
           <a href="#orders">ORDERS</a>
-          <a href="#about">ABOUT</a>
+          <a href="/about">ABOUT</a>
         </div>
         <div className="right-group">
           {/* Add onClick handler to the cart-icon div */}

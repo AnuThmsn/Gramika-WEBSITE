@@ -1,0 +1,161 @@
+/* Form Container - centered with padding and shadow */
+.form-container {
+max-width: 600px;
+margin: 50px auto;
+background: #fefefe;
+border-radius: 20px;
+padding: 40px 45px;
+box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+font-family: 'Poppins', sans-serif;
+color: #2f2f2f;
+}
+/* Header */
+.form-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 35px;
+}
+.form-header h2 {
+font-weight: 700;
+font-size: 2rem;
+color: #4a7023;
+}
+.close-btn {
+font-size: 30px;
+border: none;
+background: none;
+cursor: pointer;
+color: #aaa;
+transition: color 0.3s ease;
+}
+.close-btn:hover {
+color: #4a7023;
+}
+/* Labels */
+.product-form label {
+display: block;
+font-weight: 600;
+margin-bottom: 10px;
+font-size: 15px;
+color: #444;
+}
+/* Inputs, Select, Textarea */
+.product-form input[type="text"],
+.product-form input[type="number"],
+.product-form input[type="date"],
+.product-form select,
+.product-form textarea {
+width: 100%;
+padding: 14px 18px;
+font-size: 16px;
+border: 2px solid #d1d1d1;
+border-radius: 12px;
+background-color: #fafafa;
+transition: border-color 0.3s ease, box-shadow 0.3s ease;
+font-family: inherit;
+box-sizing: border-box;
+box-shadow: inset 2px 2px 6px #f0f0f0;
+}
+.product-form input[type="text"]:focus,
+.product-form input[type="number"]:focus,
+.product-form input[type="date"]:focus,
+.product-form select:focus,
+.product-form textarea:focus {
+outline: none;
+border-color: #4a7023;
+box-shadow: 0 0 10px rgba(74, 112, 35, 0.5);
+background-color: #fff;
+}
+.product-form textarea {
+resize: vertical;
+min-height: 90px;
+line-height: 1.5;
+}
+/* File Input */
+.product-form input[type="file"] {
+padding: 8px 12px;
+border-radius: 10px;
+border: 2px solid #ccc;
+cursor: pointer;
+font-size: 14px;
+background-color: #fafafa;
+transition: border-color 0.3s ease;
+}
+.product-form input[type="file"]:hover {
+border-color: #4a7023;
+}
+/* Form Group */
+.form-group {
+margin-bottom: 28px;
+}
+/* Delivery Options */
+.delivery-options-group {
+display: flex;
+flex-direction: column;
+gap: 16px;
+margin-top: 12px;
+}
+.checkbox-item {
+display: flex;
+align-items: center;
+gap: 14px;
+}
+.checkbox-item input[type="checkbox"] {
+width: 22px;
+height: 22px;
+cursor: pointer;
+accent-color: #4a7023;
+}
+.checkbox-item label {
+font-size: 16px;
+cursor: pointer;
+user-select: none;
+color: #555;
+font-weight: 600;
+}
+/* Save Button */
+.save-btn {
+width: 100%;
+background: linear-gradient(90deg, #3e661b, #83a747);
+color: white;
+border: none;
+padding: 16px 0;
+border-radius: 15px;
+font-size: 20px;
+font-weight: 700;
+cursor: pointer;
+box-shadow: 0 8px 20px rgba(131, 167, 71, 0.6);
+transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.save-btn:hover {
+background: linear-gradient(90deg, #315115, #5c7a2d);
+box-shadow: 0 10px 30px rgba(92, 122, 45, 0.8);
+}
+/* Image Preview */
+.image-preview {
+display: flex;
+gap: 16px;
+flex-wrap: wrap;
+margin-bottom: 24px;
+}
+.image-preview img {
+width: 80px;
+height: 80px;
+object-fit: cover;
+border-radius: 14px;
+border: 3px solid #4a7023;
+box-shadow: 0 4px 14px rgba(74, 112, 35, 0.35);
+}
+/* Responsive */
+@media (max-width: 680px) {
+.form-container {
+padding: 30px 25px;
+}
+.form-header h2 {
+font-size: 1.6rem;
+}
+.save-btn {
+font-size: 18px;
+}
+}

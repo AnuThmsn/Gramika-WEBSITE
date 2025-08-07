@@ -17,6 +17,11 @@
   0 4px 10px rgba(0, 0, 0, 0.3),
   0 -4px 10px rgba(0, 0, 0, 0.3),
   0 4px 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  /* Add these properties to fix the navbar's position */
+  position: fixed;
+  top: 0;
+  z-index: 1000; /* Ensures it's on top of other content */
 }
 
 .left-group,
