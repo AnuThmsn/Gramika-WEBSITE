@@ -1,47 +1,65 @@
-import React, { useState } from 'react';
-import './Dashboard.css';
-const dummyOrders = [
- { id: 1, status: 'Delivered', location: 'Chennai' },
- { id: 2, status: 'Packed', location: 'Bangalore' },
- { id: 3, status: 'Ordered', location: 'Hyderabad' },
-];
+import React from 'react';
+import './dashboard.css';
+import { FaBox, FaMoneyBillWave, FaHourglassHalf } from 'react-icons/fa';
+import { MdOutlineShowChart } from 'react-icons/md';
+
 const Dashboard = () => {
- const [mapExpanded, setMapExpanded] = useState(false);
- const toggleMapSize = () => {
- setMapExpanded(!mapExpanded);
- };
- return (
- <div className="dashboard-container">
- <h2>귑귒귓귔귕귖 Orders Dashboard</h2>
- <div className="orders-list">
- {dummyOrders.map(order => (
- <div key={order.id} className="order-card">
- <h3>Order #{order.id}</h3>
- <p>Location: {order.location}</p>
- <p>
- Status:{" "}
- <span className={`status-label ${order.status.toLowerCase()}`}>
- {order.status}
- </span>
- </p>
- </div>
- ))}
- </div>
- <div
- className={`map-container ${mapExpanded ? 'expanded' : 'collapsed'}`}
- onClick={toggleMapSize}
- >
- <iframe
- title="Order Map"
- width="100%"
- height="100%"
- style={{ border: 0 }}
- loading="lazy"
- src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=India"
- ></iframe>
- {!mapExpanded && <div className="map-overlay">녟녠녡녢녣 Click to Expand Map</div>}
- </div>
- </div>
- );
+  const stats = [
+    { label: 'Total Products', value: '125', icon: <FaBox /> },
+    { label: 'Total Sales', value: '₹85,420', icon: <FaMoneyBillWave /> },
+    { label: 'Pending Orders', value: '23', icon: <FaHourglassHalf /> },
+    { label: 'This Month', value: '₹12,450', icon: <MdOutlineShowChart /> }
+  ];
+
+  const salesData = [
+    { month: 'Jan', sales: 15000 },
+    { month: 'Feb', sales: 22000 },
+    { month: 'Mar', sales: 18000 },
+    { month: 'Apr', sales: 25000 },
+    { month: 'May', sales: 30000 },
+    { month: 'Jun', sales: 28000 }
+  ];
+
+  const exportToExcel = () => {
+    alert('Exporting monthly status to Excel...');
+  };
+
+  return (
+    <div className="dashboard">
+      <div className="dashboard-header">
+        <h1 className="dashboard-title">Dashboard</h1>
+        <button className="btn-primary" onClick={exportToExcel}>
+          <MdOutlineShowChart /> Export Monthly Report
+        </button>
+      </div>
+
+      <div className="stats-grid">
+        {stats.map((stat, index) => (
+          <div key={index} className="stat-card">
+            <div className="stat-icon">{stat.icon}</div>
+            <div className="stat-value">{stat.value}</div>
+            <div className="stat-label">{stat.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card">
+        <h3 className="chart-title">Sales Trend (Last 6 Months)</h3>
+        <div className="chart-container">
+          {salesData.map((data, index) => (
+            <div key={index} className="chart-bar">
+              <div 
+                className="bar" 
+                style={{height: `${(data.sales / 30000) * 100}%`}}
+              ></div>
+              <div className="bar-label">{data.month}</div>
+              <div className="bar-value">₹{data.sales.toLocaleString()}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 };
+
 export default Dashboard;

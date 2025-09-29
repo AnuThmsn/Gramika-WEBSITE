@@ -1,33 +1,31 @@
 // src/components/Header.js
 import { HiUserCircle } from 'react-icons/hi';
 import { BsCart3 } from "react-icons/bs";
+import { Link } from 'react-router-dom';
 import './Header.css';
 
-// Accept an 'onCartClick' prop
 function Header({ onCartClick }) {
   return (
-    <>
-      <div className='navbar'>
-        <div className="left-group">
-          <img className="logo" src="src/assets/gramika.png" alt="Logo" />
+    <div className='navbar'>
+      <div className="left-group">
+        <Link to="/">
+          <img className="logo" src="src/assets/logo.png" alt="Logo" />
+        </Link>
+      </div>
+      <div className="nav-links">
+        <Link to="/shop">BUY</Link>
+        <Link to="/Myshop">MY SHOP</Link>
+        <Link to="/about">ABOUT</Link>
+      </div>
+      <div className="right-group">
+        <div className="cart-icon" onClick={onCartClick}>
+          <BsCart3 size={32} color="#ffffffff" style={{ padding: '0px 0px 5px 0px' }} /> CART
         </div>
-        <div className="nav-links">
-          <a href="#buy">SHOP</a>
-          <a href="#sell">SELL</a>
-          <a href="#orders">ORDERS</a>
-          <a href="/about">ABOUT</a>
-        </div>
-        <div className="right-group">
-          {/* Add onClick handler to the cart-icon div */}
-          <div className="cart-icon" onClick={onCartClick}>
-            <BsCart3 size={32} color="#5b5b5aff" style={{ padding: '0px 0px 5px 0px' }} /> CART
-          </div>
-          <div className="profile">
-            <HiUserCircle size={49} className="profile-icon" />
-          </div>
+        <div className="profile">
+          <HiUserCircle size={49} className="profile-icon" />
         </div>
       </div>
-    </>
+    </div>
   );
 }
 

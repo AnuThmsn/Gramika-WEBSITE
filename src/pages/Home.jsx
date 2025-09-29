@@ -1,14 +1,11 @@
 import { useNavigate, NavLink, useLocation } from 'react-router-dom';
-// src/pages/Home.jsx
-import 'bootstrap/dist/css/bootstrap.min.css';  // Correct import path
-
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { motion } from 'framer-motion';
 import { FaLeaf, FaAppleAlt, FaCheese, FaEgg, FaPhone, FaEnvelope, FaMapMarkerAlt, FaUsers, FaHandshake, FaStore, FaShoppingCart, FaTruck, FaUser, FaUserShield } from 'react-icons/fa';
-import { useEffect, useRef, useState } from 'react';
-import Header from '../components/Header';
-
+import React, { useState, useRef, useEffect } from 'react';
 import "./Home.css";
-
+import Header from '../components/Header'; 
+import Cart from './cart.jsx';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -18,6 +15,9 @@ const Home = () => {
   const topRef = useRef(null);
   const aboutRef = useRef(null);
   const contactRef = useRef(null);
+
+  // Cart state
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Testimonials state
   const [testimonials, setTestimonials] = useState([
@@ -40,23 +40,20 @@ const Home = () => {
 
   // Scroll to section when location hash changes
   useEffect(() => {
-  const scrollToSection = () => {
-    const offset = 80; // approximate height of Header in px
-    if (location.hash === '#about' && aboutRef.current) {
-      const top = aboutRef.current.offsetTop - offset;
-      window.scrollTo({ top, behavior: 'smooth' });
-    } else if (location.hash === '#contact' && contactRef.current) {
-      const top = contactRef.current.offsetTop - offset;
-      window.scrollTo({ top, behavior: 'smooth' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-  scrollToSection();
-}, [location]);
-
-
-
+    const scrollToSection = () => {
+      const offset = 80; // approximate height of Header in px
+      if (location.hash === '#about' && aboutRef.current) {
+        const top = aboutRef.current.offsetTop - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      } else if (location.hash === '#contact' && contactRef.current) {
+        const top = contactRef.current.offsetTop - offset;
+        window.scrollTo({ top, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    };
+    scrollToSection();
+  }, [location]);
 
   // Handle testimonial submission
   const handleTestimonialSubmit = (e) => {
@@ -67,30 +64,30 @@ const Home = () => {
       role: form.roleInput.value,
       message: form.messageInput.value
     };
-    
+
     setTestimonials([...testimonials, newTestimonial]);
     form.reset();
   };
 
   // Product data with icons
   const products = [
-    { 
-      name: 'Fresh Vegetables', 
+    {
+      name: 'Fresh Vegetables',
       bg: 'https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80',
       icon: <FaLeaf className="product-icon" />
     },
-    { 
-      name: 'Seasonal Fruits', 
+    {
+      name: 'Seasonal Fruits',
       bg: 'https://images.unsplash.com/photo-1571575173700-afb9492e6a50?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80',
       icon: <FaAppleAlt className="product-icon" />
     },
-    { 
-      name: 'Dairy Products', 
+    {
+      name: 'Dairy Products',
       bg: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80',
       icon: <FaCheese className="product-icon" />
     },
-    { 
-      name: 'Farm Fresh Eggs', 
+    {
+      name: 'Farm Fresh Eggs',
       bg: 'https://thumbs.dreamstime.com/b/beautiful-white-sussex-hen-farm-154980883.jpg',
       icon: <FaEgg className="product-icon" />
     }
@@ -143,14 +140,25 @@ const Home = () => {
     }
   };
 
+  const handleCartClick = () => setIsCartOpen(true);
+  const handleCartClose = () => setIsCartOpen(false);
+
+  // Dummy handler for payment
+  const handleProceedToPayment = (amount) => {
+    alert(`Proceeding to payment of ₹${amount}`);
+    setIsCartOpen(false);
+  };
+
   return (
-    <div className="community-market min-vh-100 d-flex flex-column" ref={topRef}>
-      {/* Navigation Bar */}
-   
-
-
+    <div className="community-market min-vh-100 d-flex flex-column" ref={topRef} >
+      <Header onCartClick={handleCartClick}/>
+      <Cart
+        isOpen={isCartOpen}
+        onClose={handleCartClose}
+        onProceedToPayment={handleProceedToPayment}
+      />
       {/* Hero Section */}
-      <motion.header 
+      <motion.header
         className="market-header py-4 py-lg-5 text-white"
         style={{
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')`,
@@ -163,21 +171,23 @@ const Home = () => {
         variants={headerVariants}
       >
         <div className="container h-100 d-flex flex-column justify-content-center">
-          <motion.div 
+          <motion.div
             className="d-flex flex-column align-items-center"
             variants={itemVariants}
+            style={{ marginTop: '1em' }} // Add margin-top here
           >
-            <motion.div 
+            <motion.div
               className="text-center"
               variants={itemVariants}
             >
-              <motion.h1 
+              <motion.h1
                 className="display-4 display-lg-3 fw-bold mb-2 mb-lg-3"
+                style={{ fontFamily: "'Cormorant Garamond', serif" }} // Add this line
                 variants={itemVariants}
               >
                 GRAMIKA
               </motion.h1>
-              <motion.p 
+              <motion.p
                 className="lead mb-0 fs-5"
                 variants={itemVariants}
               >
@@ -197,10 +207,10 @@ const Home = () => {
                 <h2 className="fw-bold mb-4">About Our Community</h2>
                 <p className="lead mb-4">
                   Gramika is a platform where local producers can sell their organic products directly to their community.
-                  Whether you have extra milk from your cows, fresh eggs from your chickens, or homegrown vegetables, 
+                  Whether you have extra milk from your cows, fresh eggs from your chickens, or homegrown vegetables,
                   you can connect with neighbors who appreciate fresh, local products.
                 </p>
-                
+
                 <div className="row justify-content-center g-4">
                   <div className="col-md-6">
                     <div className="d-flex align-items-center justify-content-center">
@@ -219,16 +229,16 @@ const Home = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="d-flex justify-content-center gap-3 mt-5">
-                  <button 
+                  <button
                     className="btn btn-primary-green px-4 py-2"
                     onClick={() => navigate('/login?role=user')}
                   >
                     <FaUser className="me-2" />
                     Sign In as User
                   </button>
-                  <button 
+                  <button
                     className="btn btn-outline-primary-green px-4 py-2"
                     onClick={() => navigate('/login?role=admin')}
                   >
@@ -248,20 +258,20 @@ const Home = () => {
           <h2 className="text-center mb-5 fw-bold text-dark-green market-heading display-5">
             <span className="text-accent-green">Local</span> Products Available
           </h2>
-          
-          <motion.div 
+
+          <motion.div
             className="row g-4 justify-content-center"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
             {products.map((product, index) => (
-              <motion.div 
-                key={index} 
+              <motion.div
+                key={index}
                 className="col-12 col-sm-6 col-lg-3"
                 variants={cardVariants}
               >
-                <div 
+                <div
                   className="product-card h-100 rounded-4 overflow-hidden shadow position-relative"
                   style={{
                     backgroundImage: `linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url(${product.bg})`,
@@ -334,7 +344,7 @@ const Home = () => {
           <h2 className="text-center mb-5 fw-bold">What Our Community Says</h2>
           <div className="row">
             {testimonials.map((testimonial, index) => (
-              <motion.div 
+              <motion.div
                 key={index}
                 className="col-md-4 mb-4"
                 initial={{ opacity: 0, y: 30 }}
@@ -367,7 +377,7 @@ const Home = () => {
           <div className="contact-shape-2"></div>
         </div>
         <div className="container position-relative">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -381,7 +391,7 @@ const Home = () => {
           </motion.div>
 
           <div className="row g-4 justify-content-center">
-            <motion.div 
+            <motion.div
               className="col-md-4"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -400,7 +410,7 @@ const Home = () => {
               </div>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="col-md-4"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -419,7 +429,7 @@ const Home = () => {
               </div>
             </motion.div>
 
-            <motion.div 
+            <motion.div
               className="col-md-4"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -439,7 +449,7 @@ const Home = () => {
             </motion.div>
           </div>
 
-          <motion.div 
+          <motion.div
             className="row mt-5 g-4 justify-content-center"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -453,11 +463,11 @@ const Home = () => {
                   <div className="row g-3">
                     <div className="col-md-6">
                       <div className="form-floating">
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          id="nameInput" 
-                          placeholder="Your Name" 
+                        <input
+                          type="text"
+                          className="form-control"
+                          id="nameInput"
+                          placeholder="Your Name"
                           required
                         />
                         <label htmlFor="nameInput">Your Name</label>
@@ -465,11 +475,11 @@ const Home = () => {
                     </div>
                     <div className="col-md-6">
                       <div className="form-floating">
-                        <input 
-                          type="email" 
-                          className="form-control" 
-                          id="emailInput" 
-                          placeholder="Your Email" 
+                        <input
+                          type="email"
+                          className="form-control"
+                          id="emailInput"
+                          placeholder="Your Email"
                           required
                         />
                         <label htmlFor="emailInput">Your Email</label>
@@ -477,8 +487,8 @@ const Home = () => {
                     </div>
                     <div className="col-12">
                       <div className="form-floating">
-                        <select 
-                          className="form-select" 
+                        <select
+                          className="form-select"
                           id="roleInput"
                           required
                         >
@@ -494,9 +504,9 @@ const Home = () => {
                     </div>
                     <div className="col-12">
                       <div className="form-floating">
-                        <textarea 
-                          className="form-control" 
-                          id="messageInput" 
+                        <textarea
+                          className="form-control"
+                          id="messageInput"
                           placeholder="Your Testimonial"
                           style={{ height: '150px' }}
                           required
@@ -505,8 +515,8 @@ const Home = () => {
                       </div>
                     </div>
                     <div className="col-12 text-center">
-                      <button 
-                        type="submit" 
+                      <button
+                        type="submit"
                         className="btn btn-primary-green px-4 py-3"
                       >
                         Share Your Story

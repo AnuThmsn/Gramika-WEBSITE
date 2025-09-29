@@ -5,23 +5,20 @@
 }
 
 .navbar {
+  position: fixed; /* Add this */
+  top: 0; /* Add this */
+  left: 0; /* Add this */
   overflow: hidden;
   width: 100vw;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  background-color: #9cbf89;
+  align-items: center; /* Add this */
+  background-color: #ffffff;
   box-sizing: border-box;
   height: 4em;
-  box-shadow:
-  0 4px 10px rgba(0, 0, 0, 0.3),
-  0 -4px 10px rgba(0, 0, 0, 0.3),
-  0 4px 10px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  /* Add these properties to fix the navbar's position */
-  position: fixed;
-  top: 0;
-  z-index: 1000; /* Ensures it's on top of other content */
+  z-index: 1000; /* Add this */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Simplified shadow */
+  border-bottom: #f7f5f5 solid;
 }
 
 .left-group,
@@ -35,12 +32,19 @@
 }
 
 .logo {
-  height: 6em;
-  padding: 1.5em 0em 1.5em 0em;
+  height: 3.5em; /* Reduce from 6em to 3.5em */
+  padding-bottom: 0.2em;
   will-change: filter;
   transition: filter 300ms;
-  box-shadow: 8px 0 8px -1px rgba(0, 0, 0, 0.3),
-              -8px 0 8px -1px rgba(0, 0, 0, 0.3);
+  box-shadow: none; /* Remove logo shadow */
+  margin-top: -4px;    /* Added to move logo up */
+  position: relative;  /* Added for better positioning */
+  top: -1px;          /* Fine-tune vertical position */
+}
+
+/* Ensure content below navbar is not hidden */
+.community-market {
+  padding-top: 4em; /* Add this to match navbar height */
 }
 
 .nav-links {
@@ -67,43 +71,47 @@
 .profile,
 .cart-icon{
   padding:0px 20px 0px 20px;
+  margin-top: -5px;    /* Added to move it up */
+  position: relative;   /* Added for better positioning */
+  top: -1px; 
 }
 
 .cart-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #dcd4d4;
+  background-color: #204229;
   border-radius: 20px;
   height: 50.5px;
   width: 120px;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 18px;
-  color: #716e6e;
+  color: #ffffff;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.2s ease;
   margin-right: 10px;
+            /* Added to fine-tune vertical position */
 }
 
 .cart-icon:hover {
-  background-color: #efc551;
+  background-color: #b19f33;
   transform: translateY(-2px);
 }
 
 .cart-icon span {
   margin-left: 12px;
   font-weight: 800;
-  color: #111;
+  color: #f9f9f9;
 }
 
 .profile-icon {
-  color: #dcd4d4;
+  color: #204229;
   transition: color 0.2s ease;
   cursor: pointer;
 }
 
 
 .profile-icon:hover {
-  color: #f6c642;
+  color: #b19f33;
   transform: translateY(-2px);
 }

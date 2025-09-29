@@ -3,7 +3,8 @@ import { NavLink } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-primary-green py-4 text-white">
+    // Change bg-primary-green to bg-dark-green for a darker background
+    <footer className="bg-dark-green py-4 text-white">
       <div className="container">
         <div className="row">
           <div className="col-md-4 mb-4 mb-md-0">

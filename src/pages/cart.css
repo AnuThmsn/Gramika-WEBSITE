@@ -1,257 +1,295 @@
 /* src/styles/Cart.css */
 
 /* Define custom properties for a unified color palette */
+:root {
+  --primary-green: #4a7c59;
+  --dark-green: #2d5016;
+  --darker-green-hover: #213c12;
+  --primary-yellow: #ffc107;
+  --darker-yellow-hover: #e0ac00;
+  --main-bg-beige: #f8fdf9;
+  --light-green-info-box: #e6f0e2;
+  --dark-text: #2d5016;
+  --medium-text: #666;
+  --light-text: #999;
+  --border-light-gray: #eee;
+  --border-dark-gray: #ccc;
+}
 
+body {
+  font-family: 'Lato', sans-serif;
+}
 
-.cart-sidebar {
+/* New CSS for the overlay */
+.cart-overlay {
     position: fixed;
     top: 0;
-    right: -400px; /* Initially hidden */
-    width: 380px; /* Adjust width as per your design, originally 320px */
-    height: 100%;
-    background-color: var(--main-bg-beige); /* Changed to match main content background */
-    box-shadow: -2px 0 15px rgba(0, 0, 0, 0.3); /* Slightly stronger shadow for better separation */
-    transition: right 0.3s ease-in-out;
-    padding: 20px 20px 20px 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    z-index: 1000;
-    overflow-y: auto; /* Enable scroll for the entire cart if content overflows */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 999; /* Below the cart sidebar but above other content */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.cart-overlay.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cart-sidebar {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 380px;
+  height: 100%;
+  background-color: var(--main-bg-beige);
+  box-shadow: -2px 0 15px rgba(0, 0, 0, 0.3);
+  transition: right 0.3s ease-in-out;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  overflow-y: auto;
 }
 
 .cart-sidebar.open {
-    right: 0;
+  right: 0;
 }
 
 .cart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-light-gray);
+  padding-bottom: 15px;
 }
 
 .cart-header h2 {
-    font-size: 1.5em;
-    color: var(--dark-text); /* Ensure good contrast for the title */
-    margin: 0;
+  font-size: 1.5em;
+  color: var(--dark-text);
+  margin: 0;
+  font-weight: bold;
 }
 
 .close-cart {
-    background: none;
-    border: none;
-    font-size: 2em; /* Slightly larger for better clickability */
-    cursor: pointer;
-    color: var(--medium-text); /* Consistent with other neutral text */
-    padding: 0; /* Remove default button padding */
+  background: none;
+  border: none;
+  font-size: 2em;
+  cursor: pointer;
+  color: var(--medium-text);
+  padding: 0;
 }
 
 .delivery-info {
-    background-color: var(--light-green-info-box); /* Keeping the existing light green for the delivery info box */
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    color: var(--dark-text);
-    font-size: 0.95em;
+  background-color: var(--light-green-info-box);
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--dark-text);
+  font-size: 0.95em;
 }
 
 .delivery-info p {
-    margin: 0;
-    display: flex;
-    align-items: center;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  font-family: 'Lato', sans-serif;
 }
 
 .delivery-info .icon {
-    margin-right: 8px;
-    font-size: 1.2em; /* Adjust icon size */
-    color: var(--primary-green); /* Changed to use primary green from header */
+  margin-right: 8px;
+  font-size: 1.2em;
+  color: var(--primary-green);
 }
 
 .cart-items {
-    flex-grow: 1;
-    margin-bottom: 20px;
+  flex-grow: 1;
+  margin-bottom: 20px;
 }
 
 .cart-item {
-    display: flex;
-    align-items: center; /* Ensures vertical centering of image, details, and quantity controls */
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-light-gray); /* Using CSS variable */
-    gap: 15px; /* Adds space between children of cart-item */
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-light-gray);
+  gap: 15px;
 }
 
 .cart-item:last-child {
-    border-bottom: none;
+  border-bottom: none;
 }
 
 .cart-item img {
-    width: 70px;
-    height: 70px;
-    object-fit: contain; /* Ensures the whole image is visible within the box */
-    border-radius: 4px;
-    flex-shrink: 0; /* Prevent image from shrinking if space is tight */
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  border-radius: 4px;
+  flex-shrink: 0;
 }
 
 .item-details {
-    flex-grow: 1; /* Allows item-details to take up available space */
-    display: flex; /* Make item-details a flex container */
-    flex-direction: column; /* Stack name, volume, price vertically */
-    justify-content: center; /* Vertically center content if item-details has extra height */
-    min-width: 0; /* Allow text to shrink if necessary within flex container */
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
 }
 
 .item-details p {
-    margin: 0;
-    line-height: 1.4;
-    word-wrap: break-word; /* Allow long words to break */
-    overflow-wrap: break-word; /* Modern equivalent */
+  margin: 0;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-family: 'Lato', sans-serif;
 }
 
 .item-name {
-    font-weight: 600;
-    color: var(--dark-text);
-    font-size: 1.05em;
+  font-weight: 600;
+  color: var(--dark-text);
+  font-size: 1.05em;
 }
 
 .item-volume {
-    font-size: 0.9em;
-    color: var(--light-text);
+  font-size: 0.9em;
+  color: var(--light-text);
 }
 
 .item-price {
-    font-weight: 500;
-    color: var(--dark-text);
-    margin-top: 5px;
+  font-weight: 500;
+  color: var(--dark-text);
+  margin-top: 5px;
 }
 
 .quantity-controls {
-    display: flex;
-    align-items: center;
-    border: 1px solid var(--primary-green); /* Changed to primary green from header */
-    border-radius: 5px;
-    overflow: hidden;
-    flex-shrink: 0; /* Prevent quantity controls from shrinking */
-    margin-left: auto; /* Pushes quantity controls to the far right */
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--primary-green);
+  border-radius: 5px;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
+/* Updated styles for quantity buttons */
 .quantity-controls button {
-    background-color: var(--primary-green); /* Changed to primary green from header */
-    color: white;
-    border: none;
-    padding: 8px 12px; /* Adjusted padding */
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1.1em;
-    transition: background-color 0.2s ease;
+  background-color: var(--dark-green);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.1em;
+  transition: background-color 0.2s ease;
 }
 
 .quantity-controls button:hover {
-    background-color: var(--darker-green-hover); /* Darker green on hover */
+  background-color: var(--primary-green);
 }
 
 .quantity-controls .quantity-value {
-    padding: 0 15px; /* Adjusted padding */
-    min-width: 25px; /* Ensure space for single/double digit numbers */
-    text-align: center;
-    font-weight: 600;
-    color: var(--dark-text);
+  padding: 0 15px;
+  min-width: 25px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--dark-text);
 }
 
 .bill-details {
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid var(--border-light-gray);
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border-light-gray);
+  font-family: 'Lato', sans-serif;
 }
 
 .bill-details p {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 0.95em;
-    color: var(--medium-text); /* General text color */
-    align-items: center; /* Added for vertical alignment of icons and text */
-}
-
-.bill-details .bill-icon { /* New styles for the bill detail icons */
-    font-size: 1.2em;
-    color: var(--dark-text);
-    margin-right: 8px;
-    flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.95em;
+  color: var(--medium-text);
+  align-items: center;
 }
 
 .bill-details p.grand-total {
-    font-weight: bold;
-    font-size: 1.2em;
-    color: var(--dark-text);
-    border-top: 1px dashed var(--border-dark-gray); /* Using CSS variable */
-    padding-top: 10px;
-    margin-top: 10px;
-}
-
-.bill-details .info-icon {
-    font-size: 0.8em;
-    color: var(--light-text); /* Kept lighter for the info icon */
-    margin-left: 5px;
+  font-weight: bold;
+  font-size: 1.2em;
+  color: var(--dark-text);
+  border-top: 1px dashed var(--border-dark-gray);
+  padding-top: 10px;
+  margin-top: 10px;
 }
 
 .cancellation-policy {
-    font-size: 0.85em;
-    color: var(--medium-text);
-    margin-top: 10px;
-    padding-top: 15px;
-    margin-bottom: 20px;
-    border-top: 1px solid var(--border-light-gray);
-    /* Changed background to a subtle tint of primary green */
-    background-color: color-mix(in srgb, var(--main-bg-beige) 90%, var(--primary-green) 10%);
-    padding: 15px;
-    border-radius: 8px;
+  font-family: 'Lato', sans-serif;
+  font-size: 0.85em;
+  color: var(--medium-text);
+  margin-top: 10px;
+  padding-top: 15px;
+  margin-bottom: 20px;
+  border-top: 1px solid var(--border-light-gray);
+  background-color: color-mix(in srgb, var(--main-bg-beige) 90%, var(--primary-green) 10%);
+  padding: 15px;
+  border-radius: 8px;
 }
 
 .cancellation-policy strong {
-    color: var(--dark-text);
+  color: var(--dark-text);
 }
 
+/* Changed background of the footer to light grey */
 .cart-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: var(--primary-green); /* Changed to primary green from header */
-    color: white;
-    padding: 15px 20px; /* Adjust padding to match sidebar */
-    margin: 0 -20px -20px -20px; /* Negative margin to push to edges */
-    margin-top: auto; /* Push to the very bottom */
-    position: sticky; /* Make it stick to the bottom */
-
-    bottom: 0;
-    left: 0;
-    right: 0;
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow above footer */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f0f0f0; /* Changed to light grey */
+  padding: 15px 20px;
+  margin: 0 -20px -20px -20px;
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.total-amount {
+/* Updated styles for the total price section in the footer */
+.cart-footer .total-amount {
+    font-family: 'Lato', sans-serif;
     font-size: 1.3em;
     font-weight: bold;
+    background-color: transparent; /* Changed to transparent to use the footer's background */
+    color: var(--dark-green);
+    padding: 0; /* Remove padding as it's now on the footer */
+    border-radius: 0;
 }
 
+/* Updated proceed button */
 .proceed-button {
-    background-color: var(--primary-yellow); /* Changed to primary yellow from header cart button */
-    color: var(--dark-text);
-    border: none;
-    padding: 12px 20px; /* Increased padding */
-    border-radius: 8px; /* More rounded corners */
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1.1em;
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Space between text and arrow */
-    transition: background-color 0.2s ease;
+  background-color: var(--dark-green);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+  font-family: 'Lato', sans-serif;
 }
 
 .proceed-button:hover {
-    background-color: var(--darker-yellow-hover); /* Darker yellow on hover */
+  background-color: var(--primary-green);
+  color: white;
 }

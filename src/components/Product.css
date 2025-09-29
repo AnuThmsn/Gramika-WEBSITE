@@ -1,0 +1,249 @@
+/* Add to your Product.css file */
+
+/* Container for the entire products section */
+.products-container {
+    width: 100%;
+}
+
+/* A dedicated wrapper to manage the flex container */
+.products-content-wrapper {
+    width: 100%;
+    padding: 5px;
+    background-color: #f8fdf9;
+}
+
+/* Grid layout for product cards */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.products-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+
+
+.btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #4a7c59;
+    background-color: white;
+    color: #4a7c59;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn:hover {
+    background-color: #4a7c59;
+    color: white;
+}
+
+.btn-add {
+    background-color: #4a7c59;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+}
+
+.btn-add:hover {
+    background-color: #2d5016;
+}
+
+.btn-delete {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-delete:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.product-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    transition: transform 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+}
+
+.product-image {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fdf9;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.product-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.product-info {
+    text-align: center;
+    width: 100%;
+}
+
+/* Updated styling for product name */
+.product-name {
+    color: #2d5016;
+    font-family: 'Lato', sans-serif; /* Apply Lato font */
+    font-size: 20px; /* Increased font size */
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase; /* Make text all caps */
+}
+
+/* Updated styling for product price */
+.product-price {
+    font-family: 'Lato', sans-serif; /* Apply Lato font */
+    font-size: 22px; /* Increased font size */
+    font-weight: bold;
+    color: #4a7c59;
+    margin-bottom: 12px;
+}
+
+.products-qty-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 8px;
+    background: #f8fdf9;
+    border-radius: 6px;
+}
+
+.products-quantity-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.products-qty-btn {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #4a7c59;
+    background: white;
+    color: #4a7c59;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    line-height: 1;
+    font-size: 18px;
+}
+
+.products-qty-btn:hover {
+    background: #4a7c59;
+    color: white;
+}
+
+/* Updated styling for product status */
+.products-status {
+    font-family: 'Lato', sans-serif; /* Apply Lato font */
+    text-transform: uppercase; /* Make text all caps */
+    font-size: 14px; /* Increased font size */
+    margin-bottom: 16px;
+    padding: 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.products-status.available {
+    background: #d4edda;
+    color: #155724;
+}
+
+.products-status.sold-out {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.products-action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.products-add-product-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.products-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.products-modal-content h3 {
+    color: #2d5016;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.products-form-group {
+    margin-bottom: 16px;
+}
+
+.products-form-group label {
+    display: block;
+    margin-bottom: 4px;
+    color: #2d5016;
+    font-weight: 500;
+}
+
+.products-form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.products-form-group input:focus {
+    outline: none;
+    border-color: #4a7c59;
+}
+
+.products-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+}

@@ -1,14 +1,4 @@
 
-head,body,#root{
-  background-color: #fefee0;
-  padding:0px;
-  font-family: "Dosis", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-}
-
-/* src/styles/App.css */
 
 /* ... (Your existing header and main-content styles) ... */
 
@@ -24,7 +14,19 @@ head,body,#root{
     transition: opacity 0.3s ease; /* Smooth transition for appearance/disappearance */
     opacity: 1; /* Default opacity when rendered */
 }
+/* A robust solution for preventing horizontal scrolling */
+html, body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
 
+/* Ensure images and other replaced content don't exceed their containers */
+img, svg, video, canvas, audio, iframe, embed, object {
+  display: block;
+  max-width: 100%;
+}
 :root {
     /* Main application colors from your header and main content */
     --primary-green: #a1cb8a; /* The green from your header */
