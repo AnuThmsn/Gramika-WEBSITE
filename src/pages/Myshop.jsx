@@ -3,7 +3,7 @@ import Dashboard from '../components/dashboard.jsx';
 import Orders from '../components/order.jsx';
 import Products from '../components/product.jsx';
 import Reviews from '../components/review.jsx';
-import './MyShop.css';
+import '../styles/MyShop.css';
 import Header from "../components/Header";
 import { FaChartBar, FaBox, FaShoppingBag, FaStar } from 'react-icons/fa';
 

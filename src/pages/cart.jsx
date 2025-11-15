@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CartItem from '../components/CartItem.jsx';
-import './Cart.css';
+import '../styles/Cart.css';
 import trialPic from '../assets/trial_pic.jpg';
 import { BsClock } from 'react-icons/bs';
 

@@ -94,7 +94,7 @@
 
 .bar {
   width: 40px;
-  background: linear-gradient(180deg, #d0d241, #898209);
+  background: linear-gradient(180deg, #b6b7ae, #1a4323);
   border-radius: 4px 4px 0 0;
   margin-bottom: 10px;
   transition: height 0.3s ease;

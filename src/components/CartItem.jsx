@@ -1,6 +1,6 @@
 // src/components/CartItem.js
 import React from 'react';
-import '../pages/Cart.css'; // Import cart specific styles
+import '../styles/Cart.css'; // Import cart specific styles
 
 const CartItem = ({ item, onUpdateQuantity }) => {
     return (

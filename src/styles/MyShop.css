@@ -3,7 +3,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background-color: #f5f5f5;
+    background-color: #c8c7c7;
 }
 
 /* Flex container for the sidebar and main content */
@@ -14,7 +14,7 @@
 
 .myshop-sidebar {
     width: 250px;
-    background-color: #163701;
+    background-color: #1a3c22ff;
     color: white;
     padding: 20px;
     box-shadow: 2px 0 5px rgba(46, 23, 23, 0.1);

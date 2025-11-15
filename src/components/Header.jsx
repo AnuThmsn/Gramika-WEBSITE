@@ -1,4 +1,3 @@
-// src/components/Header.js
 import { HiUserCircle } from 'react-icons/hi';
 import { BsCart3 } from "react-icons/bs";
 import { Link } from 'react-router-dom';
@@ -22,7 +21,7 @@ function Header({ onCartClick }) {
           <BsCart3 size={32} color="#ffffffff" style={{ padding: '0px 0px 5px 0px' }} /> CART
         </div>
         <div className="profile">
-          <HiUserCircle size={49} className="profile-icon" />
+          <Link to="/profile"><HiUserCircle size={49} className="profile-icon" /></Link>
         </div>
       </div>
     </div>

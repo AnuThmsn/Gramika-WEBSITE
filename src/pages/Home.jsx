@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { motion } from 'framer-motion';
 import { FaLeaf, FaAppleAlt, FaCheese, FaEgg, FaPhone, FaEnvelope, FaMapMarkerAlt, FaUsers, FaHandshake, FaStore, FaShoppingCart, FaTruck, FaUser, FaUserShield } from 'react-icons/fa';
 import React, { useState, useRef, useEffect } from 'react';
-import "./Home.css";
+import "../styles/Home.css";
 import Header from '../components/Header'; 
 import Cart from './cart.jsx';
 
@@ -304,7 +304,7 @@ const Home = () => {
             <div className="col-md-4">
               <div className="how-it-works-card h-100 p-4 p-lg-5 rounded-4 shadow-sm text-center">
                 <div className="step-icon mb-4">
-                  <FaStore className="text-accent-green" size={32} />
+                  <FaStore size={32} />
                 </div>
                 <h4 className="mb-3">Local Producers List Items</h4>
                 <p className="mb-0">
@@ -315,7 +315,7 @@ const Home = () => {
             <div className="col-md-4">
               <div className="how-it-works-card h-100 p-4 p-lg-5 rounded-4 shadow-sm text-center">
                 <div className="step-icon mb-4">
-                  <FaShoppingCart className="text-accent-green" size={32} />
+                  <FaShoppingCart size={32} />
                 </div>
                 <h4 className="mb-3">Customers Browse & Order</h4>
                 <p className="mb-0">
@@ -326,7 +326,7 @@ const Home = () => {
             <div className="col-md-4">
               <div className="how-it-works-card h-100 p-4 p-lg-5 rounded-4 shadow-sm text-center">
                 <div className="step-icon mb-4">
-                  <FaTruck className="text-accent-green" size={32} />
+                  <FaTruck size={32} />
                 </div>
                 <h4 className="mb-3">Pickup or Delivery</h4>
                 <p className="mb-0">
@@ -400,7 +400,7 @@ const Home = () => {
             >
               <div className="contact-card h-100 p-4 p-lg-5 rounded-4 shadow-sm text-center bg-white">
                 <div className="contact-icon mb-4">
-                  <FaMapMarkerAlt className="text-accent-green" size={32} />
+                  <FaMapMarkerAlt size={32} />
                 </div>
                 <h4 className="mb-3">Our Location</h4>
                 <p className="mb-0 text-muted">
@@ -419,7 +419,7 @@ const Home = () => {
             >
               <div className="contact-card h-100 p-4 p-lg-5 rounded-4 shadow-sm text-center bg-white">
                 <div className="contact-icon mb-4">
-                  <FaPhone className="text-accent-green" size={32} />
+                  <FaPhone size={32} />
                 </div>
                 <h4 className="mb-3">Phone</h4>
                 <p className="mb-0 text-muted">
@@ -438,7 +438,7 @@ const Home = () => {
             >
               <div className="contact-card h-100 p-4 p-lg-5 rounded-4 shadow-sm text-center bg-white">
                 <div className="contact-icon mb-4">
-                  <FaEnvelope className="text-accent-green" size={32} />
+                  <FaEnvelope size={32} />
                 </div>
                 <h4 className="mb-3">Email</h4>
                 <p className="mb-0 text-muted">
