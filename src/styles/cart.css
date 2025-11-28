@@ -22,15 +22,17 @@
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.35);
-  z-index: 998;
+  z-index: 9998;
   opacity: 0;
   visibility: hidden;
   transition: 0.25s ease;
+  pointer-events: none; /* don't block clicks when closed */
 }
 
 .cart-overlay.open {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto; /* allow clicks to close when open */
 }
 
 /* ---------------------------
@@ -45,9 +47,9 @@
   height: 100%;
   background: var(--card-bg);
   box-shadow: -5px 0 18px rgba(0, 0, 0, 0.15);
-  transition: right 0.3s ease;
+  transition: right 0.3s ease, transform 0.3s ease;
   padding: 25px 22px;
-  z-index: 999;
+  z-index: 9999;
   overflow-y: auto;
   border-radius: 0;
 }

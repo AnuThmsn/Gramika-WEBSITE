@@ -27,28 +27,66 @@ const Cart = ({ isOpen, onClose, onProceedToPayment }) => {
     };
 
     useEffect(() => {
-        if (isOpen) {
-            // Add a class to the body to prevent scrolling when the cart is open
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = 'unset';
-        }
+        document.body.style.overflow = isOpen ? 'hidden' : 'unset';
     }, [isOpen]);
 
     const handleProceedClick = () => {
         onProceedToPayment(grandTotal);
     };
 
+    // overlay covers viewport but doesn't remove/hide the background content
+    const overlayStyle = {
+        position: 'fixed',
+        inset: 0,
+        zIndex: 2000,
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'stretch',
+        backgroundColor: isOpen ? 'rgba(0,0,0,0.45)' : 'transparent',
+        visibility: isOpen ? 'visible' : 'hidden',
+        opacity: isOpen ? 1 : 0,
+        transition: 'opacity .22s ease, visibility .22s ease, background-color .22s ease',
+        pointerEvents: isOpen ? 'auto' : 'none'
+    };
+
+    const panelStyle = {
+        width: 360,
+        maxWidth: '100%',
+        height: '100vh',
+        background: '#ffffff',
+        transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform .28s cubic-bezier(.2,.9,.2,1)',
+        boxShadow: '-8px 0 30px rgba(0,0,0,0.25)',
+        padding: 20,
+        overflowY: 'auto'
+    };
+
+    const closeBtnStyle = {
+        background: 'transparent',
+        border: 'none',
+        color: '#204229',
+        fontSize: 18,
+        cursor: 'pointer',
+        fontWeight: 700
+    };
+
+    // clicking backdrop (outside the panel) should close cart
+    const handleBackdropClick = (e) => {
+        if (e.target === e.currentTarget) onClose();
+    };
+
     return (
         <>
-            <div 
-                className={`cart-overlay ${isOpen ? 'open' : ''}`} 
-                onClick={onClose}
+            <div
+                className={`cart-overlay ${isOpen ? 'open' : ''}`}
+                onClick={handleBackdropClick}
+                aria-hidden={!isOpen}
             ></div>
-            <div className={`cart-sidebar ${isOpen ? 'open' : ''}`}>
-                <div className="cart-header">
-                    <h2>My Cart</h2>
-                    <button className="close-cart" onClick={onClose}>&times;</button>
+
+            <div className={`cart-sidebar ${isOpen ? 'open' : ''}`} role="dialog" aria-hidden={!isOpen}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <h3 style={{ margin: 0, color: '#204229' }}>Your Cart</h3>
+                    <button aria-label="Close cart" style={closeBtnStyle} onClick={onClose}>✕</button>
                 </div>
 
                 <div className="delivery-info">

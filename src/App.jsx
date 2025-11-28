@@ -1,11 +1,13 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import UserLayout from "./layouts/UserLayout";
 
 // User-side pages
 import Home from "./pages/Home.jsx";
-import Shop from "./pages/BuyPage.jsx";
+import BuyPage from "./pages/BuyPage.jsx";
 import ProfilePage from "./pages/Profile.jsx";
-import MyShop from "./pages/MyShop.jsx";
+import MyShop from "./pages/Myshop.jsx";
+import Cart from "./pages/cart.jsx"; // added cart route
 
 // Common Header
 import Header from "./components/Header.jsx";
@@ -17,70 +19,29 @@ import "./App.css";
 
 export default function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-
-        {/* ===============================
-            PUBLIC ROUTES (Header on top)
-        =============================== */}
-        <Route
-          path="/"
-          element={
-            <PublicLayout>
-              <Home />
-            </PublicLayout>
-          }
-        />
-
-        <Route
-          path="/about"
-          element={
-            <PublicLayout>
-              <Home />
-            </PublicLayout>
-          }
-        />
-
-        <Route
-          path="/shop"
-          element={
-            <PublicLayout>
-              <Shop />
-            </PublicLayout>
-          }
-        />
-
-        {/* ===============================
-            USER PROTECTED ROUTES
-            (You can disable ProtectedRoute
-             if you don't need user login)
-        =============================== */}
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <PublicLayout>
+        {/* All user-facing routes share UserLayout (Header visible) */}
+        <Route element={<UserLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/shop" element={<BuyPage />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
                 <ProfilePage />
-              </PublicLayout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/myshop/*"
-          element={
-            <ProtectedRoute>
-              <PublicLayout>
-                <MyShop />
-              </PublicLayout>
-            </ProtectedRoute>
-          }
-        />
+              </ProtectedRoute>
+            }
+          />
+          {/* My Shop route (no auth for now — change easily later) */}
+          <Route path="/my-shop" element={<MyShop />} />
+          <Route path="/cart" element={<Cart />} />
+        </Route>
 
         {/* Fallback redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
 

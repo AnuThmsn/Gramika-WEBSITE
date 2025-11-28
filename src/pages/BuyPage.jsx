@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import CategoryButton from '../components/CategoryButton';
 import ProductCard from '../components/ProductCard';
-import Header from '../components/Header';
 import Cart from './cart.jsx';
 import { FaCarrot, FaAppleAlt, FaHome } from 'react-icons/fa';
 import { GiMeatCleaver, GiMilkCarton, GiManualMeatGrinder } from "react-icons/gi";
@@ -88,17 +87,13 @@ function BuyPage() {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#e8e8e8ff', // very light yellow
-      fontFamily: '"Lato", sans-serif'
-    }}>
-      <Header onCartClick={handleCartClick} cartItemCount={cartItems.length} />
+    <div>
+      {/* <Header onCartClick={handleCartClick} cartItemCount={cartItems.length} />
       <Cart
         isOpen={isCartOpen}
         onClose={handleCartClose}
         onProceedToPayment={handleProceedToPayment}
-      />
+      /> */}
 
       <div style={{ padding: '32px 0', maxWidth: '1200px', margin: '0 auto' }}>
         {/* Search and Sort section */}

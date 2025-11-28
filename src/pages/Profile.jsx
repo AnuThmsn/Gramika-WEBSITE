@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../components/Header";
+
 import {
   FaUserCircle,
   FaMapMarkerAlt,
@@ -167,7 +167,7 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-page">
-      <Header onCartClick={() => console.log("cart")} />
+     
 
       <div className="profile-wrapper">
         {/* COVER + HEADER */}

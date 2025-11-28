@@ -13,7 +13,7 @@ function Header({ onCartClick }) {
       </div>
       <div className="nav-links">
         <Link to="/shop">BUY</Link>
-        <Link to="/Myshop">MY SHOP</Link>
+        <Link to="/My-shop">MY SHOP</Link>
         <Link to="/about">ABOUT</Link>
       </div>
       <div className="right-group">

@@ -1,0 +1,18 @@
+/* ensure layout leaves room for fixed header and sets a neutral page bg */
+.user-layout {
+  min-height: 10vh;
+  background: #e2e1e1; /* very light yellow page background */
+  color: #204229;      /* page text dark green by default (override as needed) */
+}
+
+/* main content should start below the fixed header */
+.user-layout > main {
+  padding-top: 0px; /* match header height */
+
+}
+
+/* small helper to keep central content width */
+.user-layout .container {
+  max-width: 1200px;
+  margin: 0 auto;
+}

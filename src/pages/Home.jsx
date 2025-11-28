@@ -1,11 +1,11 @@
-import { useNavigate, NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { motion } from 'framer-motion';
 import { FaLeaf, FaAppleAlt, FaCheese, FaEgg, FaPhone, FaEnvelope, FaMapMarkerAlt, FaUsers, FaHandshake, FaStore, FaShoppingCart, FaTruck, FaUser, FaUserShield } from 'react-icons/fa';
 import React, { useState, useRef, useEffect } from 'react';
 import "../styles/Home.css";
-import Header from '../components/Header'; 
 import Cart from './cart.jsx';
+import { useNavigate } from 'react-router-dom'; // <-- add this
 
 const Home = () => {
   const navigate = useNavigate();
@@ -151,7 +151,6 @@ const Home = () => {
 
   return (
     <div className="community-market min-vh-100 d-flex flex-column" ref={topRef} >
-      <Header onCartClick={handleCartClick}/>
       <Cart
         isOpen={isCartOpen}
         onClose={handleCartClose}
