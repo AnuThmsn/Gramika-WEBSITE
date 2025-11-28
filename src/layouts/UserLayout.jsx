@@ -19,7 +19,7 @@ export default function UserLayout() {
   return (
     <div className="user-layout">
       <Header onCartClick={openCart} />
-      <main style={{ paddingTop: '4.5rem' }}>
+      <main>
         <Outlet />
       </main>
 
