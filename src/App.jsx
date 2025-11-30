@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import UserLayout from "./layouts/UserLayout.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 // User-side pages
 import Home from "./pages/Home.jsx";
