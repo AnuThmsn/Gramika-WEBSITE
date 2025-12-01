@@ -1,14 +1,17 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import UserLayout from "./layouts/UserLayout";
+import UserLayout from "./layouts/UserLayout.jsx";
 import AdminLayout from "./layouts/AdminLayout.jsx";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 // User-side pages
 import Home from "./pages/Home.jsx";
 import BuyPage from "./pages/BuyPage.jsx";
 import ProfilePage from "./pages/Profile.jsx";
 import MyShop from "./pages/Myshop.jsx";
-import Cart from "./pages/cart.jsx"; // added cart route
+import Cart from "./pages/cart.jsx";
+import Login from "./pages/Login.jsx";
 
 // Admin-side pages
 import Dashboard from "./pages/admin/Dashboard.jsx";
@@ -18,20 +21,18 @@ import Users from "./pages/admin/Users.jsx";
 import Payouts from "./pages/admin/Payouts.jsx";
 import Settings from "./pages/admin/Settings.jsx";
 
-// Common Header
-import Header from "./components/Header.jsx";
-
-// Route Guard (OPTIONAL: keep or remove; currently allows everyone)
+// Route Guards (optional)
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import AdminRoute from "./routes/AdminRoute.jsx";
-
-import "./App.css";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* All user-facing routes share UserLayout (Header visible) */}
+        {/* Login route outside UserLayout so header won't appear */}
+        <Route path="/login" element={<Login />} />
+
+        {/* User Layout */}
         <Route element={<UserLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<BuyPage />} />
@@ -43,7 +44,6 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          {/* My Shop route (no auth for now — change easily later) */}
           <Route path="/my-shop" element={<MyShop />} />
           <Route path="/cart" element={<Cart />} />
         </Route>
@@ -66,11 +66,9 @@ export default function App() {
           <Route path="settings" element={<Settings />} />
         </Route>
 
-        {/* Fallback redirect */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
-
