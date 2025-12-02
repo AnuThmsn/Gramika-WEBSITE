@@ -1,9 +1,14 @@
 import React, { useState } from "react";
 import { Card, Form, Button, Row, Col } from "react-bootstrap";
-// Using react-icons (removed BsMoonStars as it is no longer needed)
-import { BsGear, BsPersonCircle, BsSave } from "react-icons/bs";
+// 1. Import useNavigate for navigation
+import { useNavigate } from "react-router-dom";
+// 2. Import Logout Icon
+import { BsGear, BsPersonCircle, BsSave, BsBoxArrowRight } from "react-icons/bs";
 
 const Settings = () => {
+  // Navigation hook
+  const navigate = useNavigate();
+
   // Marketplace Settings
   const [commission, setCommission] = useState(5);
   const [shipping, setShipping] = useState(50);
@@ -22,6 +27,15 @@ const Settings = () => {
   const handleProfileSave = (e) => {
     e.preventDefault();
     alert("Admin Profile Updated!");
+  };
+
+  // 3. Logout Handler
+  const handleLogout = () => {
+    // In a real app, you would clear local storage/tokens here
+    // localStorage.removeItem("userToken");
+    
+    // Navigate back to the About page
+    navigate("/about"); 
   };
 
   return (
@@ -126,10 +140,21 @@ const Settings = () => {
                   />
                 </Form.Group>
 
-                <Button variant="primary" type="submit" className="w-100 d-flex align-items-center justify-content-center gap-2">
+                <Button variant="primary" type="submit" className="w-100 d-flex align-items-center justify-content-center gap-2 mb-3">
                   <BsSave /> Update Profile
                 </Button>
               </Form>
+
+              {/* LOGOUT BUTTON SECTION */}
+              <hr className="my-4" />
+              <Button 
+                variant="outline-danger" 
+                className="w-100 d-flex align-items-center justify-content-center gap-2"
+                onClick={handleLogout}
+              >
+                <BsBoxArrowRight /> Sign Out
+              </Button>
+
             </Card.Body>
           </Card>
         </Col>
