@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { Card, Row, Col, Table, Button, Badge } from "react-bootstrap";
 
 const Payouts = () => {
-  // Dark green color theme
-  const darkGreen = "#1a622bff";
+  // Light green color for backgrounds (kept for table consistency)
   const lightGreen = "#e8f5e8";
 
   // Social program commission rate (only 2%)
@@ -106,17 +105,11 @@ const Payouts = () => {
   return (
     <div style={{ padding: "24px", backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
       
-      {/* Header with Stats */}
+      {/* Header Section */}
       <div className="mb-4">
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <div>
-            <h1 style={{ fontWeight: 700, color: darkGreen, marginBottom: "8px" }}>Financial Management</h1>
-            
-          </div>
-          <div className="text-end">
-           
-          </div>
-        </div>
+        
+        {/* UPDATED: Simplified heading to match Dashboard style */}
+        <h2 className="mb-4">Financial Management</h2>
 
         {/* Stats Cards */}
         <Row className="g-3">

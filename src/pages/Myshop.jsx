@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import Dashboard from '../components/dashboard.jsx';
-import Orders from '../components/order.jsx';
-import Products from '../components/product.jsx';
-import Reviews from '../components/review.jsx';
 import '../styles/MyShop.css';
+import Dashboard from '../components/dashboard';
+import Orders from '../components/order';
+import Products from '../components/product';
+import Reviews from '../components/review';
 
 const MyShop = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
@@ -24,9 +24,9 @@ const MyShop = () => {
   };
 
   return (
-    <div>
+    <div className="myshop-page-container">
       <div className="myshop-main-content-area">
-        <div className="myshop-sidebar">
+        <aside className="myshop-sidebar">
           <h2 className="myshop-sidebar-title">My Shop</h2>
           <nav className="myshop-sidebar-nav">
             <button
@@ -54,9 +54,10 @@ const MyShop = () => {
               Reviews
             </button>
           </nav>
-        </div>
+        </aside>
+
         <div className="myshop-content">
-          {renderContent()}
+          <div className="page-inner">{renderContent()}</div>
         </div>
       </div>
     </div>

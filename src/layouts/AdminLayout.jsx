@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink, Outlet, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { NavLink, Outlet, Link, useNavigate } from 'react-router-dom';
 import { 
   FaThLarge, 
   FaBoxOpen, 
@@ -14,7 +14,30 @@ import './AdminLayout.css';
 import logoImg from '../assets/logo.png';
 
 const AdminLayout = () => {
-  
+  const navigate = useNavigate();
+  const [searchValue, setSearchValue] = useState('');
+
+  const handleSearchSubmit = (e) => {
+    e?.preventDefault?.();
+    const q = (searchValue || '').trim();
+    if (!q) return;
+    const l = q.toLowerCase();
+
+    // simple routing heuristics
+    if (l.includes('product') || l.startsWith('p:') || /sku|item|price|category/.test(l)) {
+      navigate(`/admin/products?q=${encodeURIComponent(q)}`);
+    } else if (l.includes('order') || l.startsWith('o:') || /invoice|order#|trx|buyer|seller/.test(l)) {
+      navigate(`/admin/orders?q=${encodeURIComponent(q)}`);
+    } else if (l.includes('user') || l.includes('buyer') || l.includes('seller')) {
+      navigate(`/admin/users?q=${encodeURIComponent(q)}`);
+    } else if (l.includes('payout') || l.includes('pay')) {
+      navigate(`/admin/payouts?q=${encodeURIComponent(q)}`);
+    } else {
+      // fallback to dashboard (showing results there)
+      navigate(`/admin/dashboard?q=${encodeURIComponent(q)}`);
+    }
+  };
+
   const menuItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: <FaThLarge /> },
     { name: 'Products', path: '/admin/products', icon: <FaBoxOpen /> },
@@ -37,13 +60,20 @@ const AdminLayout = () => {
         {/* Right: Search & Profile */}
         <div className="nav-right">
           <div className="search-box">
-            <FaSearch className="search-icon" />
-            <input type="text" placeholder="Search..." />
+            <FaSearch className="search-icon" onClick={handleSearchSubmit} />
+            <form onSubmit={handleSearchSubmit} style={{ display: 'inline' }}>
+              <input
+                type="text"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                placeholder="Search..."
+              />
+            </form>
           </div>
           
           <div className="profile-section">
             <span className="admin-name">Anu Thomson</span>
-            <Link to="/admin/profile" className="profile-icon-link">
+            <Link to="/admin/settings" className="profile-icon-link">
               <FaUserCircle size={32} />
             </Link>
           </div>
