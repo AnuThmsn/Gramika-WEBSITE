@@ -8,7 +8,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  overflow: hidden;
+  /* FIXED: Changed from 'hidden' to 'visible' so the dropdown can appear */
+  overflow: visible !important; 
   width: 100vw;
   display: flex;
   justify-content: space-between;
@@ -21,10 +22,17 @@
   border-bottom: #f7f5f5 solid;
 }
 
-.left-group,
+.left-group {
+  display: flex;
+  align-items: center;
+}
+
+/* FIXED: Added this to ensure the container doesn't clip the dropdown */
 .right-group {
   display: flex;
   align-items: center;
+  overflow: visible; 
+  z-index: 1001; 
 }
 
 .nav-links a {
@@ -112,4 +120,91 @@
 .profile-icon:hover {
   color: #b19f33;
   transform: translateY(-2px);
+}
+
+/* --- Language Selector Container --- */
+.lang-container {
+  position: relative; 
+  margin-right: 25px;
+  display: flex;
+  align-items: center;
+}
+
+/* The Main Button */
+.lang-btn {
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px; 
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: #1a4d2e; 
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.lang-btn:hover {
+  background-color: #f0fdf4; 
+  border-color: #1a4d2e;
+}
+
+/* Text inside button */
+.lang-text {
+  margin-top: 2px; 
+}
+
+/* Arrow Animation */
+.arrow-icon {
+  transition: transform 0.3s ease;
+}
+.arrow-icon.rotate {
+  transform: rotate(180deg);
+}
+
+/* --- The Dropdown Menu --- */
+.lang-dropdown {
+  position: absolute;
+  top: 130%; /* Pushes it just below the button */
+  right: 0;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); 
+  width: 120px;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+  animation: fadeIn 0.2s ease-in-out;
+  
+  /* FIXED: Increased Z-Index to stay above everything else */
+  z-index: 2000 !important; 
+}
+
+/* Individual Options */
+.lang-option {
+  padding: 10px 15px;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: left;
+}
+
+.lang-option:hover {
+  background-color: #f5f5f5;
+  color: #1a4d2e;
+}
+
+/* Highlight the currently selected language */
+.lang-option.active {
+  background-color: #e6f4ea;
+  color: #1a4d2e;
+  font-weight: bold;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
