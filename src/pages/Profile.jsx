@@ -56,8 +56,12 @@ export default function ProfilePage() {
 
   // computed seller rating (from localStorage reviews)
   const [sellerRating, setSellerRating] = useState(null);
+  const [sellers, setSellers] = useState([]);
+  const [reviewTarget, setReviewTarget] = useState('');
+  const [reviewText, setReviewText] = useState('');
+  const [reviewRating, setReviewRating] = useState(5);
 
-  // load saved seller details / status from localStorage on mount
+  // load saved seller details / status from localStorage on mount and fetch sellers
   useEffect(() => {
     const savedSeller = localStorage.getItem("gramika_seller");
     const savedStatus = localStorage.getItem("gramika_seller_status");
@@ -66,6 +70,19 @@ export default function ProfilePage() {
       setSellerStatus(savedStatus || "registered");
       computeRating(JSON.parse(savedSeller).shopName);
     }
+
+    // preload sellers list for review dropdown
+    (async () => {
+      try {
+        const res = await fetch('/api/users/sellers');
+        if (!res.ok) return;
+        const list = await res.json();
+        setSellers(list);
+      } catch (err) {
+        // ignore fetch errors
+        console.error('Could not load sellers', err);
+      }
+    })();
   }, []);
 
   // compute average rating for a shop
@@ -125,6 +142,15 @@ export default function ProfilePage() {
     computeRating(sellerDetails.shopName);
     // small success feedback
     setTimeout(() => alert("Seller info saved locally."), 10);
+    // if logged in, persist seller info to backend user document
+    const token = localStorage.getItem('gramika_token');
+    if (token) {
+      fetch('/api/users/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ isSeller: true, seller: { ...sellerDetails, status: 'registered' } })
+      }).catch(err => console.error('Failed to save seller backend', err));
+    }
   };
 
   const applyForVerification = (e) => {
@@ -139,6 +165,37 @@ export default function ProfilePage() {
     setEditingSeller(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
     alert("Application sent — status: PENDING.");
+    const token = localStorage.getItem('gramika_token');
+    if (token) {
+      fetch('/api/users/me', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ isSeller: true, seller: { ...sellerDetails, status: 'pending' } })
+      }).catch(err => console.error('Failed to send verification', err));
+    }
+  };
+
+  const submitReview = async (e) => {
+    e?.preventDefault();
+    const token = localStorage.getItem('gramika_token');
+    if (!token) return alert('Please login to submit a review');
+    if (!reviewTarget) return alert('Please select a seller to review');
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ seller: reviewTarget, rating: reviewRating, comment: reviewText })
+      });
+      if (!res.ok) throw new Error('Failed to submit review');
+      alert('Review submitted — thank you!');
+      setReviewText('');
+      setReviewRating(5);
+      // notify any review lists to refresh (e.g., seller MyShop reviews)
+      try { window.dispatchEvent(new Event('reviewsUpdated')); } catch (e) { /* ignore */ }
+    } catch (err) {
+      console.error(err);
+      alert('Could not submit review');
+    }
   };
 
   const quickFeedbackSubmit = (e) => {
@@ -407,6 +464,39 @@ export default function ProfilePage() {
   )}
 </div>
 
+            </div>
+
+            {/* Write a review (select seller) */}
+            <div className="card write-review-card" style={{ marginTop: 16 }}>
+              <h3>Write a Review</h3>
+              <form onSubmit={submitReview}>
+                <div style={{ marginBottom: 8 }}>
+                  <label>Select Seller</label>
+                  <select value={reviewTarget} onChange={(e) => setReviewTarget(e.target.value)} style={{ width: '100%', padding: 8 }}>
+                    <option value="">-- choose seller --</option>
+                    {sellers.map(s => (
+                      <option key={s._id} value={s._id}>{(s.seller && s.seller.shopName) || s.name || s.email}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: 8 }}>
+                  <label>Rating</label>
+                  <select value={reviewRating} onChange={(e) => setReviewRating(Number(e.target.value))} style={{ width: 120, padding: 8 }}>
+                    {[5,4,3,2,1].map(n => <option key={n} value={n}>{n} star{n>1?'s':''}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: 8 }}>
+                  <label>Comment</label>
+                  <textarea value={reviewText} onChange={(e) => setReviewText(e.target.value)} rows={3} style={{ width: '100%', padding: 8 }} />
+                </div>
+
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button type="button" onClick={() => { setReviewText(''); setReviewRating(5); setReviewTarget(''); }} className="cancel-btn">Clear</button>
+                  <button type="submit" className="save-btn">Submit Review</button>
+                </div>
+              </form>
             </div>
 
             {/* Recent Orders summary */}

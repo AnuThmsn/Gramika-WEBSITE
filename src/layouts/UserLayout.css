@@ -7,6 +7,12 @@
 
 /* main content should start below the fixed header */
 
+.user-layout main {
+  /* leave space for the fixed header using the shared navbar height variable */
+  
+  min-height: calc(100vh - var(--navbar-height));
+}
+
 
 /* small helper to keep central content width */
 .user-layout .container {

@@ -21,17 +21,44 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!isLogin && role === "admin") {
-      alert("Admin registration is not allowed.");
-      return;
-    }
-    if (!isLogin && password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-    console.log({ name, email, password, mobile, address, pincode, role, action: isLogin ? "login" : "register" });
-    if (role === "admin") navigate("/admin/dashboard");
-    else navigate("/profile");
+    (async () => {
+      try {
+        if (!isLogin && role === "admin") {
+          alert("Admin registration is not allowed.");
+          return;
+        }
+        if (!isLogin && password !== confirmPassword) {
+          alert("Passwords do not match!");
+          return;
+        }
+
+        if (isLogin) {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json();
+          if (!res.ok) return alert(data.msg || 'Login failed');
+          localStorage.setItem('gramika_token', data.token);
+          localStorage.setItem('gramika_user_id', data.user.id);
+          navigate('/profile');
+        } else {
+          // register
+          const res = await fetch('/api/auth/register', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+          });
+          const data = await res.json();
+          if (!res.ok) return alert(data.msg || 'Registration failed');
+          localStorage.setItem('gramika_token', data.token);
+          localStorage.setItem('gramika_user_id', data.user.id);
+          navigate('/profile');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Authentication error');
+      }
+    })();
   };
 
   return (

@@ -1,0 +1,161 @@
+/* =========================
+   Checkout Page – Gramika
+   ========================= */
+
+.checkout-page {
+  padding: 32px;
+  background: var(--light-green);
+  min-height: 100vh;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Layout */
+.checkout-grid {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+/* Left section */
+.checkout-items {
+  flex: 2;
+}
+
+.checkout-items h2 {
+  color: var(--dark-green);
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-family: 'Playfair Display', serif;
+}
+
+.checkout-items p {
+  color: #6b7280;
+  font-size: 15px;
+}
+
+/* =========================
+   Summary Card
+   ========================= */
+
+.checkout-summary {
+  flex: 1;
+  background: var(--white);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* Title */
+.checkout-summary h3 {
+  color: var(--dark-green);
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  font-family: 'Playfair Display', serif;
+}
+
+/* Labels */
+.checkout-summary label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dark);
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* Address & Payment Options */
+.checkout-summary .address-option,
+.checkout-summary .payment-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--dark);
+}
+
+.checkout-summary input[type="radio"] {
+  accent-color: var(--accent-green);
+}
+
+/* Textarea */
+.checkout-summary textarea {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-top: 8px;
+  resize: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.checkout-summary textarea:focus {
+  outline: none;
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 0.25rem rgba(76, 175, 80, 0.15);
+}
+
+/* =========================
+   Price Summary
+   ========================= */
+
+.checkout-summary .price-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.checkout-summary .price-row.total {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--dark-green);
+  border-top: 1px solid #e6e6e6;
+  padding-top: 12px;
+  margin-top: 16px;
+}
+
+/* =========================
+   Place Order Button
+   ========================= */
+
+.checkout-summary button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  background: var(--accent-green);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.checkout-summary button:hover {
+  background: var(--dark-green);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.checkout-summary button:active {
+  transform: scale(0.97);
+}
+
+/* =========================
+   Responsive
+   ========================= */
+
+@media (max-width: 768px) {
+  .checkout-grid {
+    flex-direction: column;
+  }
+
+  .checkout-summary {
+    margin-top: 16px;
+  }
+}

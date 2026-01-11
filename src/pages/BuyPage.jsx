@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import CategoryButton from '../components/CategoryButton';
 import ProductCard from '../components/ProductCard';
 import Cart from './cart.jsx';
@@ -7,6 +7,14 @@ import { GiMeatCleaver, GiMilkCarton, GiManualMeatGrinder } from "react-icons/gi
 import { CiSearch } from "react-icons/ci";
 
 function BuyPage() {
+  // require login to access Buy page
+  React.useEffect(() => {
+    const token = localStorage.getItem('gramika_token');
+    if (!token) {
+      // redirect to login
+      window.location.href = '/login';
+    }
+  }, []);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortOption, setSortOption] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,32 +22,89 @@ function BuyPage() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
-  const products = [
-    { image: "egg.jpeg", name: "Egg", price: 10, category: "Poultry & Meat", quantity: 4 },
-    { image: "milk.jpeg", name: "Milk", price: 20, category: "Dairy & Beverages", quantity: 4 },
-    { image: "Homemade chocolates.webp", name: "Chocolates", price: 250, category: "Bakery & Snacks", quantity: 7 },
-    { image: "chicken.jpeg", name: "Chicken", price: 250, category: "Poultry & Meat", quantity: 3 },
-    { image: "buns.webp", name: "Bun", price: 30, category: "Bakery & Snacks", quantity: 5 },
-    { image: "Butter Buns.jpg", name: "Butter Bun", price: 50, category: "Bakery & Snacks", quantity: 1 },
-    { image: "Coconut oil.jpeg", name: "Coconut Oil", price: 250, category: "Homemade Essentials", quantity: 2 },
-    { image: "cream cakes.jpg", name: "Cream Cake", price: 400, category: "Bakery & Snacks", quantity: 4 },
-    { image: "jam.jpg", name: "Jam", price: 350, category: "Homemade Essentials", quantity: 4 },
-    { image: "soap.jpeg", name: "Soap", price: 250, category: "Homemade Essentials", quantity: 4 },
-    { image: "Cookies.jpeg", name: "Cookies", price: 250, category: "Bakery & Snacks", quantity: 4 },
-    { image: "coconut.jpeg", name: "Coconut", price: 250, category: "Homemade Essentials", quantity: 4 },
-    { image: "brinjal.jpeg", name: "Brinjal", price: 250, category: "Vegetables", quantity: 4 },
-    { image: "chilli.jpeg", name: "Chilli", price: 150, category: "Vegetables", quantity: 4 },
-    { image: "ladys finger.jpeg", name: "Lady's Finger", price: 200, category: "Vegetables", quantity: 4 },
-    { image: "tomato.jpeg", name: "Tomato", price: 500, category: "Vegetables", quantity: 4 },
-    { image: "pea.jpeg", name: "Pea", price: 250, category: "Vegetables", quantity: 4 },
-    { image: "mango.webp", name: "Mango", price: 800, category: "Fruits", quantity: 4 },
-    { image: "guava.jpeg", name: "Guava", price: 650, category: "Fruits", quantity: 4 },
-    { image: "dragon fruit.jpeg", name: "Dragon Fruit", price: 250, category: "Fruits", quantity: 4 }
-  ];
+  const [products, setProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
-  const handleAddToCart = (product) => {
-    setCartItems([...cartItems, product]);
-    console.log(`${product.quantity} × ${product.name} added to cart!`); // Replaced alert()
+  useEffect(() => {
+    let mounted = true;
+    const fetchProducts = async () => {
+      try {
+        setLoadingProducts(true);
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        if (mounted) setProducts(data);
+      } catch (err) {
+        console.error('Failed to fetch products', err);
+      } finally {
+        if (mounted) setLoadingProducts(false);
+      }
+    };
+    fetchProducts();
+    const onOrder = () => { fetchProducts(); };
+    window.addEventListener('orderUpdated', onOrder);
+    return () => {
+      mounted = false;
+      window.removeEventListener('orderUpdated', onOrder);
+    };
+  }, []);
+
+  const handleAddToCart = async (product) => {
+    try {
+      const token = localStorage.getItem('gramika_token');
+      const prodId = product._id || product.id || product.id;
+      const qty = product.quantity || 1;
+
+      // verify latest product availability before adding
+      try {
+        const check = await fetch(`/api/products/${prodId}`);
+        if (check.ok) {
+          const p = await check.json();
+          if (p.quantity !== undefined && p.quantity <= 0) {
+            alert('Sorry — this product is sold out and cannot be added to the cart.');
+            return;
+          }
+        }
+      } catch (e) {
+        // ignore transient availability check errors, server will validate too
+      }
+      if (token) {
+        // persist to backend
+        const res = await fetch('/api/carts/item', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ product: prodId, qty, priceAt: product.price })
+        });
+        if (!res.ok) {
+          const json = await res.json().catch(() => null);
+          const text = json?.msg || json?.message || await res.text().catch(() => null) || 'Failed to add to cart';
+          console.error('BuyPage: add to cart failed', res.status, text);
+          alert(text);
+          return;
+        } else {
+          const body = await res.json().catch(() => null);
+          console.log('BuyPage: add to cart response', body);
+        }
+        // notify cart component to reload
+        window.dispatchEvent(new Event('cartUpdated'));
+      } else {
+        // guest: save to localStorage
+        const saved = JSON.parse(localStorage.getItem('gramika_cart') || '[]');
+        // ensure not already saved and product has stock
+        const exists = saved.find(s => (s.id || s.product || s._id) === prodId);
+        if (exists) {
+          alert('Product already in cart');
+        } else {
+          saved.push({ id: prodId, name: product.name, price: product.price, quantity: qty, image: product.image || product.imageUrl || '' });
+          localStorage.setItem('gramika_cart', JSON.stringify(saved));
+          console.log('BuyPage: guest cart saved', saved);
+          window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { source: 'BuyPage', guest: true } }));
+        }
+      }
+      console.log(`BuyPage: ${qty} × ${product.name} added to cart.`);
+    } catch (err) {
+      console.error('Add to cart failed', err);
+      alert('Could not add to cart');
+    }
   };
 
   const getCategoryIcon = (category) => {
@@ -276,7 +341,9 @@ function BuyPage() {
           gap: '32px',
           justifyContent: 'center'
         }}>
-          {products
+          {loadingProducts ? (
+            <div style={{ gridColumn: '1/-1', textAlign: 'center' }}>Loading products…</div>
+          ) : products
             .filter(item =>
               (selectedCategory === 'All' || item.category === selectedCategory) &&
               item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -287,16 +354,20 @@ function BuyPage() {
               if (sortOption === 'nameAZ') return a.name.localeCompare(b.name);
               return 0;
             })
-            .map((item, index) => (
-              <ProductCard
-                key={index}
-                image={item.image}
-                name={item.name}
-                price={item.price}
-                stock={item.quantity}
-                onAddToCart={(qty) => handleAddToCart({ ...item, quantity: qty })}
-              />
-            ))}
+            .map((item, index) => {
+              // decide image source: prefer imageUrl (S3/Cloudinary), then GridFS id, then legacy image
+              const imageSrc = item.imageUrl || (item.imageGridFsId ? `/api/uploads/${item.imageGridFsId}` : item.image);
+              return (
+                <ProductCard
+                  key={index}
+                  image={imageSrc}
+                  name={item.name}
+                  price={item.price}
+                  stock={item.quantity}
+                  onAddToCart={(qty) => handleAddToCart({ ...item, quantity: qty })}
+                />
+              );
+            })}
         </div>
       </div>
     </div>

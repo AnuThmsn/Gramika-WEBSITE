@@ -14,4 +14,10 @@ export default defineConfig({
       'internmap'
     ]
   }
+  ,
+  server: {
+    proxy: {
+      '/api': 'http://localhost:5000'
+    }
+  }
 })

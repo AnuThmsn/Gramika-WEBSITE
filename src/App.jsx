@@ -11,6 +11,7 @@ import BuyPage from "./pages/BuyPage.jsx";
 import ProfilePage from "./pages/Profile.jsx";
 import MyShop from "./pages/Myshop.jsx";
 import Cart from "./pages/cart.jsx";
+import CheckoutPage from "./pages/Checkout.jsx";
 import Login from "./pages/Login.jsx";
 
 // Admin-side pages
@@ -45,6 +46,7 @@ export default function App() {
             }
           />
           <Route path="/my-shop" element={<MyShop />} />
+          <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
           <Route path="/cart" element={<Cart />} />
         </Route>
 

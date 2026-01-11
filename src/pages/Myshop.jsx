@@ -8,6 +8,21 @@ import Reviews from '../components/review';
 const MyShop = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
 
+	// enforce login and seller registration
+	React.useEffect(() => {
+		const token = localStorage.getItem('gramika_token');
+		if (!token) {
+			window.location.href = '/login';
+			return;
+		}
+		const sellerStatus = localStorage.getItem('gramika_seller_status');
+		if (!sellerStatus || sellerStatus === 'not_seller') {
+			// not registered as seller — redirect to profile to register
+			window.location.href = '/profile';
+			return;
+		}
+	}, []);
+
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
@@ -16,8 +31,8 @@ const MyShop = () => {
         return <Orders />;
       case 'products':
         return <Products />;
-      case 'reviews':
-        return <Reviews />;
+			case 'reviews':
+				return <Reviews sellerId={localStorage.getItem('gramika_user_id')} />;
       default:
         return <Dashboard />;
     }
@@ -58,6 +73,7 @@ const MyShop = () => {
 
         <div className="myshop-content">
           <div className="page-inner">{renderContent()}</div>
+					{/* Reviews are available on the Reviews tab only */}
         </div>
       </div>
     </div>

@@ -2,12 +2,15 @@
 
 import React, { useState } from 'react';
 
+// This component now uploads image to backend (/api/uploads) and then creates
+// a seller product via POST /api/products/seller using auth token from localStorage.
 const AddProduct = ({ onAddProduct, onClose }) => {
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
     quantity: '',
-    image: ''
+    imageFile: null,
+    imagePreview: ''
   });
 
   const handleInputChange = (e) => {
@@ -20,25 +23,67 @@ const AddProduct = ({ onAddProduct, onClose }) => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setNewProduct({ ...newProduct, image: reader.result });
+        setNewProduct({ ...newProduct, imageFile: file, imagePreview: reader.result });
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = () => {
-    if (newProduct.name && newProduct.price && newProduct.quantity && newProduct.image) {
-      const product = {
-        id: Date.now().toString(),
+  const uploadFile = async (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/uploads', { method: 'POST', body: fd });
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    // return URL that can be used directly in <img>
+    return `/api/uploads/${data.fileId}`;
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (!newProduct.name || !newProduct.price || !newProduct.quantity) {
+        alert('Please fill name, price and quantity');
+        return;
+      }
+
+      let imageUrl = '';
+      if (newProduct.imageFile) {
+        imageUrl = await uploadFile(newProduct.imageFile);
+      }
+
+      const productPayload = {
         name: newProduct.name,
         price: Number(newProduct.price),
         quantity: Number(newProduct.quantity),
-        image: newProduct.image,
-        status: 'available'
+        imageUrl,
+        description: ''
       };
-      onAddProduct(product);
-      setNewProduct({ name: '', price: '', quantity: '', image: '' });
+
+      // read token from localStorage (frontend login should store it)
+      const token = localStorage.getItem('gramika_token');
+
+      const createRes = await fetch('/api/products/seller', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify(productPayload)
+      });
+
+      if (!createRes.ok) {
+        const err = await createRes.json().catch(() => ({}));
+        throw new Error(err.msg || 'Failed to create product');
+      }
+
+      const created = await createRes.json();
+      // call parent callback so UI updates immediately
+      onAddProduct(created);
+      setNewProduct({ name: '', price: '', quantity: '', imageFile: null, imagePreview: '' });
       onClose();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to add product: ' + err.message);
     }
   };
 
@@ -85,9 +130,9 @@ const AddProduct = ({ onAddProduct, onClose }) => {
             onChange={handleImageChange}
           />
         </div>
-        {newProduct.image && (
+        {newProduct.imagePreview && (
           <div className="image-preview">
-            <img src={newProduct.image} alt="Product Preview" style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+            <img src={newProduct.imagePreview} alt="Product Preview" style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
           </div>
         )}
         <div className="products-modal-actions">

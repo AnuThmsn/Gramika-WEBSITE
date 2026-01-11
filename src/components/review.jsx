@@ -1,42 +1,10 @@
-import React from 'react';
-import { FaStar, FaReply, FaFlag } from 'react-icons/fa'; // Import the icons
+import React, { useEffect, useState } from 'react';
+import { FaStar, FaReply, FaFlag } from 'react-icons/fa';
 import './Review.css';
 
-const Reviews = () => {
-    const reviews = [
-        {
-            id: '1',
-            customerName: 'Rahul Sharma',
-            rating: 5,
-            comment: 'Excellent quality milk! Fresh and pure. Will order again.',
-            product: 'Fresh Milk',
-            date: '2024-01-15'
-        },
-        {
-            id: '2',
-            customerName: 'Priya Singh',
-            rating: 4,
-            comment: 'Good quality chicken, properly cleaned and fresh.',
-            product: 'Organic Chicken',
-            date: '2024-01-14'
-        },
-        {
-            id: '3',
-            customerName: 'Amit Kumar',
-            rating: 5,
-            comment: 'Best chocolates in town! Kids loved them.',
-            product: 'Premium Chocolates',
-            date: '2024-01-13'
-        },
-        {
-            id: '4',
-            customerName: 'Sunita Devi',
-            rating: 3,
-            comment: 'Eggs were okay, but delivery was a bit delayed.',
-            product: 'Farm Eggs',
-            date: '2024-01-12'
-        }
-    ];
+const Reviews = ({ sellerId }) => {
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     const renderStars = (rating) => {
         const stars = [];
@@ -48,8 +16,40 @@ const Reviews = () => {
         return stars;
     };
 
+    useEffect(() => {
+        let mounted = true;
+        const load = async () => {
+            setLoading(true);
+            try {
+                if (sellerId) {
+                    const res = await fetch(`/api/reviews/seller/${sellerId}`);
+                    const data = await res.json();
+                    if (mounted) setReviews(data || []);
+                } else {
+                    const res = await fetch('/api/reviews');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (mounted) setReviews(data || []);
+                    } else {
+                        if (mounted) setReviews([]);
+                    }
+                }
+            } catch (err) {
+                if (mounted) setReviews([]);
+            } finally {
+                if (mounted) setLoading(false);
+            }
+        };
+        load();
+
+        const onUpdated = () => { load(); };
+        window.addEventListener('reviewsUpdated', onUpdated);
+        return () => { mounted = false; window.removeEventListener('reviewsUpdated', onUpdated); };
+    }, [sellerId]);
+
     const getAverageRating = () => {
-        const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+        if (!reviews.length) return null;
+        const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
         return (totalRating / reviews.length).toFixed(1);
     };
 
@@ -59,9 +59,9 @@ const Reviews = () => {
                 <h1 className="section-title">Customer Reviews</h1>
                 <div className="reviews-summary">
                     <div className="average-rating">
-                        <span className="rating-number">{getAverageRating()}</span>
+                        {getAverageRating() && <span className="rating-number">{getAverageRating()}</span>}
                         <div className="rating-stars">
-                            {renderStars(Math.round(Number(getAverageRating())))}
+                            {renderStars(Math.round(Number(getAverageRating()) || 0))}
                         </div>
                         <span className="total-reviews">({reviews.length} reviews)</span>
                     </div>
@@ -69,38 +69,36 @@ const Reviews = () => {
             </div>
 
             <div className="reviews-container">
-                {reviews.map((review) => (
-                    <div key={review.id} className="review-card">
-                        <div className="review-header">
-                            <div className="customer-info">
-                                <div className="customer-avatar">
-                                    {review.customerName.charAt(0).toUpperCase()}
+                {loading ? <p>Loading reviews…</p> : (
+                    reviews.length === 0 ? <p>No reviews yet.</p> : (
+                        reviews.map((review) => (
+                            <div key={review._id || review.id} className="review-card">
+                                <div className="review-header">
+                                    <div className="customer-info">
+                                        <div className="customer-avatar">
+                                            {(review.user?.name || review.user?.email || 'U').charAt(0).toUpperCase()}
+                                        </div>
+                                        <div className="customer-details">
+                                            <h4 className="customer-name">{review.user?.name || review.user?.email || 'User'}</h4>
+                                            <span className="review-date">{new Date(review.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+                                    <div className="review-rating">
+                                        {renderStars(review.rating || 0)}
+                                    </div>
                                 </div>
-                                <div className="customer-details">
-                                    <h4 className="customer-name">{review.customerName}</h4>
-                                    <span className="review-date">{review.date}</span>
+                                <div className="review-content">
+                                    {review.product && <div className="product-name">📦 {review.productName || review.product}</div>}
+                                    <p className="review-comment">{review.comment}</p>
+                                </div>
+                                <div className="review-actions">
+                                    <button className="btn-reply"><FaReply /> Reply</button>
+                                    <button className="btn-flag"><FaFlag /> Flag</button>
                                 </div>
                             </div>
-                            <div className="review-rating">
-                                {renderStars(review.rating)}
-                            </div>
-                        </div>
-                        
-                        <div className="review-content">
-                            <div className="product-name">📦 {review.product}</div>
-                            <p className="review-comment">{review.comment}</p>
-                        </div>
-                        
-                        <div className="review-actions">
-                            <button className="btn-reply">
-                                <FaReply /> Reply
-                            </button>
-                            <button className="btn-flag">
-                                <FaFlag /> Flag
-                            </button>
-                        </div>
-                    </div>
-                ))}
+                        ))
+                    )
+                )}
             </div>
         </div>
     );

@@ -4,11 +4,16 @@
   box-sizing: border-box;
 }
 
+/* Navbar height variable for consistent layout spacing */
+:root {
+  /* use a fixed pixel navbar height to avoid em-based rounding differences */
+  --navbar-height: 72px;
+}
+
 .navbar {
   position: fixed;
   top: 0;
   left: 0;
-  /* FIXED: Changed from 'hidden' to 'visible' so the dropdown can appear */
   overflow: visible !important; 
   width: 100vw;
   display: flex;
@@ -16,7 +21,7 @@
   align-items: center;
   background-color: #ffffff;
   box-sizing: border-box;
-  height: 4em;
+  height: var(--navbar-height);
   z-index: 1000;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   border-bottom: #f7f5f5 solid;
@@ -51,9 +56,7 @@
 }
 
 /* Ensure content below navbar is not hidden */
-.community-market {
-  padding-top: 4em;
-}
+/* remove page-level padding here; layout handles spacing using --navbar-height */
 
 .nav-links {
   display: flex;
@@ -207,4 +210,32 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments to fit narrow screens */
+@media (max-width: 900px) {
+  .nav-links {
+    gap: 12px;
+  }
+  .nav-links a {
+    padding: 0 10px;
+    font-size: 14px;
+  }
+  .logo {
+    height: 44px; /* smaller logo */
+  }
+  .cart-icon {
+    width: 96px;
+    height: 44px;
+    font-size: 14px;
+    border-radius: 16px;
+  }
+  .lang-container { margin-right: 12px; }
+}
+
+@media (max-width: 600px) {
+  .nav-links { display: none; }
+  .logo { height: 40px; }
+  .cart-icon { width: 84px; height: 40px; font-size: 13px; }
+  .profile-icon { width: 36px; height: 36px; }
 }

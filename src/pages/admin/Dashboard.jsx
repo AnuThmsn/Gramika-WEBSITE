@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Row, Col, Table } from "react-bootstrap";
 import {
   LineChart,
@@ -17,29 +17,45 @@ import {
 } from "recharts";
 
 const Dashboard = () => {
-  // Revenue Data (Line Chart)
-  const revenueData = [
-    { month: "Jan", revenue: 800 },
-    { month: "Feb", revenue: 1200 },
-    { month: "Mar", revenue: 900 },
-    { month: "Apr", revenue: 1500 },
-    { month: "May", revenue: 1700 },
-    { month: "Jun", revenue: 2200 },
-  ];
+  const [revenueData, setRevenueData] = useState([]);
+  const [monthlyProfitData, setMonthlyProfitData] = useState([]);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  // Orders Data (Bar Chart)
-  const orderData = [
-    { day: "Mon", orders: 40 },
-    { day: "Tue", orders: 35 },
-    { day: "Wed", orders: 50 },
-    { day: "Thu", orders: 30 },
-    { day: "Fri", orders: 60 },
-  ];
+  useEffect(() => {
+    let mounted = true;
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('gramika_token');
+        const res = await fetch('/api/admin/stats', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        if (!res.ok) throw new Error('Failed to load stats');
+        const data = await res.json();
+        if (!mounted) return;
+        setTotalOrders(data.totalOrders || 0);
+        setTotalRevenue(data.totalRevenue || 0);
+        setTotalUsers(data.userCount || 0);
+        setTotalProducts(data.productCount || 0);
+        setRevenueData((data.month || []).map(m => ({ month: m.label, revenue: m.revenue })));
+        setMonthlyProfitData((data.monthlyProfit || []).map(m => ({ month: m.label, profit: m.profit })));
+      } catch (err) {
+        console.error('Failed to fetch admin stats', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    fetchStats();
+    return () => { mounted = false; };
+  }, []);
 
-  // User Distribution (Pie Chart)
+  const orderData = revenueData.map((r, i) => ({ day: r.month, orders: 0 }));
+
+  // User distribution placeholder (could be replaced with real data)
   const userTypeData = [
-    { name: "Buyers", value: 80 },
-    { name: "Sellers", value: 40 },
+    { name: "Buyers", value: Math.max(0, totalUsers - 10) },
+    { name: "Sellers", value: 10 },
   ];
 
   const COLORS = ["#0088FE", "#FF7F50"];
@@ -50,21 +66,38 @@ const Dashboard = () => {
 
       {/* TOP CARDS */}
       <Row className="mb-4">
-        {[
-          { title: "Total Users", value: "120" },
-          { title: "Pending Verifications", value: "5" },
-          { title: "Orders Today", value: "45" },
-          { title: "Revenue", value: "₹1,200" },
-        ].map((card, i) => (
-          <Col md={3} key={i}>
-            <Card className="text-center shadow-sm">
-              <Card.Body>
-                <Card.Title>{card.title}</Card.Title>
-                <h4>{card.value}</h4>
-              </Card.Body>
-            </Card>
-          </Col>
-        ))}
+        <Col md={3}>
+          <Card className="text-center shadow-sm">
+            <Card.Body>
+              <Card.Title>Total Orders</Card.Title>
+              <h4>{totalOrders}</h4>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3}>
+          <Card className="text-center shadow-sm">
+            <Card.Body>
+              <Card.Title>Revenue</Card.Title>
+              <h4>₹{totalRevenue.toLocaleString()}</h4>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3}>
+          <Card className="text-center shadow-sm">
+            <Card.Body>
+              <Card.Title>Total Users</Card.Title>
+              <h4>{totalUsers}</h4>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={3}>
+          <Card className="text-center shadow-sm">
+            <Card.Body>
+              <Card.Title>Total Products</Card.Title>
+              <h4>{totalProducts}</h4>
+            </Card.Body>
+          </Card>
+        </Col>
       </Row>
 
       {/* GRAPH SECTION */}
@@ -119,7 +152,7 @@ const Dashboard = () => {
                   label
                 >
                   {userTypeData.map((entry, index) => (
-                    <Cell key={index} fill={COLORS[index]} />
+                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Legend />

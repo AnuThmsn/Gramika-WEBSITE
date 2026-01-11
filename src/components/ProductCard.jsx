@@ -67,11 +67,11 @@ function ProductCard({ image, name, price, onAddToCart, stock }) {
         marginBottom: '12px',
         border: '1px solid #e0e0e0'
       }}>
-        <img
-          src={image}
-          alt={name}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
+        {image ? (
+          <img src={image} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9aa' }}>No Image</div>
+        )}
       </div>
 
       {/* Product Info */}

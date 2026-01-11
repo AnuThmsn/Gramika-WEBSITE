@@ -13,6 +13,8 @@ const Products = () => {
     setSearchTerm(initialQ);
   }, [initialQ]);
 
+  
+
   // Theme Colors
   const lightGreen = "#e8f5e8";
   const darkGreen = "#1a622bff";
@@ -30,8 +32,10 @@ const Products = () => {
   const [showCatModal, setShowCatModal] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
-  // State: Products Data
-  const [products, setProducts] = useState([
+  // State: Products Data (fetched from backend)
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const sampleProducts = [
     {
       id: "P001",
       name: "Organic Carrots (1kg)",
@@ -39,7 +43,7 @@ const Products = () => {
       seller: "Meera Stores",
       price: 60,
       stock: 45,
-      status: "Active", // Live on site
+      status: "Active",
       image: "🥕",
     },
     {
@@ -49,7 +53,7 @@ const Products = () => {
       seller: "Grandma's Kitchen",
       price: 150,
       stock: 12,
-      status: "Pending", // Needs approval
+      status: "Pending",
       image: "🏺",
     },
     {
@@ -61,45 +65,88 @@ const Products = () => {
       stock: 5,
       status: "Active",
       image: "🧺",
-    },
-    {
-      id: "P004",
-      name: "Fresh Cow Milk (1L)",
-      category: "Dairy",
-      seller: "Organic Farms",
-      price: 55,
-      stock: 20,
-      status: "Rejected", // Failed compliance
-      image: "🥛",
-    },
-    {
-      id: "P005",
-      name: "Red Spinach Bunch",
-      category: "Vegetables",
-      seller: "Fresh Veggies",
-      price: 30,
-      stock: 100,
-      status: "Pending",
-      image: "🌿",
-    },
-  ]);
+    }
+  ];
 
   // State: Filters
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterCategory, setFilterCategory] = useState("All");
 
-  // Actions
-  const handleApprove = (id) => {
-    setProducts(products.map(p => p.id === id ? { ...p, status: "Active" } : p));
+  // Actions (call backend)
+  const apiHeaders = () => {
+    const token = localStorage.getItem('gramika_token');
+    return token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
   };
 
-  const handleReject = (id) => {
-    setProducts(products.map(p => p.id === id ? { ...p, status: "Rejected" } : p));
+  const loadProducts = async () => {
+    setLoading(true);
+    try {
+      const q = searchTerm ? `?q=${encodeURIComponent(searchTerm)}` : '';
+      const res = await fetch(`/api/products${q}`);
+      const data = await res.json();
+      const mapped = data.map(p => ({
+        id: p._id,
+        name: p.name,
+        category: p.category || '—',
+        seller: p.sellerName || (p.seller ? String(p.seller) : 'Unknown'),
+        price: p.price,
+        stock: p.quantity ?? 0,
+        status: p.status || (p.approved ? 'Active' : 'Pending'),
+        image: p.imageUrl || p.image || ''
+      }));
+      // if backend has no products, keep sample demo products so admin UI isn't empty
+      setProducts(mapped.length ? mapped : sampleProducts);
+    } catch (err) {
+      console.error('Failed to load products', err);
+      setProducts([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this listing permanently?")) {
+  useEffect(() => { loadProducts(); }, []);
+
+  const handleApprove = async (id) => {
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: 'PUT',
+        headers: apiHeaders(),
+        body: JSON.stringify({ status: 'Active' })
+      });
+      if (!res.ok) throw new Error('Approve failed');
+      const updated = await res.json();
+      setProducts(products.map(p => p.id === id ? { ...p, status: updated.status || 'Active' } : p));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to approve product');
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: 'PUT',
+        headers: apiHeaders(),
+        body: JSON.stringify({ status: 'Rejected' })
+      });
+      if (!res.ok) throw new Error('Reject failed');
+      const updated = await res.json();
+      setProducts(products.map(p => p.id === id ? { ...p, status: updated.status || 'Rejected' } : p));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to reject product');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this listing permanently?')) return;
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: 'DELETE', headers: apiHeaders() });
+      if (!res.ok) throw new Error('Delete failed');
       setProducts(products.filter(p => p.id !== id));
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete product');
     }
   };
 
