@@ -16,31 +16,142 @@ export default function ProfilePage() {
 
   // --- User state (example defaults) ---
   const [user, setUser] = useState({
-    displayName: "Anu Thomson",
-    username: "anu_thomson",
-    email: "anu@example.com",
-    phone: "+91 98765 43210",
-    bio: "Maker, gardener & part-time baker — building Gramika 🌱",
-    joined: "2024-08-12",
+    displayName: "",
+    username: "",
+    email: "",
+    phone: "",
+    address: "",
+    pincode: "",
+    bio: "",
+    joined: "",
     avatarUrl: "",
-    applesCollected: 12,
-    level: "Growing Tree",
+    applesCollected: 0,
+    level: "",
   });
+
+  // Fetch user data on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem('gramika_token');
+      if (!token) {
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/users/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const userData = await res.json();
+          setUser({
+            displayName: userData.name || "",
+            username: userData.name?.toLowerCase().replace(/\s+/g, '_') || "",
+            email: userData.email || "",
+            phone: userData.phone || "",
+            address: userData.address || "",
+            pincode: userData.pincode || "",
+            bio: userData.bio || "",
+            joined: userData.createdAt ? new Date(userData.createdAt).toISOString().split('T')[0] : "",
+            avatarUrl: userData.avatar || "",
+            applesCollected: userData.applesCollected || 0,
+            level: userData.level || "Growing Tree",
+          });
+
+          // Fetch seller data
+          const sellerRes = await fetch('/api/users/seller/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (sellerRes.ok) {
+            const sellerData = await sellerRes.json();
+            setSellerDetails({
+              name: sellerData.name || "",
+              email: sellerData.email || "",
+              phone: sellerData.phone || "",
+              address: sellerData.address || "",
+              licenseFileName: sellerData.licenseFileName || "",
+              aadharFileName: sellerData.aadharFileName || "",
+              sellItems: sellerData.sellItems || [],
+            });
+            setSellerStatus(sellerData.status || "registered");
+          }
+        } else {
+          // Token invalid, redirect to login
+          localStorage.removeItem('gramika_token');
+          localStorage.removeItem('gramika_user_id');
+          localStorage.removeItem('gramika_is_admin');
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUser();
+  }, [navigate]);
+
+  // Load user settings on mount
+  useEffect(() => {
+    const savedNotifications = localStorage.getItem('gramika_notifications');
+    if (savedNotifications) {
+      setNotifications(JSON.parse(savedNotifications));
+    }
+
+    const savedPrivacy = localStorage.getItem('gramika_privacy');
+    if (savedPrivacy) {
+      setPrivacy(JSON.parse(savedPrivacy));
+    }
+  }, []);
 
   // seller details (always-visible card: SD1)
   const [sellerDetails, setSellerDetails] = useState({
-    shopName: "",
-    category: "",
-    businessEmail: "",
+    name: "",
+    email: "",
     phone: "",
     address: "",
     licenseFileName: "",
+    aadharFileName: "",
     sellItems: [],
   });
 
   // seller status: not_seller | registered | pending | verified
   const [sellerStatus, setSellerStatus] = useState("not_seller");
   const [editingSeller, setEditingSeller] = useState(false);
+
+  // Account settings modals
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+
+  // Password change form
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
+  // Notifications settings
+  const [notifications, setNotifications] = useState({
+    email: true,
+    push: true,
+    sms: false
+  });
+
+  // Privacy settings
+  const [privacy, setPrivacy] = useState({
+    profileVisible: true,
+    showEmail: false,
+    showPhone: false
+  });
+
+  // Delete account confirmation
+  const [deletePassword, setDeletePassword] = useState('');
 
   // activity (sample)
   const [activity] = useState([
@@ -66,9 +177,18 @@ export default function ProfilePage() {
     const savedSeller = localStorage.getItem("gramika_seller");
     const savedStatus = localStorage.getItem("gramika_seller_status");
     if (savedSeller) {
-      setSellerDetails(JSON.parse(savedSeller));
+      const parsed = JSON.parse(savedSeller);
+      setSellerDetails({
+        name: parsed.name || parsed.shopName || "",
+        email: parsed.email || parsed.businessEmail || "",
+        phone: parsed.phone || "",
+        address: parsed.address || "",
+        licenseFileName: parsed.licenseFileName || "",
+        aadharFileName: parsed.aadharFileName || "",
+        sellItems: parsed.sellItems || [],
+      });
       setSellerStatus(savedStatus || "registered");
-      computeRating(JSON.parse(savedSeller).shopName);
+      computeRating(parsed.name || parsed.shopName);
     }
 
     // preload sellers list for review dropdown
@@ -123,11 +243,18 @@ export default function ProfilePage() {
     }
   };
 
+  const handleAadharUpload = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (f) {
+      setSellerDetails((prev) => ({ ...prev, aadharFileName: f.name }));
+    }
+  };
+
   const saveSellerLocally = (e) => {
     e?.preventDefault();
-    // require shopName & businessEmail as minimal
-    if (!sellerDetails.shopName || !sellerDetails.businessEmail) {
-      alert("Please provide Shop Name and Business Email.");
+    // require name & email as minimal
+    if (!sellerDetails.name || !sellerDetails.email) {
+      alert("Please provide Name and Email.");
       return;
     }
     localStorage.setItem("gramika_seller", JSON.stringify(sellerDetails));
@@ -139,24 +266,40 @@ export default function ProfilePage() {
       localStorage.setItem("gramika_seller_status", sellerStatus);
     }
     setEditingSeller(false);
-    computeRating(sellerDetails.shopName);
+    computeRating(sellerDetails.name);
     // small success feedback
     setTimeout(() => alert("Seller info saved locally."), 10);
-    // if logged in, persist seller info to backend user document
+    // if logged in, persist seller info to backend seller collection
     const token = localStorage.getItem('gramika_token');
     if (token) {
-      fetch('/api/users/me', {
-        method: 'PUT',
+      const backendSeller = {
+        name: sellerDetails.name,
+        email: sellerDetails.email,
+        phone: sellerDetails.phone,
+        address: sellerDetails.address,
+        licenseFileName: sellerDetails.licenseFileName,
+        aadharFileName: sellerDetails.aadharFileName,
+        sellItems: sellerDetails.sellItems,
+        status: 'registered'
+      };
+      fetch('/api/users/seller', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ isSeller: true, seller: { ...sellerDetails, status: 'registered' } })
+        body: JSON.stringify(backendSeller)
+      }).then(res => {
+        if (res.ok) {
+          console.log('Seller saved successfully');
+        } else {
+          console.error('Failed to save seller');
+        }
       }).catch(err => console.error('Failed to save seller backend', err));
     }
   };
 
   const applyForVerification = (e) => {
     e?.preventDefault();
-    if (!sellerDetails.shopName || !sellerDetails.businessEmail) {
-      alert("Please provide Shop Name and Business Email before applying.");
+    if (!sellerDetails.name || !sellerDetails.email) {
+      alert("Please provide Name and Email before applying.");
       return;
     }
     setSellerStatus("pending");
@@ -167,10 +310,16 @@ export default function ProfilePage() {
     alert("Application sent — status: PENDING.");
     const token = localStorage.getItem('gramika_token');
     if (token) {
-      fetch('/api/users/me', {
+      fetch('/api/users/seller/me', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ isSeller: true, seller: { ...sellerDetails, status: 'pending' } })
+        body: JSON.stringify({ status: 'pending' })
+      }).then(res => {
+        if (res.ok) {
+          alert('Application sent successfully');
+        } else {
+          alert('Failed to send application');
+        }
       }).catch(err => console.error('Failed to send verification', err));
     }
   };
@@ -205,21 +354,98 @@ export default function ProfilePage() {
     setQuickFeedback({ rating: 5, comment: "" });
   };
 
-  const handleClearSeller = () => {
-    localStorage.removeItem("gramika_seller");
-    localStorage.removeItem("gramika_seller_status");
+  // Account settings functions
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert('New passwords do not match');
+      return;
+    }
+    const token = localStorage.getItem('gramika_token');
+    try {
+      const res = await fetch('/api/users/me/password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Password changed successfully');
+        setShowChangePassword(false);
+        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      } else {
+        alert(data.msg || 'Failed to change password');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error changing password');
+    }
+  };
+
+  const handleSaveNotifications = () => {
+    // Save to localStorage for now
+    localStorage.setItem('gramika_notifications', JSON.stringify(notifications));
+    alert('Notification preferences saved');
+    setShowNotifications(false);
+  };
+
+  const handleSavePrivacy = () => {
+    // Save to localStorage for now
+    localStorage.setItem('gramika_privacy', JSON.stringify(privacy));
+    alert('Privacy settings saved');
+    setShowPrivacy(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      alert('Please enter your password');
+      return;
+    }
+    const token = localStorage.getItem('gramika_token');
+    try {
+      const res = await fetch('/api/users/me', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ password: deletePassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert('Account deleted successfully');
+        localStorage.clear();
+        navigate('/login');
+      } else {
+        alert(data.msg || 'Failed to delete account');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error deleting account');
+    }
+  };
+
+  const handleRegisterSeller = () => {
+    if (!user.displayName) {
+      alert('Please wait for your profile data to load.');
+      return;
+    }
     setSellerDetails({
-      shopName: "",
-      category: "",
-      businessEmail: "",
-      phone: "",
-      address: "",
+      name: user.displayName || "",
+      email: user.email || "",
+      phone: user.phone || "",
+      address: user.address || "",
       licenseFileName: "",
+      aadharFileName: "",
       sellItems: [],
     });
-    setSellerStatus("not_seller");
-    setSellerRating(null);
-    setEditingSeller(false);
+    setEditingSeller(true);
   };
 
   return (
@@ -294,7 +520,9 @@ export default function ProfilePage() {
               <h2>User Details</h2>
               <div className="info-list">
                 <div className="info-item"><span>Email</span><strong>{user.email}</strong></div>
-                <div className="info-item"><span>Phone</span><strong>{user.phone}</strong></div>
+                <div className="info-item"><span>Phone</span><strong>{user.phone || "Not provided"}</strong></div>
+                <div className="info-item"><span>Address</span><strong>{user.address || "Not provided"}</strong></div>
+                <div className="info-item"><span>Pincode</span><strong>{user.pincode || "Not provided"}</strong></div>
                 <div className="info-item"><span>Joined</span><strong>{user.joined}</strong></div>
                 <div className="info-item"><span>Last Active</span><strong>2025-11-15</strong></div>
                 <div className="info-item"><span>Account Type</span><strong>User</strong></div>
@@ -306,8 +534,8 @@ export default function ProfilePage() {
                   <FaMapMarkerAlt className="address-icon" />
                   <div className="address-details">
                     <strong>Home</strong>
-                    <p>No. 12, Gramika Lane, Green Valley</p>
-                    <p>Chennai, Tamil Nadu - 600001</p>
+                    <p>{user.address || "No address provided"}</p>
+                    <p>{user.pincode ? `Pincode: ${user.pincode}` : ""}</p>
                   </div>
                 </div>
               </div>
@@ -346,10 +574,10 @@ export default function ProfilePage() {
             <div className="card settings-card left-settings">
               <h3>Account Settings</h3>
               <div className="settings-options">
-                <button onClick={() => alert("Change Password")}>Change Password</button>
-                <button onClick={() => alert("Notification Preferences")}>Notifications</button>
-                <button onClick={() => alert("Privacy Settings")}>Privacy</button>
-                <button className="danger" onClick={() => alert("Delete Account")}>Delete Account</button>
+                <button onClick={() => setShowChangePassword(true)}>Change Password</button>
+                <button onClick={() => setShowNotifications(true)}>Notifications</button>
+                <button onClick={() => setShowPrivacy(true)}>Privacy</button>
+                <button className="danger" onClick={() => setShowDeleteAccount(true)}>Delete Account</button>
               </div>
             </div>
           </div>
@@ -367,22 +595,22 @@ export default function ProfilePage() {
               {/* DISPLAY MODE (not editing) */}
               {!editingSeller && (
                 <div className="seller-display-grid">
-                  <div className="seller-field"><label>Shop Name</label><div className="seller-value">{sellerDetails.shopName || "—"}</div></div>
-                  <div className="seller-field"><label>Category</label><div className="seller-value">{sellerDetails.category || "—"}</div></div>
-                  <div className="seller-field"><label>Business Email</label><div className="seller-value">{sellerDetails.businessEmail || "—"}</div></div>
+                  <div className="seller-field"><label>Name</label><div className="seller-value">{sellerDetails.name || "—"}</div></div>
+                  <div className="seller-field"><label>Email</label><div className="seller-value">{sellerDetails.email || "—"}</div></div>
                   <div className="seller-field"><label>Phone</label><div className="seller-value">{sellerDetails.phone || "—"}</div></div>
-                  <div className="seller-field full"><label>Business Address</label><div className="seller-value">{sellerDetails.address || "—"}</div></div>
+                  <div className="seller-field full"><label>Address</label><div className="seller-value">{sellerDetails.address || "—"}</div></div>
                   <div className="seller-field full license-inline">
   <label>License File</label>
   <div className="seller-value">{sellerDetails.licenseFileName || "None"}</div>
 </div>
-
-
-                  <div className="seller-field full"><label>Intent to Sell</label><div className="seller-value">{sellerDetails.sellItems.length ? sellerDetails.sellItems.join(", ") : "—"}</div></div>
+                  <div className="seller-field full license-inline">
+  <label>Aadhar File</label>
+  <div className="seller-value">{sellerDetails.aadharFileName || "None"}</div>
+</div>
 
                   <div className="seller-actions full">
                     {/* show apply only when we have registration info */}
-                    {sellerDetails.shopName ? (
+                    {sellerDetails.name ? (
                       <>
                         <button className="edit-seller-btn" onClick={() => setEditingSeller(true)}>Edit</button>
                         <button
@@ -395,7 +623,7 @@ export default function ProfilePage() {
                         </button>
                       </>
                     ) : (
-                      <button className="register-btn" onClick={() => setEditingSeller(true)}>Register</button>
+                      <button className="register-btn" onClick={handleRegisterSeller}>Register</button>
                     )}
                   </div>
                 </div>
@@ -405,16 +633,20 @@ export default function ProfilePage() {
               {editingSeller && (
                 <form className="seller-edit-form" onSubmit={(e) => { e.preventDefault(); saveSellerLocally(); }}>
                   <div className="form-grid">
-                    <div className="form-row"><label>Shop Name</label><input name="shopName" value={sellerDetails.shopName} onChange={handleSellerInput} required /></div>
-                    <div className="form-row"><label>Category</label><input name="category" value={sellerDetails.category} onChange={handleSellerInput} /></div>
-                    <div className="form-row"><label>Business Email</label><input name="businessEmail" value={sellerDetails.businessEmail} onChange={handleSellerInput} type="email" required /></div>
+                    <div className="form-row"><label>Name</label><input name="name" value={sellerDetails.name} onChange={handleSellerInput} required /></div>
+                    <div className="form-row"><label>Email</label><input name="email" value={sellerDetails.email} onChange={handleSellerInput} type="email" required /></div>
                     <div className="form-row"><label>Phone</label><input name="phone" value={sellerDetails.phone} onChange={handleSellerInput} /></div>
-                    <div className="form-row full"><label>Business Address</label><textarea name="address" value={sellerDetails.address} onChange={handleSellerInput} rows="3" /></div>
+                    <div className="form-row full"><label>Address</label><textarea name="address" value={sellerDetails.address} onChange={handleSellerInput} rows="3" /></div>
 
                     <div className="form-row file-row">
-                      <label>Upload License / Document</label>
+                      <label>Upload License / Document (Optional)</label>
                       <input type="file" onChange={handleLicenseUpload} />
                       <div className="file-name">{sellerDetails.licenseFileName || ""}</div>
+                    </div>
+                    <div className="form-row file-row">
+                      <label>Upload Aadhar for KYC</label>
+                      <input type="file" onChange={handleAadharUpload} />
+                      <div className="file-name">{sellerDetails.aadharFileName || ""}</div>
                     </div>
 
                     <div className="form-row full">
@@ -438,6 +670,15 @@ export default function ProfilePage() {
                 </form>
               )}
             </div>
+
+            {/* Success message for verified sellers */}
+            {sellerStatus === 'verified' && (
+              <div className="card success-card">
+                <h3>🎉 Congratulations!</h3>
+                <p>Your seller application has been approved by the admin. You are now a verified seller!</p>
+                <button className="primary-btn" onClick={() => navigate('/my-shop')}>Go to My Shop</button>
+              </div>
+            )}
 
             {/* Activity */}
             <div className="card activity-card">
@@ -504,6 +745,154 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Account Settings Modals */}
+      {showChangePassword && (
+        <div className="modal-overlay" onClick={() => setShowChangePassword(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Change Password</h3>
+            <form onSubmit={handleChangePassword}>
+              <div className="form-group">
+                <label>Current Password</label>
+                <input
+                  type="password"
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>New Password</label>
+                <input
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Confirm New Password</label>
+                <input
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="modal-actions">
+                <button type="button" onClick={() => setShowChangePassword(false)}>Cancel</button>
+                <button type="submit">Change Password</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showNotifications && (
+        <div className="modal-overlay" onClick={() => setShowNotifications(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Notification Preferences</h3>
+            <div className="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={notifications.email}
+                  onChange={(e) => setNotifications({...notifications, email: e.target.checked})}
+                />
+                Email notifications
+              </label>
+            </div>
+            <div className="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={notifications.push}
+                  onChange={(e) => setNotifications({...notifications, push: e.target.checked})}
+                />
+                Push notifications
+              </label>
+            </div>
+            <div className="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={notifications.sms}
+                  onChange={(e) => setNotifications({...notifications, sms: e.target.checked})}
+                />
+                SMS notifications
+              </label>
+            </div>
+            <div className="modal-actions">
+              <button onClick={() => setShowNotifications(false)}>Cancel</button>
+              <button onClick={handleSaveNotifications}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPrivacy && (
+        <div className="modal-overlay" onClick={() => setShowPrivacy(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Privacy Settings</h3>
+            <div className="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={privacy.profileVisible}
+                  onChange={(e) => setPrivacy({...privacy, profileVisible: e.target.checked})}
+                />
+                Make profile visible to other users
+              </label>
+            </div>
+            <div className="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={privacy.showEmail}
+                  onChange={(e) => setPrivacy({...privacy, showEmail: e.target.checked})}
+                />
+                Show email address on profile
+              </label>
+            </div>
+            <div className="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={privacy.showPhone}
+                  onChange={(e) => setPrivacy({...privacy, showPhone: e.target.checked})}
+                />
+                Show phone number on profile
+              </label>
+            </div>
+            <div className="modal-actions">
+              <button onClick={() => setShowPrivacy(false)}>Cancel</button>
+              <button onClick={handleSavePrivacy}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteAccount && (
+        <div className="modal-overlay" onClick={() => setShowDeleteAccount(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>Delete Account</h3>
+            <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+            <div className="form-group">
+              <label>Enter your password to confirm</label>
+              <input
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="modal-actions">
+              <button onClick={() => setShowDeleteAccount(false)}>Cancel</button>
+              <button className="danger" onClick={handleDeleteAccount}>Delete Account</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -19,7 +19,6 @@ import Dashboard from "./pages/admin/Dashboard.jsx";
 import Products from "./pages/admin/Products.jsx";
 import Orders from "./pages/admin/Orders.jsx";
 import Users from "./pages/admin/Users.jsx";
-import Payouts from "./pages/admin/Payouts.jsx";
 import Settings from "./pages/admin/Settings.jsx";
 
 // Route Guards (optional)
@@ -64,7 +63,6 @@ export default function App() {
           <Route path="products" element={<Products />} />
           <Route path="orders" element={<Orders />} />
           <Route path="users" element={<Users />} />
-          <Route path="payouts" element={<Payouts />} />
           <Route path="settings" element={<Settings />} />
         </Route>
 

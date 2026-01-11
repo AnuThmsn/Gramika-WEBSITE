@@ -1,24 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './dashboard.css';
 import { FaBox, FaMoneyBillWave, FaHourglassHalf } from 'react-icons/fa';
 import { MdOutlineShowChart } from 'react-icons/md';
 
 const Dashboard = () => {
-  const stats = [
-    { label: 'Total Products', value: '125', icon: <FaBox /> },
-    { label: 'Total Sales', value: '₹85,420', icon: <FaMoneyBillWave /> },
-    { label: 'Pending Orders', value: '23', icon: <FaHourglassHalf /> },
-    { label: 'This Month', value: '₹12,450', icon: <MdOutlineShowChart /> }
-  ];
+  const [stats, setStats] = useState([
+    { label: 'Total Products', value: '0', icon: <FaBox /> },
+    { label: 'Total Sales', value: '₹0', icon: <FaMoneyBillWave /> },
+    { label: 'Pending Orders', value: '0', icon: <FaHourglassHalf /> },
+    { label: 'This Month', value: '₹0', icon: <MdOutlineShowChart /> }
+  ]);
 
-  const salesData = [
-    { month: 'Jan', sales: 15000 },
-    { month: 'Feb', sales: 22000 },
-    { month: 'Mar', sales: 18000 },
-    { month: 'Apr', sales: 25000 },
-    { month: 'May', sales: 30000 },
-    { month: 'Jun', sales: 28000 }
-  ];
+  const [salesData, setSalesData] = useState([]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const token = localStorage.getItem('gramika_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch('/api/users/seller/stats', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setStats([
+            { label: 'Total Products', value: data.totalProducts.toString(), icon: <FaBox /> },
+            { label: 'Total Sales', value: `₹${data.totalSales.toFixed(2)}`, icon: <FaMoneyBillWave /> },
+            { label: 'Pending Orders', value: data.pendingOrders.toString(), icon: <FaHourglassHalf /> },
+            { label: 'This Month', value: `₹${data.monthlyData[data.monthlyData.length - 1]?.sales.toFixed(2) || '0'}`, icon: <MdOutlineShowChart /> }
+          ]);
+          setSalesData(data.monthlyData.map(m => ({ month: m.label, sales: m.sales })));
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const exportToExcel = () => {
     alert('Exporting monthly status to Excel...');

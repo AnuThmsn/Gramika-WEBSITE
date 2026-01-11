@@ -8,7 +8,7 @@ import Reviews from '../components/review';
 const MyShop = () => {
   const [activeSection, setActiveSection] = useState('dashboard');
 
-	// enforce login and seller registration
+	// enforce login and seller verification
 	React.useEffect(() => {
 		const token = localStorage.getItem('gramika_token');
 		if (!token) {
@@ -16,8 +16,8 @@ const MyShop = () => {
 			return;
 		}
 		const sellerStatus = localStorage.getItem('gramika_seller_status');
-		if (!sellerStatus || sellerStatus === 'not_seller') {
-			// not registered as seller — redirect to profile to register
+		if (sellerStatus !== 'verified') {
+			// not verified as seller — redirect to profile
 			window.location.href = '/profile';
 			return;
 		}

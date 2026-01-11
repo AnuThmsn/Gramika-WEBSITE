@@ -1,28 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Card, Row, Col, Table } from "react-bootstrap";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
   Legend,
+  ResponsiveContainer,
+  Tooltip,
 } from "recharts";
 
 const Dashboard = () => {
-  const [revenueData, setRevenueData] = useState([]);
-  const [monthlyProfitData, setMonthlyProfitData] = useState([]);
   const [totalOrders, setTotalOrders] = useState(0);
-  const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,22 +26,34 @@ const Dashboard = () => {
         const data = await res.json();
         if (!mounted) return;
         setTotalOrders(data.totalOrders || 0);
-        setTotalRevenue(data.totalRevenue || 0);
         setTotalUsers(data.userCount || 0);
         setTotalProducts(data.productCount || 0);
-        setRevenueData((data.month || []).map(m => ({ month: m.label, revenue: m.revenue })));
-        setMonthlyProfitData((data.monthlyProfit || []).map(m => ({ month: m.label, profit: m.profit })));
       } catch (err) {
         console.error('Failed to fetch admin stats', err);
       } finally {
         if (mounted) setLoading(false);
       }
     };
+
+    const fetchRecentOrders = async () => {
+      try {
+        const token = localStorage.getItem('gramika_token');
+        const res = await fetch('/api/orders/admin', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        if (!res.ok) throw new Error('Failed to load orders');
+        const orders = await res.json();
+        if (!mounted) return;
+        // Sort by createdAt descending and take first 5
+        const sorted = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+        setRecentOrders(sorted);
+      } catch (err) {
+        console.error('Failed to fetch recent orders', err);
+      }
+    };
+
     fetchStats();
+    fetchRecentOrders();
     return () => { mounted = false; };
   }, []);
-
-  const orderData = revenueData.map((r, i) => ({ day: r.month, orders: 0 }));
 
   // User distribution placeholder (could be replaced with real data)
   const userTypeData = [
@@ -66,7 +69,7 @@ const Dashboard = () => {
 
       {/* TOP CARDS */}
       <Row className="mb-4">
-        <Col md={3}>
+        <Col md={4}>
           <Card className="text-center shadow-sm">
             <Card.Body>
               <Card.Title>Total Orders</Card.Title>
@@ -74,15 +77,7 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
-          <Card className="text-center shadow-sm">
-            <Card.Body>
-              <Card.Title>Revenue</Card.Title>
-              <h4>₹{totalRevenue.toLocaleString()}</h4>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3}>
+        <Col md={4}>
           <Card className="text-center shadow-sm">
             <Card.Body>
               <Card.Title>Total Users</Card.Title>
@@ -90,47 +85,12 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
         </Col>
-        <Col md={3}>
+        <Col md={4}>
           <Card className="text-center shadow-sm">
             <Card.Body>
               <Card.Title>Total Products</Card.Title>
               <h4>{totalProducts}</h4>
             </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* GRAPH SECTION */}
-      <Row className="mt-4">
-        {/* Line Chart */}
-        <Col md={6}>
-          <Card className="p-3 shadow-sm">
-            <h5>Revenue Overview</h5>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="revenue" stroke="#0088FE" strokeWidth={3} />
-              </LineChart>
-            </ResponsiveContainer>
-          </Card>
-        </Col>
-
-        {/* Bar Chart */}
-        <Col md={6}>
-          <Card className="p-3 shadow-sm">
-            <h5>Orders This Week</h5>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={orderData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="orders" fill="#82ca9d" />
-              </BarChart>
-            </ResponsiveContainer>
           </Card>
         </Col>
       </Row>
@@ -177,20 +137,21 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>101</td>
-              <td>Alice</td>
-              <td>Rice</td>
-              <td>10</td>
-              <td>2025-11-01</td>
-            </tr>
-            <tr>
-              <td>102</td>
-              <td>Bob</td>
-              <td>Wheat</td>
-              <td>5</td>
-              <td>2025-11-02</td>
-            </tr>
+            {recentOrders.length > 0 ? (
+              recentOrders.map((order) => (
+                <tr key={order._id}>
+                  <td>{order._id.slice(-6)}</td>
+                  <td>{order.user?.name || 'Unknown'}</td>
+                  <td>{order.items?.[0]?.name || 'N/A'}</td>
+                  <td>{order.items?.[0]?.quantity || 0}</td>
+                  <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center">No recent orders</td>
+              </tr>
+            )}
           </tbody>
         </Table>
       </Card>

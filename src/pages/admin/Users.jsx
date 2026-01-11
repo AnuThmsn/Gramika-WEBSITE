@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Table,
@@ -13,15 +13,107 @@ import { ArrowLeftCircle } from "react-bootstrap-icons";
 
 const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
+  const [fullUserDetails, setFullUserDetails] = useState(null);
   const [search, setSearch] = useState("");
   const [filterKYC, setFilterKYC] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const users = [
-    { id: 1, name: "Gopika PS", email: "gopika@example.com", phone: "+91 98765 11111", kyc: "Approved", status: "Active" },
-    { id: 2, name: "Anu", email: "anu@example.com", phone: "+91 98765 43210", kyc: "Pending", status: "Active" },
-    { id: 3, name: "Rahul", email: "rahul@example.com", phone: "+91 99887 12345", kyc: "Rejected", status: "Banned" },
-  ];
+  const fetchUserDetails = async (userId) => {
+    const token = localStorage.getItem('gramika_token');
+    if (!token) return;
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const user = await res.json();
+        setFullUserDetails(user);
+      }
+    } catch (err) {
+      console.error('Failed to fetch user details:', err);
+    }
+  };
+
+  const handleViewDetails = (user) => {
+    setSelectedUser(user);
+    fetchUserDetails(user.id);
+  };
+
+  const handleApproveKYC = async () => {
+    if (!fullUserDetails) return;
+    const token = localStorage.getItem('gramika_token');
+    try {
+      const res = await fetch(`/api/users/seller/${fullUserDetails._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: 'verified' })
+      });
+      if (res.ok) {
+        alert('KYC Approved');
+        setFullUserDetails({ ...fullUserDetails, seller: { ...fullUserDetails.seller, status: 'verified' } });
+        // Update the users list
+        setUsers(users.map(u => u.id === fullUserDetails._id ? { ...u, kyc: 'Approved' } : u));
+      } else {
+        alert('Failed to approve KYC');
+      }
+    } catch (err) {
+      console.error('Error approving KYC:', err);
+      alert('Error approving KYC');
+    }
+  };
+
+  const handleRejectKYC = async () => {
+    if (!fullUserDetails) return;
+    const token = localStorage.getItem('gramika_token');
+    try {
+      const res = await fetch(`/api/users/seller/${fullUserDetails._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: 'rejected' })
+      });
+      if (res.ok) {
+        alert('KYC Rejected');
+        setFullUserDetails({ ...fullUserDetails, seller: { ...fullUserDetails.seller, status: 'rejected' } });
+        setUsers(users.map(u => u.id === fullUserDetails._id ? { ...u, kyc: 'Rejected' } : u));
+      } else {
+        alert('Failed to reject KYC');
+      }
+    } catch (err) {
+      console.error('Error rejecting KYC:', err);
+      alert('Error rejecting KYC');
+    }
+  };
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const token = localStorage.getItem('gramika_token');
+      if (!token) return;
+      try {
+        const res = await fetch('/api/users/admin', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const formattedUsers = data.map(user => ({
+            id: user._id,
+            name: user.name || 'Unknown',
+            email: user.email,
+            phone: user.phone || 'N/A',
+            kyc: user.seller?.status === 'verified' ? 'Approved' : user.seller?.status === 'pending' ? 'Pending' : user.seller?.status === 'rejected' ? 'Rejected' : user.seller ? 'Registered' : 'Not Applied',
+            status: user.isAdmin ? 'Admin' : 'Active'
+          }));
+          setUsers(formattedUsers);
+        }
+      } catch (err) {
+        console.error('Failed to fetch users:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const filteredUsers = users.filter((u) => {
     const matchSearch =
@@ -56,6 +148,8 @@ const Users = () => {
                 <option value="Pending">Pending</option>
                 <option value="Approved">Approved</option>
                 <option value="Rejected">Rejected</option>
+                <option value="Registered">Registered</option>
+                <option value="Not Applied">Not Applied</option>
               </Form.Select>
             </Col>
 
@@ -95,7 +189,7 @@ const Users = () => {
                     </Badge>
                   </td>
                   <td>
-                    <Button size="sm" onClick={() => setSelectedUser(user)}>
+                    <Button size="sm" onClick={() => handleViewDetails(user)}>
                       View Details
                     </Button>
                   </td>
@@ -114,7 +208,7 @@ const Users = () => {
               variant="light"
               size="sm"
               className="rounded-circle shadow-sm me-3"
-              onClick={() => setSelectedUser(null)}
+              onClick={() => { setSelectedUser(null); setFullUserDetails(null); }}
             >
               <ArrowLeftCircle size={24} />
             </Button>
@@ -122,30 +216,33 @@ const Users = () => {
           </div>
 
           <Row className="mt-3">
-            {/* LEFT COLUMN */}
             <Col md={6}>
-              <p className="text-start"><strong>Email:</strong> {selectedUser.email}</p>
-              <p className="text-start"><strong>Phone:</strong> {selectedUser.phone}</p>
-              <p className="text-start"><strong>Joined:</strong> 2024-08-12</p>
-              <p className="text-start"><strong>Last Active:</strong> 2025-11-15</p>
-              <p className="text-start"><strong>Account Type:</strong> User</p>
+              <p className="text-start"><strong>Email:</strong> {fullUserDetails?.email || selectedUser.email}</p>
+              <p className="text-start"><strong>Phone:</strong> {fullUserDetails?.phone || selectedUser.phone}</p>
+              <p className="text-start"><strong>Joined:</strong> {fullUserDetails?.createdAt ? new Date(fullUserDetails.createdAt).toLocaleDateString() : 'N/A'}</p>
+              <p className="text-start"><strong>Last Active:</strong> {fullUserDetails?.updatedAt ? new Date(fullUserDetails.updatedAt).toLocaleDateString() : 'N/A'}</p>
+              <p className="text-start"><strong>Account Type:</strong> {fullUserDetails?.isAdmin ? 'Admin' : 'User'}</p>
 
               <h5 className="mt-4 text-start">Saved Addresses</h5>
               <p className="text-start">
-                <strong>Home</strong><br />
-                No. 12, Gramika Lane, Green Valley<br />
-                Chennai, Tamil Nadu - 600001
+                {fullUserDetails?.address || 'No address provided'}
               </p>
 
               <h5 className="mt-4 text-start">Seller Information</h5>
-              <p className="text-start"><strong>Shop Name:</strong> Gramika Store</p>
-              <p className="text-start"><strong>Category:</strong> Handicrafts</p>
-              <p className="text-start"><strong>Business Email:</strong> seller@example.com</p>
-              <p className="text-start"><strong>Phone:</strong> +91 98765 43210</p>
-              <p className="text-start"><strong>Business Address:</strong> No. 12, Gramika Lane, Green Valley, Chennai - 600001</p>
-              <p className="text-start"><strong>KYC Document:</strong> <a href="#">View Document</a></p>
-              <p className="text-start"><strong>License Document:</strong> <a href="#">View License</a></p>
-              <p className="text-start"><strong>Intent to Sell:</strong> Yes</p>
+              {fullUserDetails?.seller ? (
+                <>
+                  <p className="text-start"><strong>Name:</strong> {fullUserDetails.seller.shopName || 'N/A'}</p>
+                  <p className="text-start"><strong>Email:</strong> {fullUserDetails.seller.businessEmail || 'N/A'}</p>
+                  <p className="text-start"><strong>Phone:</strong> {fullUserDetails.seller.phone || 'N/A'}</p>
+                  <p className="text-start"><strong>Address:</strong> {fullUserDetails.seller.address || 'N/A'}</p>
+                  <p className="text-start"><strong>Aadhar Document:</strong> {fullUserDetails.seller.aadharFileName ? <a href="#" onClick={() => alert(`View Aadhar: ${fullUserDetails.seller.aadharFileName}`)}>View Aadhar</a> : 'Not uploaded'}</p>
+                  <p className="text-start"><strong>License Document:</strong> {fullUserDetails.seller.licenseFileName ? <a href="#" onClick={() => alert(`View License: ${fullUserDetails.seller.licenseFileName}`)}>View License</a> : 'Not uploaded'}</p>
+                  <p className="text-start"><strong>Intent to Sell:</strong> {fullUserDetails.seller.sellItems?.join(', ') || 'N/A'}</p>
+                  <p className="text-start"><strong>Status:</strong> {fullUserDetails.seller.status}</p>
+                </>
+              ) : (
+                <p className="text-start">Not registered as seller</p>
+              )}
             </Col>
 
             {/* RIGHT COLUMN */}
@@ -153,10 +250,10 @@ const Users = () => {
               {/* KYC Actions */}
               <Card className="p-3 shadow-sm mb-3">
                 <h5 className="text-start mb-3">KYC Actions</h5>
-                <Button className="my-2 w-100" variant="success">
+                <Button className="my-2 w-100" variant="success" onClick={handleApproveKYC} disabled={fullUserDetails?.seller?.status === 'verified'}>
                   Approve KYC
                 </Button>
-                <Button className="my-2 w-100" variant="danger">
+                <Button className="my-2 w-100" variant="danger" onClick={handleRejectKYC}>
                   Reject KYC
                 </Button>
               </Card>

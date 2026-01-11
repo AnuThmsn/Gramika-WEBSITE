@@ -5,7 +5,6 @@ import {
   FaBoxOpen, 
   FaShoppingCart, 
   FaUsers, 
-  FaMoneyBillWave, 
   FaCog, 
   FaSearch, 
   FaUserCircle 
@@ -43,7 +42,6 @@ const AdminLayout = () => {
     { name: 'Products', path: '/admin/products', icon: <FaBoxOpen /> },
     { name: 'Orders', path: '/admin/orders', icon: <FaShoppingCart /> },
     { name: 'Users', path: '/admin/users', icon: <FaUsers /> },
-    { name: 'Payouts', path: '/admin/payouts', icon: <FaMoneyBillWave /> },
   ];
 
   return (

@@ -6,20 +6,8 @@ import { jsPDF } from "jspdf";
 const Orders = () => {
   const [searchParams] = useSearchParams();
   const q = (searchParams.get('q') ?? '').trim().toLowerCase();
-  const [orders, setOrders] = useState([
-    {
-      id: 101, buyer: "Alice", seller: "Farmer John", items: [{ name: "Rice", qty: 2, price: 100 }],
-      date: "2025-11-30", status: "Pending", shippingAddress: "123 Main St", paymentStatus: "Paid", trackingID: "TRK12345",
-    },
-    {
-      id: 102, buyer: "Bob", seller: "Local Veggies", items: [{ name: "Tomatoes", qty: 1, price: 50 }],
-      date: "2025-11-29", status: "Delivered", shippingAddress: "456 Park Ave", paymentStatus: "Paid", trackingID: "TRK12346",
-    },
-    {
-      id: 103, buyer: "Charlie", seller: "Green Earth", items: [{ name: "Carrots", qty: 5, price: 40 }],
-      date: "2025-11-28", status: "Shipped", shippingAddress: "789 Pine Ln", paymentStatus: "Paid", trackingID: "TRK12347",
-    },
-  ]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState("All");
@@ -35,6 +23,42 @@ const Orders = () => {
   const pendingOrders = orders.filter(o => o.status === "Pending").length;
   const deliveredOrders = orders.filter(o => o.status === "Delivered").length;
   const totalRevenue = orders.reduce((acc, order) => acc + order.items.reduce((sum, item) => sum + (item.price * item.qty), 0), 0);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const token = localStorage.getItem('gramika_token');
+      if (!token) return;
+      try {
+        const res = await fetch('/api/orders/admin', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const formattedOrders = data.map(order => ({
+            id: order._id,
+            buyer: order.user?.name || 'Unknown',
+            seller: order.items?.[0]?.product?.seller?.name || 'Unknown Seller',
+            items: order.items.map(item => ({
+              name: item.name || item.product?.name,
+              qty: item.quantity,
+              price: item.price || item.product?.price
+            })),
+            date: new Date(order.createdAt).toISOString().split('T')[0],
+            status: order.status || 'Pending',
+            shippingAddress: order.address,
+            paymentStatus: order.paymentStatus || 'Paid',
+            trackingID: order.trackingID || 'N/A'
+          }));
+          setOrders(formattedOrders);
+        }
+      } catch (err) {
+        console.error('Failed to fetch orders:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
 
   useEffect(() => {
     // apply ?q= filter by id / buyer / seller / item name
