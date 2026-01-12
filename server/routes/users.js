@@ -109,7 +109,7 @@ router.post('/seller', auth, async (req, res) => {
       sellerData,
       { new: true, upsert: true }
     );
-    await User.findByIdAndUpdate(req.user._id, { isSeller: true });
+    // Do not set isSeller here, only when approved
     res.json(seller);
   } catch (err) {
     res.status(500).json({ msg: err.message });
@@ -204,11 +204,13 @@ router.get('/seller/stats', auth, async (req, res) => {
 router.put('/seller/:id', auth, adminCheck, async (req, res) => {
   try {
     const updates = req.body;
-    const seller = await Seller.findOneAndUpdate({ user: req.params.id }, updates, { new: true });
+    const seller = await Seller.findOneAndUpdate({ user: new mongoose.Types.ObjectId(req.params.id) }, updates, { new: true });
     if (!seller) return res.status(404).json({ msg: 'Seller not found' });
-    // If status is verified, set user.isSeller = true
+    // If status is verified, set user.isSeller = true, otherwise set to false
     if (updates.status === 'verified') {
       await User.findByIdAndUpdate(req.params.id, { isSeller: true });
+    } else {
+      await User.findByIdAndUpdate(req.params.id, { isSeller: false });
     }
     res.json(seller);
   } catch (err) {
@@ -221,7 +223,7 @@ router.get('/:id', auth, adminCheck, async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('name email phone address isAdmin createdAt updatedAt');
     if (!user) return res.status(404).json({ msg: 'User not found' });
-    const seller = await Seller.findOne({ user: req.params.id });
+    const seller = await Seller.findOne({ user: new mongoose.Types.ObjectId(req.params.id) });
     res.json({ ...user.toObject(), seller });
   } catch (err) {
     res.status(500).json({ msg: err.message });

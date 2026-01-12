@@ -11,36 +11,31 @@ router.post('/', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ msg: 'No file uploaded' });
     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
-    const readable = new Readable();
-    readable.push(req.file.buffer);
-    readable.push(null);
-
     const uploadStream = bucket.openUploadStream(req.file.originalname, {
       contentType: req.file.mimetype
     });
-
-    readable.pipe(uploadStream)
-      .on('error', (err) => res.status(500).json({ error: err.message }))
-      .on('finish', (file) => {
-        res.json({ fileId: file._id.toString(), filename: file.filename, contentType: file.contentType });
-      });
+    uploadStream.end(req.file.buffer);
+    uploadStream.on('finish', (file) => {
+      res.json({ fileId: file._id.toString(), filename: file.filename, contentType: file.contentType });
+    });
+    uploadStream.on('error', (err) => res.status(500).json({ error: err.message }));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Serve file by GridFS id
-router.get('/:id', async (req, res) => {
+// Serve file by filename
+router.get('/file/:filename', async (req, res) => {
   try {
     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
-    const _id = new mongoose.Types.ObjectId(req.params.id);
-    const download = bucket.openDownloadStream(_id);
-    download.on('file', (file) => {
-      if (file.contentType) res.set('Content-Type', file.contentType);
-    });
+    const files = await bucket.find({ filename: req.params.filename }).toArray();
+    if (!files.length) return res.status(404).json({ error: 'File not found' });
+    const file = files[0];
+    const download = bucket.openDownloadStream(file._id);
+    if (file.contentType) res.set('Content-Type', file.contentType);
     download.pipe(res).on('error', () => res.status(404).end());
   } catch (err) {
-    res.status(400).json({ error: 'Invalid id' });
+    res.status(400).json({ error: 'Invalid filename' });
   }
 });
 

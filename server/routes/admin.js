@@ -15,6 +15,8 @@ router.get('/stats', auth, admin, async (req, res) => {
     const totalRevenue = (totalRevenueAgg[0] && totalRevenueAgg[0].revenue) || 0;
 
     const userCount = await User.countDocuments();
+    const sellerCount = await User.countDocuments({ isSeller: true });
+    const buyerCount = userCount - sellerCount;
     const productCount = await Product.countDocuments();
 
     // monthly revenue for last 6 months
@@ -47,7 +49,7 @@ router.get('/stats', auth, admin, async (req, res) => {
     // simple profit estimate: no commission, profit = revenue
     const monthlyProfit = monthlyData.map(m => ({ label: m.label, profit: m.revenue }));
 
-    res.json({ totalOrders, totalRevenue, userCount, productCount, monthly: monthlyData, monthlyProfit });
+    res.json({ totalOrders, totalRevenue, userCount, sellerCount, buyerCount, productCount, monthly: monthlyData, monthlyProfit });
   } catch (err) {
     console.error('admin stats error', err);
     res.status(500).json({ msg: 'Server error' });

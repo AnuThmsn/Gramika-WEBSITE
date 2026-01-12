@@ -11,7 +11,9 @@ const ProductSchema = new mongoose.Schema({
   // reference to seller (user) who added this product
   seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   quantity: { type: Number, default: 0 },
-  description: { type: String }
+  description: { type: String },
+  status: { type: String, enum: ['Pending', 'Active', 'Rejected'], default: 'Pending' },
+  rejectReason: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Product', ProductSchema);

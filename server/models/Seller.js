@@ -8,6 +8,8 @@ const SellerSchema = new mongoose.Schema({
   address: { type: String },
   aadharFileName: { type: String },
   licenseFileName: { type: String },
+  aadharFileId: { type: String },
+  licenseFileId: { type: String },
   sellItems: [String],
   status: { type: String, enum: ['registered','pending','verified'], default: 'registered' }
 }, { timestamps: true });
