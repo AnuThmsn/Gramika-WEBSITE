@@ -18,6 +18,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const role = new URLSearchParams(location.search).get("role") || "user";
+const isAdminLogin = role === "admin";
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -42,19 +43,37 @@ const Login = () => {
             body: JSON.stringify({ email, password })
           });
 
-          const data = await res.json();
-          if (!res.ok) return alert(data.msg || 'Login failed');
+          let data = {};
+try {
+  data = await res.json();
+} catch {
+  data = {};
+}
+
+if (!res.ok) {
+  alert(data.msg || 'Authentication failed');
+  return;
+}
+
+          
 
           localStorage.setItem('gramika_token', data.token);
           localStorage.setItem('gramika_user_id', data.user.id);
           localStorage.setItem('gramika_is_admin', data.user.isAdmin);
 
-          // 🔥 ONLY CHANGE: ROLE-BASED REDIRECT
-          if (data.user.isAdmin) {
-            navigate('/admin/dashboard');   // loads AdminLayout
-          } else {
-            navigate('/profile');           // normal user
-          }
+          // ADMIN LOGIN FLOW
+if (role === "admin") {
+  if (!data.user.isAdmin) {
+    alert("You are not authorized as admin");
+    return;
+  }
+  navigate("/admin/dashboard", { replace: true });
+  return;
+}
+
+// NORMAL USER LOGIN FLOW
+navigate("/profile", { replace: true });
+
 
         } else {
           /* ================= REGISTER (USER ONLY) ================= */
@@ -113,8 +132,12 @@ const Login = () => {
               <h2>{isLogin ? "Welcome Back" : "Join Gramika"}</h2>
             </div>
 
-            <form onSubmit={handleSubmit} className="d-flex flex-column w-100 gap-2" style={{ maxWidth: "320px" }}>
-              
+           <form
+  onSubmit={handleSubmit}
+  className="d-flex flex-column gap-2"
+  style={{ maxWidth: "320px", width: "100%", margin: "0 auto" }}
+>
+
               {!isLogin && (
                 <>
                   <div className="custom-input-group">
@@ -172,12 +195,23 @@ const Login = () => {
                   {isLogin ? "New to Gramika?" : "Already have an account?"}
                 </p>
                 <button
-                  type="button"
-                  className="btn btn-link p-0 link-gramika"
-                  onClick={() => setIsLogin(!isLogin)}
-                >
-                  {isLogin ? "Register Here" : "Sign In"}
-                </button>
+  type="button"
+  className={`btn btn-link p-0 link-gramika ${
+    isAdminLogin && isLogin ? "disabled-register" : ""
+  }`}
+  onClick={() => {
+    if (isAdminLogin && isLogin) return; // block register for admin
+    setIsLogin(!isLogin);
+  }}
+  title={
+    isAdminLogin && isLogin
+      ? "Admin registration is disabled"
+      : ""
+  }
+>
+  {isLogin ? "Register Here" : "Sign In"}
+</button>
+
               </div>
 
             </form>

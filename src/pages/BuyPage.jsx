@@ -5,16 +5,12 @@ import Cart from './cart.jsx';
 import { FaCarrot, FaAppleAlt, FaHome } from 'react-icons/fa';
 import { GiMeatCleaver, GiMilkCarton, GiManualMeatGrinder } from "react-icons/gi";
 import { CiSearch } from "react-icons/ci";
+import '../styles/BuyPage.css';
+
 
 function BuyPage() {
   // require login to access Buy page
-  React.useEffect(() => {
-    const token = localStorage.getItem('gramika_token');
-    if (!token) {
-      // redirect to login
-      window.location.href = '/login';
-    }
-  }, []);
+ 
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortOption, setSortOption] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,6 +49,7 @@ function BuyPage() {
       const token = localStorage.getItem('gramika_token');
       const prodId = product._id || product.id || product.id;
       const qty = product.quantity || 1;
+      
 
       // verify latest product availability before adding
       try {
@@ -335,40 +332,61 @@ function BuyPage() {
         </div>
 
         {/* Product Grid */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '32px',
-          justifyContent: 'center'
-        }}>
-          {loadingProducts ? (
-            <div style={{ gridColumn: '1/-1', textAlign: 'center' }}>Loading products…</div>
-          ) : products
-            .filter(item =>
-              (selectedCategory === 'All' || item.category === selectedCategory) &&
-              item.name.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-            .sort((a, b) => {
-              if (sortOption === 'priceLowHigh') return a.price - b.price;
-              if (sortOption === 'priceHighLow') return b.price - a.price;
-              if (sortOption === 'nameAZ') return a.name.localeCompare(b.name);
-              return 0;
-            })
-            .map((item, index) => {
-              // decide image source: prefer imageUrl (S3/Cloudinary), then GridFS id, then legacy image
-              const imageSrc = item.imageUrl || (item.imageGridFsId ? `/api/uploads/${item.imageGridFsId}` : item.image);
-              return (
-                <ProductCard
-                  key={index}
-                  image={imageSrc}
-                  name={item.name}
-                  price={item.price}
-                  stock={item.quantity}
-                  onAddToCart={(qty) => handleAddToCart({ ...item, quantity: qty })}
-                />
-              );
-            })}
-        </div>
+        <div
+  style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: '32px',
+    justifyContent: 'center'
+  }}
+>
+  {loadingProducts ? (
+    <div style={{ gridColumn: '1/-1', textAlign: 'center' }}>
+      Loading products…
+    </div>
+  ) : (
+    products
+      .filter(
+        item =>
+          (selectedCategory === 'All' ||
+            item.category === selectedCategory) &&
+          item.name.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .sort((a, b) => {
+        if (sortOption === 'priceLowHigh') return a.price - b.price;
+        if (sortOption === 'priceHighLow') return b.price - a.price;
+        if (sortOption === 'nameAZ')
+          return a.name.localeCompare(b.name);
+        return 0;
+      })
+      .map((item, index) => {
+        const isOutOfStock = item.quantity <= 0;
+        const imageSrc =
+          item.imageUrl ||
+          (item.imageGridFsId
+            ? `/api/uploads/${item.imageGridFsId}`
+            : item.image);
+
+        return (
+          <div
+            key={item._id || index}
+            className={`product-card ${isOutOfStock ? 'disabled' : ''}`}
+          >
+            <ProductCard
+              image={imageSrc}
+              name={item.name}
+              price={item.price}
+              stock={item.quantity}
+              onAddToCart={(qty) =>
+                handleAddToCart({ ...item, quantity: qty })
+              }
+            />
+          </div>
+        );
+      })
+  )}
+</div>
+
       </div>
     </div>
   );

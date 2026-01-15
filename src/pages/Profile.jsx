@@ -46,20 +46,33 @@ export default function ProfilePage() {
         });
 
         if (res.ok) {
-          const userData = await res.json();
-          setUser({
-            displayName: userData.name || "",
-            username: userData.name?.toLowerCase().replace(/\s+/g, '_') || "",
-            email: userData.email || "",
-            phone: userData.phone || "",
-            address: userData.address || "",
-            pincode: userData.pincode || "",
-            bio: userData.bio || "",
-            joined: userData.createdAt ? new Date(userData.createdAt).toISOString().split('T')[0] : "",
-            avatarUrl: userData.avatar || "",
-            applesCollected: userData.applesCollected || 0,
-            level: userData.level || "Growing Tree",
-          });
+  const userData = await res.json();
+
+  if (!userData) {
+    console.error('User data is null');
+    localStorage.clear();
+    navigate('/login');
+    return;
+  }
+
+  setUser({
+    displayName: userData.name || "",
+    username: userData.name
+      ? userData.name.toLowerCase().replace(/\s+/g, '_')
+      : "",
+    email: userData.email || "",
+    phone: userData.phone || "",
+    address: userData.address || "",
+    pincode: userData.pincode || "",
+    bio: userData.bio || "",
+    joined: userData.createdAt
+      ? new Date(userData.createdAt).toISOString().split('T')[0]
+      : "",
+    avatarUrl: userData.avatar || "",
+    applesCollected: userData.applesCollected || 0,
+    level: userData.level || "Growing Tree",
+  });
+
 
           // Fetch seller data
           const sellerRes = await fetch('/api/users/seller/me', {
@@ -467,8 +480,9 @@ export default function ProfilePage() {
 
             <div className="profile-main-info">
               <div className="name-row">
-                <h1>{user.displayName}</h1>
-                <span className="username">@{user.username}</span>
+                <h1>{user.displayName || "User"}</h1>
+<span className="username">@{user.username || "user"}</span>
+
               </div>
               <p className="bio">{user.bio}</p>
 

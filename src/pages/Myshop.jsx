@@ -12,7 +12,6 @@ const MyShop = () => {
 	React.useEffect(() => {
 		const token = localStorage.getItem('gramika_token');
 		if (!token) {
-			window.location.href = '/login';
 			return;
 		}
 		const sellerStatus = localStorage.getItem('gramika_seller_status');

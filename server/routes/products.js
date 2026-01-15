@@ -9,7 +9,12 @@ router.get('/', async (req, res) => {
     const q = req.query.q || '';
     const filter = {};
     if (q) filter.name = { $regex: q, $options: 'i' };
-    const products = await Product.find(filter).limit(200);
+    const products = await Product.find({
+  ...filter,
+  status: 'Active',
+  quantity: { $gt: 0 }
+}).limit(200);
+
     res.json(products);
   } catch (err) {
     console.error(err);

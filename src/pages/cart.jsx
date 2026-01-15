@@ -16,13 +16,7 @@ const Cart = ({ isOpen, onClose }) => {
   const shipmentItemCount = cartItems.reduce((s, i) => s + i.quantity, 0);
 
   /* ---------------- AUTH GUARD ---------------- */
-  useEffect(() => {
-    const token = localStorage.getItem('gramika_token');
-    if (!token && isOpen) {
-      alert('Please login to access your cart');
-      onClose();
-    }
-  }, [isOpen, onClose]);
+
 
   /* ---------------- LOAD CART ---------------- */
   const loadCart = async () => {
@@ -130,7 +124,14 @@ setCartItems(mapped);
       alert('Your cart is empty');
       return;
     }
-    navigate('/checkout');
+    const token = localStorage.getItem('gramika_token');
+if (!token) {
+  alert('Please login to proceed to checkout');
+  navigate('/login');
+  return;
+}
+navigate('/checkout');
+
   };
 
   /* ---------------- CLOSE ---------------- */

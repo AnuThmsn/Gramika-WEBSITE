@@ -9,6 +9,11 @@
   /* use a fixed pixel navbar height to avoid em-based rounding differences */
   --navbar-height: 72px;
 }
+.nav-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: auto;
+}
 
 .navbar {
   position: fixed;

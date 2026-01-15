@@ -28,7 +28,17 @@ exports.createOrder = async (req, res) => {
 
     // 3. Decrement stock atomically
     for (const it of serverItems) {
-      await Product.findByIdAndUpdate(it.product, { $inc: { quantity: -it.quantity } });
+      const updated = await Product.findByIdAndUpdate(
+  it.product,
+  { $inc: { quantity: -it.quantity } },
+  { new: true }
+);
+
+if (updated.quantity <= 0) {
+  updated.status = 'OutOfStock';
+  await updated.save();
+}
+
     }
 
     // 4. Clear cart

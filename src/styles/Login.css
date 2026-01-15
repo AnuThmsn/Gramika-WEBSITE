@@ -129,18 +129,38 @@
 .btn-gramika:hover {
   background: #0c3418;
 }
+.disabled-register {
+  color: #999 !important;
+  cursor: not-allowed !important;
+  pointer-events: auto;
+  text-decoration: line-through;
+}
+
+.disabled-register:hover {
+  color: #999;
+}
 
 /* Links */
 .link-gramika {
+  display: inline-block;
+  margin: 0 auto;              /* centers horizontally */
   color: #0f3d1e;
   font-weight: 600;
+  font-size: 0.95rem;
   text-decoration: none;
-  font-size: 0.9rem;
+  border: 0px solid #0f3d1e;
+  border-radius: 6px;
+  padding: 14px 14px;
+  background: transparent;
 }
 
 .link-gramika:hover {
-  text-decoration: underline;
+  background-color: #01220600;
+  color: #012206;
+  border: 2px solid #0f3d1e;
+  text-decoration: none;
 }
+
 
 /* Responsive */
 @media (max-width: 992px) {

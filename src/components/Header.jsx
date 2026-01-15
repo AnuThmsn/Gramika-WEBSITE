@@ -6,28 +6,19 @@ import { IoIosArrowDown } from "react-icons/io"; // 3. New Arrow Icon
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './Header.css';
+const token = localStorage.getItem('gramika_token');
+const sellerStatus = localStorage.getItem('gramika_seller_status');
+
+const canAccessMyShop = token && sellerStatus === 'verified';
+
 
 function Header({ onCartClick }) {
   const { i18n } = useTranslation();
   const [isLangOpen, setIsLangOpen] = useState(false); // State to toggle dropdown
   const navigate = useNavigate();
 
-  const handleMyShopClick = (e) => {
-    e.preventDefault();
-    const token = localStorage.getItem('gramika_token');
-    if (!token) {
-      alert('Please login to access MyShop');
-      navigate('/login');
-      return;
-    }
-    const sellerStatus = localStorage.getItem('gramika_seller_status');
-    if (!sellerStatus || sellerStatus === 'not_seller') {
-      alert('Register as seller first');
-      navigate('/profile');
-      return;
-    }
-    navigate('/My-shop');
-  };
+const isLoggedIn = !!localStorage.getItem('gramika_token');
+
 
   const changeLanguage = (lang) => {
     i18n.changeLanguage(lang);
@@ -61,7 +52,20 @@ function Header({ onCartClick }) {
       
       <div className="nav-links">
         <Link to="/shop">BUY</Link>
-        <a href="/my-shop" onClick={handleMyShopClick}>MY SHOP</a>
+        <Link
+  to={canAccessMyShop ? "/my-shop" : "#"}
+  onClick={e => !canAccessMyShop && e.preventDefault()}
+  className={!canAccessMyShop ? "nav-disabled" : ""}
+  title={
+    !token
+      ? "Login required"
+      : "Only verified sellers can access My Shop"
+  }
+>
+  MY SHOP
+</Link>
+
+
         <Link to="/">ABOUT</Link>
       </div>
 
@@ -104,7 +108,15 @@ function Header({ onCartClick }) {
         </div>
         
         <div className="profile">
-          <Link to="/profile"><HiUserCircle size={49} className="profile-icon" /></Link>
+          <Link
+  to={isLoggedIn ? "/profile" : "#"}
+  onClick={e => !isLoggedIn && e.preventDefault()}
+  className={!isLoggedIn ? "nav-disabled" : ""}
+  title={!isLoggedIn ? "Login required" : ""}
+>
+  <HiUserCircle size={49} className="profile-icon" />
+</Link>
+
         </div>
       </div>
     </div>
