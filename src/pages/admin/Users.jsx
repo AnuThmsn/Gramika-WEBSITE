@@ -15,24 +15,26 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [fullUserDetails, setFullUserDetails] = useState(null);
   const [search, setSearch] = useState("");
-  const [filterKYC, setFilterKYC] = useState("All");
+  const [filterSeller, setFilterSeller] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  /* ---------------- FETCH FULL USER ---------------- */
   const fetchUserDetails = async (userId) => {
-    const token = localStorage.getItem('gramika_token');
+    const token = localStorage.getItem("gramika_token");
     if (!token) return;
+
     try {
       const res = await fetch(`/api/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const user = await res.json();
         setFullUserDetails(user);
       }
     } catch (err) {
-      console.error('Failed to fetch user details:', err);
+      console.error("Failed to fetch user details:", err);
     }
   };
 
@@ -41,97 +43,138 @@ const Users = () => {
     fetchUserDetails(user.id);
   };
 
-  const handleApproveKYC = async () => {
-    if (!fullUserDetails) return;
-    const token = localStorage.getItem('gramika_token');
+  /* ---------------- SELLER APPROVAL ---------------- */
+  const handleApproveSeller = async () => {
+    if (!fullUserDetails?.seller) return;
+    const token = localStorage.getItem("gramika_token");
+
     try {
       const res = await fetch(`/api/users/seller/${fullUserDetails._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status: 'verified' })
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: "verified" }),
       });
+
       if (res.ok) {
-        alert('KYC Approved');
-        setFullUserDetails({ ...fullUserDetails, seller: { ...fullUserDetails.seller, status: 'verified' } });
-        // Update the users list
-        setUsers(users.map(u => u.id === fullUserDetails._id ? { ...u, kyc: 'Approved' } : u));
+        alert("Seller Approved");
+        setFullUserDetails({
+          ...fullUserDetails,
+          seller: { ...fullUserDetails.seller, status: "verified" },
+        });
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === fullUserDetails._id
+              ? { ...u, sellerStatus: "Verified" }
+              : u
+          )
+        );
       } else {
-        alert('Failed to approve KYC');
+        alert("Failed to approve seller");
       }
     } catch (err) {
-      console.error('Error approving KYC:', err);
-      alert('Error approving KYC');
+      console.error(err);
     }
   };
 
-  const handleRejectKYC = async () => {
-    if (!fullUserDetails) return;
-    const token = localStorage.getItem('gramika_token');
+  const handleRejectSeller = async () => {
+    if (!fullUserDetails?.seller) return;
+    const token = localStorage.getItem("gramika_token");
+
     try {
       const res = await fetch(`/api/users/seller/${fullUserDetails._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status: 'rejected' })
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: "rejected" }),
       });
+
       if (res.ok) {
-        alert('KYC Rejected');
-        setFullUserDetails({ ...fullUserDetails, seller: { ...fullUserDetails.seller, status: 'rejected' } });
-        setUsers(users.map(u => u.id === fullUserDetails._id ? { ...u, kyc: 'Rejected' } : u));
+        alert("Seller Rejected");
+        setFullUserDetails({
+          ...fullUserDetails,
+          seller: { ...fullUserDetails.seller, status: "rejected" },
+        });
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === fullUserDetails._id
+              ? { ...u, sellerStatus: "Rejected" }
+              : u
+          )
+        );
       } else {
-        alert('Failed to reject KYC');
+        alert("Failed to reject seller");
       }
     } catch (err) {
-      console.error('Error rejecting KYC:', err);
-      alert('Error rejecting KYC');
+      console.error(err);
     }
   };
 
+  /* ---------------- FETCH USERS LIST ---------------- */
   useEffect(() => {
     const fetchUsers = async () => {
-      const token = localStorage.getItem('gramika_token');
+      const token = localStorage.getItem("gramika_token");
       if (!token) return;
+
       try {
-        const res = await fetch('/api/users/admin', {
-          headers: { Authorization: `Bearer ${token}` }
+        const res = await fetch("/api/users/admin", {
+          headers: { Authorization: `Bearer ${token}` },
         });
+
         if (res.ok) {
           const data = await res.json();
-          const formattedUsers = data.map(user => ({
-            id: user._id,
-            name: user.name || 'Unknown',
-            email: user.email,
-            phone: user.phone || 'N/A',
-            kyc: user.seller?.status === 'verified' ? 'Approved' : user.seller?.status === 'pending' ? 'Pending' : user.seller?.status === 'rejected' ? 'Rejected' : user.seller ? 'Registered' : 'Not Applied',
-            status: user.isAdmin ? 'Admin' : 'Active'
+          const formatted = data.map((u) => ({
+            id: u._id,
+            name: u.name || "Unknown",
+            email: u.email,
+            phone: u.phone || "N/A",
+            sellerStatus:
+              u.seller?.status === "verified"
+                ? "Verified"
+                : u.seller?.status === "pending"
+                ? "Pending"
+                : u.seller?.status === "rejected"
+                ? "Rejected"
+                : "Not Applied",
+            status: u.isAdmin ? "Admin" : "Active",
           }));
-          setUsers(formattedUsers);
+          setUsers(formatted);
         }
       } catch (err) {
-        console.error('Failed to fetch users:', err);
+        console.error("Failed to fetch users:", err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchUsers();
   }, []);
 
+  /* ---------------- FILTER ---------------- */
   const filteredUsers = users.filter((u) => {
     const matchSearch =
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase()) ||
       u.phone.includes(search);
 
-    const matchKYC = filterKYC === "All" || u.kyc === filterKYC;
-    const matchStatus = filterStatus === "All" || u.status === filterStatus;
+    const matchSeller =
+      filterSeller === "All" || u.sellerStatus === filterSeller;
+    const matchStatus =
+      filterStatus === "All" || u.status === filterStatus;
 
-    return matchSearch && matchKYC && matchStatus;
+    return matchSearch && matchSeller && matchStatus;
   });
 
+  /* ---------------- RENDER ---------------- */
   return (
     <div className="container mt-4">
       {!selectedUser && (
-        <Card className="p-3 shadow-sm mb-3">
-          <h4>User Management</h4>
+        <Card className="p-3 shadow-sm">
+          <h4>Seller Approval</h4>
 
           <InputGroup className="my-3">
             <Form.Control
@@ -143,21 +186,25 @@ const Users = () => {
 
           <Row className="mb-3">
             <Col md={4}>
-              <Form.Select value={filterKYC} onChange={(e) => setFilterKYC(e.target.value)}>
-                <option value="All">Filter by KYC (All)</option>
+              <Form.Select
+                value={filterSeller}
+                onChange={(e) => setFilterSeller(e.target.value)}
+              >
+                <option value="All">All Seller Status</option>
                 <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
+                <option value="Verified">Verified</option>
                 <option value="Rejected">Rejected</option>
-                <option value="Registered">Registered</option>
                 <option value="Not Applied">Not Applied</option>
               </Form.Select>
             </Col>
 
             <Col md={4}>
-              <Form.Select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-                <option value="All">Filter by Account Status (All)</option>
+              <Form.Select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
+                <option value="All">All Account Status</option>
                 <option value="Active">Active</option>
-                <option value="Banned">Banned</option>
               </Form.Select>
             </Col>
           </Row>
@@ -167,30 +214,37 @@ const Users = () => {
               <tr>
                 <th>Name</th>
                 <th>Email</th>
-                <th>KYC</th>
-                <th>Status</th>
+                <th>Seller Status</th>
+                <th>Account</th>
                 <th>Action</th>
               </tr>
             </thead>
-
             <tbody>
-              {filteredUsers.map((user) => (
-                <tr key={user.id}>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
+              {filteredUsers.map((u) => (
+                <tr key={u.id}>
+                  <td>{u.name}</td>
+                  <td>{u.email}</td>
                   <td>
-                    <Badge bg={user.kyc === "Approved" ? "success" : user.kyc === "Pending" ? "warning" : "danger"}>
-                      {user.kyc}
+                    <Badge
+                      bg={
+                        u.sellerStatus === "Verified"
+                          ? "success"
+                          : u.sellerStatus === "Pending"
+                          ? "warning"
+                          : u.sellerStatus === "Rejected"
+                          ? "danger"
+                          : "secondary"
+                      }
+                    >
+                      {u.sellerStatus}
                     </Badge>
                   </td>
                   <td>
-                    <Badge bg={user.status === "Active" ? "success" : "secondary"}>
-                      {user.status}
-                    </Badge>
+                    <Badge bg="success">{u.status}</Badge>
                   </td>
                   <td>
-                    <Button size="sm" onClick={() => handleViewDetails(user)}>
-                      View Details
+                    <Button size="sm" onClick={() => handleViewDetails(u)}>
+                      View Application
                     </Button>
                   </td>
                 </tr>
@@ -200,105 +254,78 @@ const Users = () => {
         </Card>
       )}
 
-      {selectedUser && (
-        <Card className="p-4 shadow-sm position-relative">
-          {/* BACK BUTTON AND HEADER */}
-          <div className="d-flex align-items-center mb-3">
-            <Button
-              variant="light"
-              size="sm"
-              className="rounded-circle shadow-sm me-3"
-              onClick={() => { setSelectedUser(null); setFullUserDetails(null); }}
-            >
-              <ArrowLeftCircle size={24} />
-            </Button>
-            <h4 className="mb-0">{selectedUser.name}</h4>
-          </div>
+      {/* ---------------- DETAILS VIEW ---------------- */}
+      {selectedUser && fullUserDetails && (
+        <Card className="p-4 shadow-sm">
+          <Button
+            variant="light"
+            size="sm"
+            onClick={() => {
+              setSelectedUser(null);
+              setFullUserDetails(null);
+            }}
+          >
+            <ArrowLeftCircle size={22} /> Back
+          </Button>
 
           <Row className="mt-3">
             <Col md={6}>
-              <p className="text-start"><strong>Email:</strong> {fullUserDetails?.email || selectedUser.email}</p>
-              <p className="text-start"><strong>Phone:</strong> {fullUserDetails?.phone || selectedUser.phone}</p>
-              <p className="text-start"><strong>Joined:</strong> {fullUserDetails?.createdAt ? new Date(fullUserDetails.createdAt).toLocaleDateString() : 'N/A'}</p>
-              <p className="text-start"><strong>Last Active:</strong> {fullUserDetails?.updatedAt ? new Date(fullUserDetails.updatedAt).toLocaleDateString() : 'N/A'}</p>
-              <p className="text-start"><strong>Account Type:</strong> {fullUserDetails?.isAdmin ? 'Admin' : 'User'}</p>
+              <h5>User Info</h5>
+              <p><strong>Email:</strong> {fullUserDetails.email}</p>
+              <p><strong>Phone:</strong> {fullUserDetails.phone}</p>
+              <p><strong>Address:</strong> {fullUserDetails.address}</p>
 
-              <h5 className="mt-4 text-start">Saved Addresses</h5>
-              <p className="text-start">
-                {fullUserDetails?.address || 'No address provided'}
-              </p>
+              <h5 className="mt-4">Seller Application</h5>
 
-              <h5 className="mt-4 text-start">Seller Information</h5>
-              {fullUserDetails?.seller ? (
+              {fullUserDetails.seller ? (
                 <>
-                  <p className="text-start"><strong>Name:</strong> {fullUserDetails.seller.shopName || 'N/A'}</p>
-                  <p className="text-start"><strong>Email:</strong> {fullUserDetails.seller.businessEmail || 'N/A'}</p>
-                  <p className="text-start"><strong>Phone:</strong> {fullUserDetails.seller.phone || 'N/A'}</p>
-                  <p className="text-start"><strong>Address:</strong> {fullUserDetails.seller.address || 'N/A'}</p>
-                  <p className="text-start"><strong>Aadhar Document:</strong> {fullUserDetails.seller.aadharFileName ? <a href="#" onClick={() => alert(`View Aadhar: ${fullUserDetails.seller.aadharFileName}`)}>View Aadhar</a> : 'Not uploaded'}</p>
-                  <p className="text-start"><strong>License Document:</strong> {fullUserDetails.seller.licenseFileName ? <a href="#" onClick={() => alert(`View License: ${fullUserDetails.seller.licenseFileName}`)}>View License</a> : 'Not uploaded'}</p>
-                  <p className="text-start"><strong>Intent to Sell:</strong> {fullUserDetails.seller.sellItems?.join(', ') || 'N/A'}</p>
-                  <p className="text-start"><strong>Status:</strong> {fullUserDetails.seller.status}</p>
+                  <p><strong>Name:</strong> {fullUserDetails.seller.name}</p>
+                  <p><strong>Email:</strong> {fullUserDetails.seller.email}</p>
+                  <p><strong>Phone:</strong> {fullUserDetails.seller.phone}</p>
+                  <p><strong>Address:</strong> {fullUserDetails.seller.address}</p>
+                  <p><strong>Items:</strong> {fullUserDetails.seller.sellItems.join(", ")}</p>
+
+                  <p>
+                    <strong>Aadhar:</strong>{" "}
+                    <a href={`/uploads/${fullUserDetails.seller.aadharFileName}`} target="_blank" rel="noreferrer">
+                      View
+                    </a>
+                  </p>
+
+                  <p>
+                    <strong>License:</strong>{" "}
+                    <a href={`/uploads/${fullUserDetails.seller.licenseFileName}`} target="_blank" rel="noreferrer">
+                      View
+                    </a>
+                  </p>
+
+                  <Badge bg="warning">
+                    {fullUserDetails.seller.status}
+                  </Badge>
                 </>
               ) : (
-                <p className="text-start">Not registered as seller</p>
+                <p>No seller application</p>
               )}
             </Col>
 
-            {/* RIGHT COLUMN */}
             <Col md={6}>
-              {/* KYC Actions */}
-              <Card className="p-3 shadow-sm mb-3">
-                <h5 className="text-start mb-3">KYC Actions</h5>
-                <Button className="my-2 w-100" variant="success" onClick={handleApproveKYC} disabled={fullUserDetails?.seller?.status === 'verified'}>
-                  Approve KYC
+              <Card className="p-3">
+                <h5>Seller Approval Actions</h5>
+                <Button
+                  className="w-100 my-2"
+                  variant="success"
+                  disabled={fullUserDetails.seller?.status === "verified"}
+                  onClick={handleApproveSeller}
+                >
+                  Approve Seller
                 </Button>
-                <Button className="my-2 w-100" variant="danger" onClick={handleRejectKYC}>
-                  Reject KYC
+                <Button
+                  className="w-100"
+                  variant="danger"
+                  onClick={handleRejectSeller}
+                >
+                  Reject Seller
                 </Button>
-              </Card>
-
-              {/* Account Actions */}
-              <Card className="p-3 shadow-sm mb-4">
-                <h5 className="text-start mb-3">Account Actions</h5>
-                <Button className="my-2 w-100" variant="warning">
-                  Ban User
-                </Button>
-                <Button className="my-2 w-100" variant="primary">
-                  Activate User
-                </Button>
-              </Card>
-
-              {/* Order History Summary */}
-              <Card className="p-3 shadow-sm">
-                <h5 className="text-start mb-3">Order History Summary</h5>
-                <Table striped bordered hover>
-                  <thead>
-                    <tr>
-                      <th>Order ID</th>
-                      <th>Item</th>
-                      <th>Price</th>
-                      <th>Status</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>#1022</td>
-                      <td>Handmade Soap</td>
-                      <td>₹150</td>
-                      <td><Badge bg="success">Delivered</Badge></td>
-                      <td>14 Nov 2025</td>
-                    </tr>
-                    <tr>
-                      <td>#1056</td>
-                      <td>Cotton Bag</td>
-                      <td>₹250</td>
-                      <td><Badge bg="info">Shipped</Badge></td>
-                      <td>19 Nov 2025</td>
-                    </tr>
-                  </tbody>
-                </Table>
               </Card>
             </Col>
           </Row>
