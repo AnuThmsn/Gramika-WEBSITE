@@ -13,7 +13,14 @@ const Products = () => {
     let mounted = true;
     const fetchProducts = async () => {
       try {
-        const res = await fetch('/api/products');
+        const token = localStorage.getItem('gramika_token');
+
+const res = await fetch('/api/products', {
+  headers: {
+    Authorization: `Bearer ${token}`
+  }
+});
+
         if (!res.ok) {
           if (mounted) setProducts([]);
           return;
@@ -116,9 +123,33 @@ const Products = () => {
     }));
   };
 
-  const deleteProduct = (id) => {
-    setProducts(products.filter(product => product.id !== id));
-  };
+  const deleteProduct = async (id) => {
+  try {
+    const token = localStorage.getItem("gramika_token");
+    if (!token) {
+      alert("Not authorized");
+      return;
+    }
+
+    const res = await fetch(`/api/products/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.msg || "Failed to delete product");
+    }
+
+    // ✅ Remove from UI only AFTER backend success
+    setProducts(prev => prev.filter(product => product.id !== id));
+  } catch (err) {
+    console.error("Delete failed:", err);
+    alert(err.message);
+  }
+};
 
   return (
     <div className="products-content-wrapper">

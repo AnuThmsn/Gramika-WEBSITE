@@ -1,89 +1,140 @@
-// src/components/addproduct.jsx
+import React, { useState, useEffect } from "react";
 
-import React, { useState } from 'react';
-
-// This component now uploads image to backend (/api/uploads) and then creates
-// a seller product via POST /api/products/seller using auth token from localStorage.
+// This component uploads image to backend (/api/uploads)
+// and creates seller product via POST /api/products/seller
 const AddProduct = ({ onAddProduct, onClose }) => {
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   const [newProduct, setNewProduct] = useState({
-    name: '',
-    price: '',
-    quantity: '',
+    name: "",
+    price: "",
+    quantity: "",
+    category: "",
     imageFile: null,
-    imagePreview: ''
+    imagePreview: ""
   });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewProduct({ ...newProduct, [name]: value });
-  };
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewProduct({ ...newProduct, imageFile: file, imagePreview: reader.result });
-      };
-      reader.readAsDataURL(file);
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("gramika_token");
+
+      const res = await fetch("/api/categories", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(Array.isArray(data) ? data : []);
+      } else {
+        setDefaultCategories();
+      }
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+      setDefaultCategories();
+    } finally {
+      setLoading(false);
     }
   };
 
-  const uploadFile = async (file) => {
-    const fd = new FormData();
-    fd.append('file', file);
-    const res = await fetch('/api/uploads', { method: 'POST', body: fd });
-    if (!res.ok) throw new Error('Upload failed');
-    const data = await res.json();
-    // return URL that can be used directly in <img>
-    return `/api/uploads/${data.fileId}`;
+  const setDefaultCategories = () => {
+    setCategories([
+      "Poultry & Meat",
+      "Vegetables",
+      "Fruits",
+      "Dairy & Beverages",
+      "Bakery & Snacks",
+      "Homemade Essentials"
+    ]);
   };
 
+  // Handle text inputs
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewProduct((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle image upload (preview only)
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setNewProduct((prev) => ({
+        ...prev,
+        imageFile: file,       // actual file for backend
+        imagePreview: reader.result // preview only
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Submit product
   const handleSubmit = async () => {
     try {
       if (!newProduct.name || !newProduct.price || !newProduct.quantity) {
-        alert('Please fill name, price and quantity');
+        alert("Please fill name, price and quantity");
         return;
       }
 
-      let imageUrl = '';
-      if (newProduct.imageFile) {
-        imageUrl = await uploadFile(newProduct.imageFile);
+      if (!newProduct.category && categories.length > 0) {
+        alert("Please select a category");
+        return;
       }
 
-      const productPayload = {
-        name: newProduct.name,
-        price: Number(newProduct.price),
-        quantity: Number(newProduct.quantity),
-        imageUrl,
-        description: ''
-      };
+      const fd = new FormData();
+      fd.append("name", newProduct.name);
+      fd.append("price", newProduct.price);
+      fd.append("quantity", newProduct.quantity);
+      fd.append("category", newProduct.category);
+      fd.append("description", "");
 
-      // read token from localStorage (frontend login should store it)
-      const token = localStorage.getItem('gramika_token');
+      // IMPORTANT: send actual image file
+      if (newProduct.imageFile) {
+        fd.append("image", newProduct.imageFile);
+      }
 
-      const createRes = await fetch('/api/products/seller', {
-        method: 'POST',
+      const token = localStorage.getItem("gramika_token");
+
+      const res = await fetch("/api/products/seller", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
+          Authorization: `Bearer ${token}`
+          // DO NOT set Content-Type for FormData
         },
-        body: JSON.stringify(productPayload)
+        body: fd
       });
 
-      if (!createRes.ok) {
-        const err = await createRes.json().catch(() => ({}));
-        throw new Error(err.msg || 'Failed to create product');
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.msg || "Failed to add product");
       }
 
-      const created = await createRes.json();
-      // call parent callback so UI updates immediately
+      const created = await res.json();
       onAddProduct(created);
-      setNewProduct({ name: '', price: '', quantity: '', imageFile: null, imagePreview: '' });
+
+      // Reset form
+      setNewProduct({
+        name: "",
+        price: "",
+        quantity: "",
+        category: "",
+        imageFile: null,
+        imagePreview: ""
+      });
+
       onClose();
     } catch (err) {
-      console.error(err);
-      alert('Failed to add product: ' + err.message);
+      alert(err.message);
     }
   };
 
@@ -91,6 +142,7 @@ const AddProduct = ({ onAddProduct, onClose }) => {
     <div className="products-add-product-modal">
       <div className="products-modal-content">
         <h3>Add New Product</h3>
+
         <div className="products-form-group">
           <label>Product Name</label>
           <input
@@ -101,6 +153,33 @@ const AddProduct = ({ onAddProduct, onClose }) => {
             placeholder="Enter product name"
           />
         </div>
+
+        <div className="products-form-group">
+          <label htmlFor="category-select">Category</label>
+          <select
+            id="category-select"
+            name="category"
+            value={newProduct.category}
+            onChange={handleInputChange}
+            disabled={loading || categories.length === 0}
+            className="product-form select"
+          >
+            <option value="">Select Category</option>
+            {categories.map((category, index) => (
+              <option key={index} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+
+          {loading && <small className="text-muted">Loading categories...</small>}
+          {!loading && categories.length === 0 && (
+            <small className="text-danger">
+              No categories available. Please contact admin.
+            </small>
+          )}
+        </div>
+
         <div className="products-form-group">
           <label>Price (₹)</label>
           <input
@@ -109,8 +188,11 @@ const AddProduct = ({ onAddProduct, onClose }) => {
             value={newProduct.price}
             onChange={handleInputChange}
             placeholder="Enter price"
+            min="0"
+            step="0.01"
           />
         </div>
+
         <div className="products-form-group">
           <label>Quantity</label>
           <input
@@ -119,8 +201,10 @@ const AddProduct = ({ onAddProduct, onClose }) => {
             value={newProduct.quantity}
             onChange={handleInputChange}
             placeholder="Enter quantity"
+            min="0"
           />
         </div>
+
         <div className="products-form-group">
           <label>Product Image</label>
           <input
@@ -129,12 +213,27 @@ const AddProduct = ({ onAddProduct, onClose }) => {
             accept="image/*"
             onChange={handleImageChange}
           />
+          <small className="text-muted">
+            Optional. Recommended for better visibility.
+          </small>
         </div>
+
         {newProduct.imagePreview && (
           <div className="image-preview">
-            <img src={newProduct.imagePreview} alt="Product Preview" style={{ width: '100px', height: '100px', objectFit: 'cover' }} />
+            <img
+              src={newProduct.imagePreview}
+              alt="Product Preview"
+              style={{
+                width: "100px",
+                height: "100px",
+                objectFit: "cover",
+                borderRadius: "8px",
+                marginTop: "10px"
+              }}
+            />
           </div>
         )}
+
         <div className="products-modal-actions">
           <button className="btn" onClick={onClose}>
             Cancel

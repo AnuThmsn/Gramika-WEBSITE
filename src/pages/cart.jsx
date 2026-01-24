@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Cart = ({ isOpen, onClose }) => {
   const [cartItems, setCartItems] = useState([]);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   /* ---------------- totals ---------------- */
@@ -15,123 +16,193 @@ const Cart = ({ isOpen, onClose }) => {
   const grandTotal = itemsTotal + deliveryCharge + handlingCharge;
   const shipmentItemCount = cartItems.reduce((s, i) => s + i.quantity, 0);
 
-  /* ---------------- AUTH GUARD ---------------- */
-
-
   /* ---------------- LOAD CART ---------------- */
   const loadCart = async () => {
     const token = localStorage.getItem('gramika_token');
+    
     if (!token) {
-      setCartItems([]);
+      // Guest user - load from localStorage
+      const guestCart = JSON.parse(localStorage.getItem('gramika_cart') || '[]');
+      setCartItems(guestCart);
       return;
     }
 
+    // Logged-in user - load from database
+    setLoading(true);
     try {
       const res = await fetch('/api/carts', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache'
+        }
       });
-      if (!res.ok) throw new Error('Failed to load cart');
+      
+      if (!res.ok) {
+        if (res.status === 401) {
+          // Token expired or invalid
+          localStorage.removeItem('gramika_token');
+          const guestCart = JSON.parse(localStorage.getItem('gramika_cart') || '[]');
+          setCartItems(guestCart);
+          return;
+        }
+        throw new Error(`Failed to load cart: ${res.status}`);
+      }
+      
       const data = await res.json();
-
-      const mapped = (data.items || [])
-  // 🔥 REMOVE BROKEN CART ITEMS
-  .filter(i => i.product && (i.product._id || i.product))
-  .map(i => ({
-    id: i.product._id,
-    name: i.product.name,
-    price: i.priceAt || i.product.price || 0,
-    quantity: i.qty || 1,
-    stock: i.product.quantity,
-    image:
-      i.product.imageUrl ||
-      (i.product.imageGridFsId
-        ? `/api/uploads/${i.product.imageGridFsId}`
-        : '')
-  }));
-const brokenItems = (data.items || []).filter(i => !i.product);
-
-for (const item of brokenItems) {
-  await fetch(`/api/carts/item/${item._id || item.product}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` }
-  });
-}
-
-setCartItems(mapped);
-
+      
+      // Transform database cart items to frontend format
+      const mapped = (data.items || []).map(item => {
+        const product = item.product || {};
+        return {
+          id: product._id || item.product,
+          name: product.name || 'Product',
+          price: item.priceAt || product.price || 0,
+          quantity: item.qty || 1,
+          stock: product.quantity || 0,
+          image: product.imageUrl || '/default-product.jpg',
+          status: product.status || 'Active',
+          productId: product._id || item.product // Keep original product ID
+        };
+      }).filter(item => item.id); // Remove items with no ID
+      
+      setCartItems(mapped);
     } catch (err) {
-      console.error('Cart load failed', err);
-      setCartItems([]);
+      console.error('Cart load failed:', err);
+      // Fallback to guest cart on error
+      const guestCart = JSON.parse(localStorage.getItem('gramika_cart') || '[]');
+      setCartItems(guestCart);
+    } finally {
+      setLoading(false);
     }
   };
 
   /* ---------------- SYNC EVENTS ---------------- */
   useEffect(() => {
-    if (isOpen) loadCart();
+    if (isOpen) {
+      loadCart();
+    }
 
-    const onUpdated = () => loadCart();
+    const onUpdated = () => {
+      if (isOpen) {
+        loadCart();
+      }
+    };
+    
     window.addEventListener('cartUpdated', onUpdated);
-    return () => window.removeEventListener('cartUpdated', onUpdated);
+    
+    return () => {
+      window.removeEventListener('cartUpdated', onUpdated);
+    };
   }, [isOpen]);
 
   /* ---------------- UPDATE QUANTITY ---------------- */
   const handleUpdateQuantity = async (id, newQuantity) => {
-    if (newQuantity <= 0) {
-      await handleRemove(id);
+    const token = localStorage.getItem('gramika_token');
+    
+    if (!token) {
+      // Guest user - update localStorage
+      const guestCart = JSON.parse(localStorage.getItem('gramika_cart') || '[]');
+      const updatedCart = guestCart.map(item => 
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      );
+      localStorage.setItem('gramika_cart', JSON.stringify(updatedCart));
+      setCartItems(updatedCart);
+      window.dispatchEvent(new Event('cartUpdated'));
       return;
     }
 
-    const token = localStorage.getItem('gramika_token');
+    // Logged-in user - update database
+    try {
+      // Optimistic UI update
+      setCartItems(prev =>
+        prev.map(i => (i.id === id ? { ...i, quantity: newQuantity } : i))
+      );
 
-    // optimistic UI
-    setCartItems(prev =>
-      prev.map(i => (i.id === id ? { ...i, quantity: newQuantity } : i))
-    );
+      const res = await fetch('/api/carts/item', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          product: id, 
+          qty: newQuantity,
+          priceAt: cartItems.find(item => item.id === id)?.price
+        })
+      });
 
-    await fetch('/api/carts/item', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ product: id, qty: newQuantity })
-    });
+      if (!res.ok) {
+        throw new Error('Failed to update cart');
+      }
 
-    window.dispatchEvent(new Event('cartUpdated'));
+      // Refresh cart to ensure consistency
+      await loadCart();
+      window.dispatchEvent(new Event('cartUpdated'));
+    } catch (err) {
+      console.error('Failed to update quantity:', err);
+      // Revert optimistic update
+      await loadCart();
+    }
   };
 
   /* ---------------- REMOVE ITEM ---------------- */
-  const handleRemove = async productId => {
+  const handleRemove = async (productId) => {
     const token = localStorage.getItem('gramika_token');
-    if (!token) return;
+    
+    if (!token) {
+      // Guest user
+      const guestCart = JSON.parse(localStorage.getItem('gramika_cart') || '[]');
+      const updatedCart = guestCart.filter(item => item.id !== productId);
+      localStorage.setItem('gramika_cart', JSON.stringify(updatedCart));
+      setCartItems(updatedCart);
+      window.dispatchEvent(new Event('cartUpdated'));
+      return;
+    }
 
-    await fetch(`/api/carts/item/${productId}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    // Logged-in user
+    try {
+      const res = await fetch(`/api/carts/item/${productId}`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${token}` 
+        }
+      });
 
-    setCartItems(prev => prev.filter(i => i.id !== productId));
-    window.dispatchEvent(new Event('cartUpdated'));
+      if (!res.ok) {
+        throw new Error('Failed to remove item');
+      }
+
+      // Update UI
+      setCartItems(prev => prev.filter(i => i.id !== productId));
+      window.dispatchEvent(new Event('cartUpdated'));
+    } catch (err) {
+      console.error('Failed to remove item:', err);
+      await loadCart();
+    }
   };
 
-  /* ---------------- PROCEED ---------------- */
+  /* ---------------- PROCEED TO CHECKOUT ---------------- */
   const handleProceedClick = () => {
-    if (cartItems.some(item => (item.stock || 0) <= 0)) {
+    // Check for sold out items
+    const soldOutItems = cartItems.filter(item => (item.stock || 0) <= 0);
+    if (soldOutItems.length > 0) {
       alert('Your cart contains items that are sold out. Please remove them before proceeding to checkout.');
       return;
     }
+
     if (!cartItems.length) {
       alert('Your cart is empty');
       return;
     }
-    const token = localStorage.getItem('gramika_token');
-if (!token) {
-  alert('Please login to proceed to checkout');
-  navigate('/login');
-  return;
-}
-navigate('/checkout');
 
+    const token = localStorage.getItem('gramika_token');
+    if (!token) {
+      alert('Please login to proceed to checkout');
+      navigate('/login');
+      return;
+    }
+
+    navigate('/checkout');
   };
 
   /* ---------------- CLOSE ---------------- */
@@ -160,7 +231,11 @@ navigate('/checkout');
         </div>
 
         <div className="cart-items">
-          {cartItems.length === 0 ? (
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '20px' }}>
+              Loading cart...
+            </div>
+          ) : cartItems.length === 0 ? (
             <p>Your cart is empty.</p>
           ) : (
             cartItems.map(item => (
@@ -177,17 +252,20 @@ navigate('/checkout');
         {cartItems.length > 0 && (
           <>
             <div className="bill-details">
-              <p>Items total <span>₹{itemsTotal}</span></p>
-              <p>Delivery charge <span>₹{deliveryCharge}</span></p>
-              <p>Handling charge <span>₹{handlingCharge}</span></p>
+              <p>Items total <span>₹{itemsTotal.toFixed(2)}</span></p>
+              <p>Delivery charge <span>₹{deliveryCharge.toFixed(2)}</span></p>
+              <p>Handling charge <span>₹{handlingCharge.toFixed(2)}</span></p>
               <p className="grand-total">
-                Grand total <span>₹{grandTotal}</span>
+                Grand total <span>₹{grandTotal.toFixed(2)}</span>
               </p>
             </div>
 
             <div className="cart-footer">
-              <span className="total-amount">₹{grandTotal}</span>
-              <button onClick={handleProceedClick}>
+              <span className="total-amount">₹{grandTotal.toFixed(2)}</span>
+              <button 
+                onClick={handleProceedClick}
+                disabled={cartItems.some(item => (item.stock || 0) <= 0)}
+              >
                 Proceed to Checkout →
               </button>
             </div>

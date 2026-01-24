@@ -12,7 +12,8 @@ const ProductSchema = new mongoose.Schema({
   seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   quantity: { type: Number, default: 0 },
   description: { type: String },
-  status: { type: String, enum: ['Pending', 'Active', 'Rejected'], default: 'Pending' },
+  status: { type: String, enum: ['Reported', 'Active', 'Rejected'], default: 'Active' },
+  reports: { type: Number, default: 0 },
   rejectReason: { type: String }
 }, { timestamps: true });
 

@@ -6,7 +6,7 @@ import { FaCarrot, FaAppleAlt, FaHome } from 'react-icons/fa';
 import { GiMeatCleaver, GiMilkCarton, GiManualMeatGrinder } from "react-icons/gi";
 import { CiSearch } from "react-icons/ci";
 import '../styles/BuyPage.css';
-
+import { MdReport } from "react-icons/md";
 
 function BuyPage() {
   // require login to access Buy page
@@ -26,7 +26,7 @@ function BuyPage() {
     const fetchProducts = async () => {
       try {
         setLoadingProducts(true);
-        const res = await fetch('/api/products');
+        const res = await fetch('/api/products/public');
         const data = await res.json();
         if (mounted) setProducts(data);
       } catch (err) {
@@ -43,66 +43,117 @@ function BuyPage() {
       window.removeEventListener('orderUpdated', onOrder);
     };
   }, []);
+  const handleReport = async (productId) => {
+  try {
+    const res = await fetch(`/api/products/public/${productId}/report`, {
+      method: "PUT"
+    });
 
-  const handleAddToCart = async (product) => {
-    try {
-      const token = localStorage.getItem('gramika_token');
-      const prodId = product._id || product.id || product.id;
-      const qty = product.quantity || 1;
-      
-
-      // verify latest product availability before adding
-      try {
-        const check = await fetch(`/api/products/${prodId}`);
-        if (check.ok) {
-          const p = await check.json();
-          if (p.quantity !== undefined && p.quantity <= 0) {
-            alert('Sorry — this product is sold out and cannot be added to the cart.');
-            return;
-          }
-        }
-      } catch (e) {
-        // ignore transient availability check errors, server will validate too
-      }
-      if (token) {
-        // persist to backend
-        const res = await fetch('/api/carts/item', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ product: prodId, qty, priceAt: product.price })
-        });
-        if (!res.ok) {
-          const json = await res.json().catch(() => null);
-          const text = json?.msg || json?.message || await res.text().catch(() => null) || 'Failed to add to cart';
-          console.error('BuyPage: add to cart failed', res.status, text);
-          alert(text);
-          return;
-        } else {
-          const body = await res.json().catch(() => null);
-          console.log('BuyPage: add to cart response', body);
-        }
-        // notify cart component to reload
-        window.dispatchEvent(new Event('cartUpdated'));
-      } else {
-        // guest: save to localStorage
-        const saved = JSON.parse(localStorage.getItem('gramika_cart') || '[]');
-        // ensure not already saved and product has stock
-        const exists = saved.find(s => (s.id || s.product || s._id) === prodId);
-        if (exists) {
-          alert('Product already in cart');
-        } else {
-          saved.push({ id: prodId, name: product.name, price: product.price, quantity: qty, image: product.image || product.imageUrl || '' });
-          localStorage.setItem('gramika_cart', JSON.stringify(saved));
-          console.log('BuyPage: guest cart saved', saved);
-          window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { source: 'BuyPage', guest: true } }));
-        }
-      }
-      console.log(`BuyPage: ${qty} × ${product.name} added to cart.`);
-    } catch (err) {
-      console.error('Add to cart failed', err);
-      alert('Could not add to cart');
+    if (!res.ok) {
+      throw new Error("Failed to report product");
     }
-  };
+
+    const data = await res.json();
+
+    // Update UI immediately
+    setProducts(prev =>
+      prev.map(p =>
+        p._id === productId
+          ? { ...p, status: "Reported", reports: data.reports }
+          : p
+      )
+    );
+  } catch (err) {
+    console.error("Report failed:", err);
+    alert("Could not report product");
+  }
+};
+ const handleAddToCart = async (product) => {
+  try {
+    // 🚫 Block reported products
+    if (product.status === "Reported") {
+      alert("This product is under review and cannot be added to cart.");
+      return;
+    }
+
+    const token = localStorage.getItem("gramika_token");
+    const prodId = product._id || product.id;
+    const qty = product.quantity || 1;
+
+    // 🔍 Verify latest availability
+    try {
+      const check = await fetch(`/api/products/public/${prodId}`);
+      if (check.ok) {
+        const p = await check.json();
+        if (p.quantity !== undefined && p.quantity <= 0) {
+          alert("Sorry — this product is sold out and cannot be added to the cart.");
+          return;
+        }
+      }
+    } catch {
+      // ignore transient check errors
+    }
+
+    if (token) {
+      // 🔐 Logged-in user
+      const res = await fetch("/api/carts/item", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          product: prodId,
+          qty,
+          priceAt: product.price
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        const msg =
+          err?.msg ||
+          err?.message ||
+          "Failed to add product to cart";
+        alert(msg);
+        return;
+      }
+
+      await res.json().catch(() => null); // optional read
+      window.dispatchEvent(new Event("cartUpdated"));
+    } else {
+      // 🧑 Guest user (localStorage)
+      const saved = JSON.parse(localStorage.getItem("gramika_cart") || "[]");
+
+      const exists = saved.find(
+        (s) => (s.id || s.product || s._id) === prodId
+      );
+
+      if (exists) {
+        alert("Product already in cart");
+        return;
+      }
+
+      saved.push({
+        id: prodId,
+        name: product.name,
+        price: product.price,
+        quantity: qty,
+        image: product.image || product.imageUrl || ""
+      });
+
+      localStorage.setItem("gramika_cart", JSON.stringify(saved));
+      window.dispatchEvent(
+        new CustomEvent("cartUpdated", { detail: { guest: true } })
+      );
+    }
+
+    console.log(`BuyPage: ${qty} × ${product.name} added to cart.`);
+  } catch (err) {
+    console.error("Add to cart failed", err);
+    alert("Could not add to cart");
+  }
+};
 
   const getCategoryIcon = (category) => {
     switch (category) {
@@ -361,26 +412,27 @@ function BuyPage() {
       })
       .map((item, index) => {
         const isOutOfStock = item.quantity <= 0;
-        const imageSrc =
-          item.imageUrl ||
-          (item.imageGridFsId
-            ? `/api/uploads/${item.imageGridFsId}`
-            : item.image);
+        const imageSrc = item.imageUrl || item.image || "";
 
         return (
           <div
             key={item._id || index}
             className={`product-card ${isOutOfStock ? 'disabled' : ''}`}
+            
+            style={{ background: "transparent", boxShadow: "none" }}
           >
             <ProductCard
-              image={imageSrc}
-              name={item.name}
-              price={item.price}
-              stock={item.quantity}
-              onAddToCart={(qty) =>
-                handleAddToCart({ ...item, quantity: qty })
-              }
-            />
+  image={imageSrc}
+  name={item.name}
+  price={item.price}
+  stock={item.quantity}
+  status={item.status}
+  reports={item.reports}
+  onAddToCart={(qty) =>
+    handleAddToCart({ ...item, quantity: qty })
+  }
+  onReport={() => handleReport(item._id)}
+/>
           </div>
         );
       })
