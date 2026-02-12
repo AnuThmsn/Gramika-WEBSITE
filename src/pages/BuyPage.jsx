@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CategoryButton from '../components/CategoryButton';
 import ProductCard from '../components/ProductCard';
-import Cart from './cart.jsx';
 import { FaCarrot, FaAppleAlt, FaHome } from 'react-icons/fa';
 import { GiMeatCleaver, GiMilkCarton, GiManualMeatGrinder } from "react-icons/gi";
 import { CiSearch } from "react-icons/ci";
@@ -14,8 +13,6 @@ function BuyPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortOption, setSortOption] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [cartItems, setCartItems] = useState([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   const [products, setProducts] = useState([]);
@@ -78,6 +75,7 @@ function BuyPage() {
 
     const token = localStorage.getItem("gramika_token");
     const prodId = product._id || product.id;
+    // Get the quantity passed from ProductCard (the third parameter in the spread object)
     const qty = product.quantity || 1;
 
     // 🔍 Verify latest availability
@@ -85,8 +83,8 @@ function BuyPage() {
       const check = await fetch(`/api/products/public/${prodId}`);
       if (check.ok) {
         const p = await check.json();
-        if (p.quantity !== undefined && p.quantity <= 0) {
-          alert("Sorry — this product is sold out and cannot be added to the cart.");
+        if (p.quantity !== undefined && p.quantity < qty) {
+          alert(`Sorry — only ${p.quantity} unit(s) available. Cannot add ${qty} to cart.`);
           return;
         }
       }
@@ -120,29 +118,33 @@ function BuyPage() {
       }
 
       await res.json().catch(() => null); // optional read
+      // ✅ Show success notification
+      alert(`✅ ${product.name} (×${qty}) added to cart!`);
       window.dispatchEvent(new Event("cartUpdated"));
     } else {
       // 🧑 Guest user (localStorage)
       const saved = JSON.parse(localStorage.getItem("gramika_cart") || "[]");
 
-      const exists = saved.find(
+      // Check if product already in cart and update quantity
+      const existing = saved.find(
         (s) => (s.id || s.product || s._id) === prodId
       );
 
-      if (exists) {
-        alert("Product already in cart");
-        return;
+      if (existing) {
+        existing.quantity = (existing.quantity || 1) + qty;
+      } else {
+        saved.push({
+          id: prodId,
+          name: product.name,
+          price: product.price,
+          quantity: qty,
+          image: product.image || product.imageUrl || ""
+        });
       }
 
-      saved.push({
-        id: prodId,
-        name: product.name,
-        price: product.price,
-        quantity: qty,
-        image: product.image || product.imageUrl || ""
-      });
-
       localStorage.setItem("gramika_cart", JSON.stringify(saved));
+      // ✅ Show success notification
+      alert(`✅ ${product.name} (×${qty}) added to cart!`);
       window.dispatchEvent(
         new CustomEvent("cartUpdated", { detail: { guest: true } })
       );
@@ -151,7 +153,7 @@ function BuyPage() {
     console.log(`BuyPage: ${qty} × ${product.name} added to cart.`);
   } catch (err) {
     console.error("Add to cart failed", err);
-    alert("Could not add to cart");
+    alert("❌ Could not add to cart");
   }
 };
 
@@ -192,23 +194,8 @@ function BuyPage() {
     boxShadow: '0 2px 8px rgba(26, 60, 52, 0.08)'
   };
 
-  const handleCartClick = () => setIsCartOpen(true);
-  const handleCartClose = () => setIsCartOpen(false);
-  const handleProceedToPayment = (amount) => {
-    alert(`Proceeding to payment of ₹${amount}`);
-    setIsCartOpen(false);
-  };
-
   return (
-    <div>
-      {/* <Header onCartClick={handleCartClick} cartItemCount={cartItems.length} />
-      <Cart
-        isOpen={isCartOpen}
-        onClose={handleCartClose}
-        onProceedToPayment={handleProceedToPayment}
-      /> */}
-
-      <div style={{ padding: '32px 0', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '32px 0', maxWidth: '1200px', margin: '0 auto' }}>
         {/* Search and Sort section */}
         <div style={{
           display: 'flex',
@@ -438,8 +425,6 @@ function BuyPage() {
       })
   )}
 </div>
-
-      </div>
     </div>
   );
 }

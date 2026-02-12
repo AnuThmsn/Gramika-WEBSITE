@@ -35,43 +35,13 @@ router.post('/', auth, orderController.createOrder);
 // Get user's orders
 router.get('/', auth, orderController.getUserOrders);
 
-// Get all orders (admin only)
-router.get('/admin', auth, adminCheck, orderController.getAllOrders);
-
 // Get orders for seller (orders that contain products sold by this seller)
 router.get('/seller', auth, orderController.getSellerOrders);
 
-// Update order status (seller can update orders with their products)
+// Update order status (seller/admin can update orders)
 router.put('/:id/status', auth, orderController.updateOrderStatus);
 
-// Admin update order status (admin can update any order)
-router.put('/:id/status/admin', auth, adminCheck, async (req, res) => {
-  try {
-    const { status } = req.body;
-    const orderId = req.params.id;
-
-    // Validate status
-    const validStatuses = ['pending', 'processing', 'delivered', 'cancelled'];
-    if (!status || !validStatuses.includes(status)) {
-      return res.status(400).json({ msg: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
-    }
-
-    // Find and update order (admin can update any order)
-    const updatedOrder = await require('../models/Order').findByIdAndUpdate(
-      orderId,
-      { status },
-      { new: true }
-    ).populate('items.product').populate('user', 'name email');
-
-    if (!updatedOrder) {
-      return res.status(404).json({ msg: 'Order not found' });
-    }
-
-    return res.json(updatedOrder);
-  } catch (err) {
-    console.error('Admin order status update error:', err);
-    return res.status(500).json({ msg: 'Server error' });
-  }
-});
+// Get all orders (admin only)
+router.get('/admin', auth, adminCheck, orderController.getAllOrders);
 
 module.exports = router;

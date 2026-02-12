@@ -69,12 +69,12 @@ export default function CheckoutPage() {
       }
       const created = await res.json();
       // clear cart on server
-      await fetch('/api/carts', { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      await fetch('/api/carts/clear', { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       // notify cart updated and navigate to confirmation/my shop orders
       window.dispatchEvent(new Event('cartUpdated'));
       window.dispatchEvent(new Event('orderUpdated'));
       navigate('/my-shop');
-      alert('Order placed successfully — Order ID: ' + (created._id || created.id));
+      alert('✅ Order placed successfully!\nOrder ID: ' + (created._id || created.id));
     } catch (err) {
       console.error(err);
       alert('Could not place order');

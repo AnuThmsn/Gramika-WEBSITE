@@ -1,29 +1,67 @@
-import React, { useState, useRef, useEffect } from 'react'; // 1. Import useState
+import React, { useState, useRef, useEffect } from 'react';
 import { HiUserCircle } from 'react-icons/hi';
 import { BsCart3 } from "react-icons/bs";
-import { MdLanguage } from "react-icons/md"; // 2. New Globe Icon
-import { IoIosArrowDown } from "react-icons/io"; // 3. New Arrow Icon
+import { MdLanguage } from "react-icons/md";
+import { IoIosArrowDown } from "react-icons/io";
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { translateBatch } from '../services/translationService';
 import './Header.css';
+
 const token = localStorage.getItem('gramika_token');
 const sellerStatus = localStorage.getItem('gramika_seller_status');
-
 const canAccessMyShop = token && sellerStatus === 'verified';
 
 
 function Header({ onCartClick }) {
   const { i18n } = useTranslation();
-  const [isLangOpen, setIsLangOpen] = useState(false); // State to toggle dropdown
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const [translations, setTranslations] = useState({
+    BUY: 'BUY',
+    MY_SHOP: 'MY SHOP',
+    ABOUT: 'ABOUT',
+    CART: 'CART'
+  });
   const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem('gramika_token');
 
-const isLoggedIn = !!localStorage.getItem('gramika_token');
-
+  // Function to load translations when language changes
+  const loadTranslations = async (language) => {
+    if (language === 'en') {
+      // Reset to English
+      setTranslations({
+        BUY: 'BUY',
+        MY_SHOP: 'MY SHOP',
+        ABOUT: 'ABOUT',
+        CART: 'CART'
+      });
+    } else if (language === 'ml') {
+      // Translate to Malayalam
+      const englishTexts = ['BUY', 'MY SHOP', 'ABOUT', 'CART'];
+      const translated = await translateBatch(englishTexts, 'ml');
+      setTranslations({
+        BUY: translated[0],
+        MY_SHOP: translated[1],
+        ABOUT: translated[2],
+        CART: translated[3]
+      });
+    }
+  };
 
   const changeLanguage = (lang) => {
     i18n.changeLanguage(lang);
-    setIsLangOpen(false); // Close menu after selection
+    loadTranslations(lang);
+    localStorage.setItem('gramika_language', lang);
+    setIsLangOpen(false);
   };
+
+  // Load translations on mount from saved preference
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem('gramika_language') || 'en';
+    if (savedLanguage !== 'en') {
+      loadTranslations(savedLanguage);
+    }
+  }, []);
 
   // Helper to show current language label
   const currentLabel = i18n.language === 'ml' ? 'MAL' : 'ENG';
@@ -51,22 +89,20 @@ const isLoggedIn = !!localStorage.getItem('gramika_token');
       </div>
       
       <div className="nav-links">
-        <Link to="/shop">BUY</Link>
+        <Link to="/shop">{translations.BUY}</Link>
         <Link
-  to={canAccessMyShop ? "/my-shop" : "#"}
-  onClick={e => !canAccessMyShop && e.preventDefault()}
-  className={!canAccessMyShop ? "nav-disabled" : ""}
-  title={
-    !token
-      ? "Login required"
-      : "Only verified sellers can access My Shop"
-  }
->
-  MY SHOP
-</Link>
-
-
-        <Link to="/">ABOUT</Link>
+          to={canAccessMyShop ? "/my-shop" : "#"}
+          onClick={e => !canAccessMyShop && e.preventDefault()}
+          className={!canAccessMyShop ? "nav-disabled" : ""}
+          title={
+            !token
+              ? "Login required"
+              : "Only verified sellers can access My Shop"
+          }
+        >
+          {translations.MY_SHOP}
+        </Link>
+        <Link to="/">{translations.ABOUT}</Link>
       </div>
 
       <div className="right-group">
@@ -102,9 +138,8 @@ const isLoggedIn = !!localStorage.getItem('gramika_token');
         {/* --- CUSTOM DROPDOWN END --- */}
 
         <div className="cart-icon" onClick={onCartClick}>
-          {/* Note: Changed color to dark green to match your white theme if needed, or keep white if background is dark */}
           <BsCart3 size={32} style={{ paddingBottom: '5px' }} /> 
-          <span style={{marginLeft: '5px'}}>CART</span>
+          <span style={{marginLeft: '5px'}}>{translations.CART}</span>
         </div>
         
         <div className="profile">

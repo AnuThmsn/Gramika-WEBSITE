@@ -28,17 +28,11 @@ exports.createOrder = async (req, res) => {
 
     // 3. Decrement stock atomically
     for (const it of serverItems) {
-      const updated = await Product.findByIdAndUpdate(
-  it.product,
-  { $inc: { quantity: -it.quantity } },
-  { new: true }
-);
-
-if (updated.quantity <= 0) {
-  updated.status = 'OutOfStock';
-  await updated.save();
-}
-
+      await Product.findByIdAndUpdate(
+        it.product,
+        { $inc: { quantity: -it.quantity } },
+        { new: true }
+      );
     }
 
     // 4. Clear cart
@@ -79,6 +73,50 @@ exports.getAllOrders = async (req, res) => {
     return res.json(orders);
   } catch (err) {
     console.error('orderController.getAllOrders', err);
+    return res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const orderId = req.params.id;
+
+    // Validate status
+    const validStatuses = ['pending', 'processing', 'delivered', 'cancelled'];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ msg: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
+    }
+
+    // Find order
+    const order = await Order.findById(orderId).populate('items.product');
+    if (!order) {
+      return res.status(404).json({ msg: 'Order not found' });
+    }
+
+    // Check if user is admin or seller with products in this order
+    const User = require('../models/User');
+    const user = await User.findById(req.user._id);
+    
+    const isAdmin = user && user.isAdmin;
+    const sellerOwnsProduct = order.items.some(item => 
+      item.product && String(item.product.seller) === String(req.user._id)
+    );
+
+    if (!isAdmin && !sellerOwnsProduct) {
+      return res.status(403).json({ msg: 'You do not have permission to update this order' });
+    }
+
+    // Update order status
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true }
+    ).populate('items.product').populate('user', 'name email');
+
+    return res.json(updatedOrder);
+  } catch (err) {
+    console.error('orderController.updateOrderStatus', err);
     return res.status(500).json({ msg: 'Server error' });
   }
 };

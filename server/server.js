@@ -17,9 +17,17 @@ app.use(express.urlencoded({ extended: true }));
 // -------------------- Connect DB --------------------
 connectDB();
 
+// Log configured LibreTranslate URL to help diagnose connectivity issues
+const configuredLibre = process.env.LIBRETRANSLATE_URL || 'http://localhost:5001';
+console.log(`LibreTranslate URL: ${configuredLibre}`);
+
 // -------------------- STATIC FILES (IMPORTANT) --------------------
 // This makes images accessible via:
 // http://localhost:5000/api/uploads/<filename>
+// Mount GridFS-backed uploads router first so streaming endpoints work
+app.use("/api/uploads", require("./routes/uploads"));
+
+// Fallback: serve local filesystem uploads (images) from server/uploads
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 // -------------------- Routes --------------------
@@ -31,6 +39,7 @@ app.use("/api/carts", require("./routes/carts"));
 app.use("/api/users", require("./routes/users"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/reports", require("./routes/reports"));
+app.use("/api/translate", require("./routes/translate"));
 
 // -------------------- Health check --------------------
 app.get("/api/health", (req, res) => {

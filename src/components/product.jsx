@@ -76,52 +76,7 @@ const res = await fetch('/api/products', {
     setProducts(prev => [...prev, normalized]);
   };
 
-  const updateQuantity = (id, change) => {
-    setProducts(products.map(product => {
-      if (product.id === id) {
-        const newQuantity = Math.max(0, product.quantity + change);
-        // optimistic update locally
-        const updated = {
-          ...product,
-          quantity: newQuantity,
-          status: newQuantity === 0 ? 'sold-out' : 'available'
-        };
-        // persist change to server (if seller authorized)
-        (async () => {
-          try {
-            const token = localStorage.getItem('gramika_token');
-            if (!token) return;
-            const body = { quantity: newQuantity };
-            const res = await fetch(`/api/products/${product.id}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-              body: JSON.stringify(body)
-            });
-            if (!res.ok) {
-              const err = await res.json().catch(() => null);
-              console.error('Failed to persist product quantity', err || await res.text());
-            }
-          } catch (e) {
-            console.error('Failed to persist product quantity', e);
-          }
-        })();
-        return updated;
-      }
-      return product;
-    }));
-  };
 
-  const toggleStatus = (id) => {
-    setProducts(products.map(product => {
-      if (product.id === id) {
-        return {
-          ...product,
-          status: product.status === 'available' ? 'sold-out' : 'available'
-        };
-      }
-      return product;
-    }));
-  };
 
   const deleteProduct = async (id) => {
   try {
@@ -184,31 +139,11 @@ const res = await fetch('/api/products', {
                 <div className="product-price">₹{product.price}</div>
                 <div className="products-qty-container">
                   <span>Quantity: {product.quantity}</span>
-                  <div className="products-quantity-buttons">
-                    <button
-                      className="products-qty-btn"
-                      onClick={() => updateQuantity(product.id, -1)}
-                    >
-                      -
-                    </button>
-                    <button
-                      className="products-qty-btn"
-                      onClick={() => updateQuantity(product.id, 1)}
-                    >
-                      +
-                    </button>
-                  </div>
                 </div>
-                <div className={`products-status ${product.status}`}>
-                  {product.status === 'available' ? '✅ Available' : '❌ Sold Out'}
+                <div className={`products-status ${product.quantity > 0 ? 'available' : 'sold-out'}`}>
+                  {product.quantity > 0 ? '✅ Available' : '❌ Out of Stock'}
                 </div>
                 <div className="products-action-buttons">
-                  <button
-                    className="btn"
-                    onClick={() => toggleStatus(product.id)}
-                  >
-                    Toggle Status
-                  </button>
                   <button
                     className="btn btn-delete"
                     onClick={() => deleteProduct(product.id)}

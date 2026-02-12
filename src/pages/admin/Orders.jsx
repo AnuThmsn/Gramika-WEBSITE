@@ -13,64 +13,60 @@ const Orders = () => {
   const [filterStatus, setFilterStatus] = useState("All");
   const [newStatus, setNewStatus] = useState("");
   const [filteredOrders, setFilteredOrders] = useState(orders);
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
 
   const statusColors = {
-    Pending: "warning", Processing: "primary", Shipped: "info", 
-    Delivered: "success", Cancelled: "danger"
+    pending: "warning", 
+    processing: "primary", 
+    delivered: "success", 
+    cancelled: "danger"
   };
 
   const totalOrders = orders.length;
-  const pendingOrders = orders.filter(o => o.status === "Pending").length;
-  const deliveredOrders = orders.filter(o => o.status === "Delivered").length;
-  const totalRevenue = orders.reduce((acc, order) => acc + order.items.reduce((sum, item) => sum + (item.price * item.qty), 0), 0);
+  const pendingOrders = orders.filter(o => o.status === "pending").length;
+  const deliveredOrders = orders.filter(o => o.status === "delivered").length;
+  const totalRevenue = orders.reduce((acc, order) => acc + (order.total || 0), 0);
 
+  // Fetch all orders from the database
   useEffect(() => {
+    let mounted = true;
     const fetchOrders = async () => {
       const token = localStorage.getItem('gramika_token');
       if (!token) return;
       try {
+        setLoading(true);
         const res = await fetch('/api/orders/admin', {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
           const data = await res.json();
-          const formattedOrders = data.map(order => ({
-            id: order._id,
-            buyer: order.user?.name || 'Unknown',
-            seller: order.items?.[0]?.product?.seller?.name || 'Unknown Seller',
-            items: order.items.map(item => ({
-              name: item.name || item.product?.name,
-              qty: item.quantity,
-              price: item.price || item.product?.price
-            })),
-            date: new Date(order.createdAt).toISOString().split('T')[0],
-            status: order.status || 'Pending',
-            shippingAddress: order.address,
-            paymentStatus: order.paymentStatus || 'Paid',
-            trackingID: order.trackingID || 'N/A'
-          }));
-          setOrders(formattedOrders);
+          setOrders(data || []);
         }
       } catch (err) {
         console.error('Failed to fetch orders:', err);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
     fetchOrders();
+    
+    // Listen for order updates
+    const onUpdated = () => fetchOrders();
+    window.addEventListener('orderUpdated', onUpdated);
+    return () => { mounted = false; window.removeEventListener('orderUpdated', onUpdated); };
   }, []);
 
+  // Filter and search orders
   useEffect(() => {
-    // apply ?q= filter by id / buyer / seller / item name
     if (!q) {
       setFilteredOrders(filterStatus === "All" ? orders : orders.filter(o => o.status === filterStatus));
       return;
     }
     const res = orders.filter(o => {
-      return String(o.id).toLowerCase().includes(q)
-         || o.buyer.toLowerCase().includes(q)
-         || o.seller.toLowerCase().includes(q)
-         || o.items.some(i => i.name.toLowerCase().includes(q));
+      const orderIdMatch = String(o._id || '').toLowerCase().includes(q);
+      const buyerMatch = (o.user?.name || '').toLowerCase().includes(q);
+      const itemMatch = (o.items || []).some(i => (i.name || '').toLowerCase().includes(q));
+      return orderIdMatch || buyerMatch || itemMatch;
     }).filter(o => filterStatus === "All" ? true : o.status === filterStatus);
     setFilteredOrders(res);
   }, [q, orders, filterStatus]);
@@ -81,20 +77,57 @@ const Orders = () => {
     setShowModal(true);
   };
 
-  const handleUpdateStatus = () => {
-    if (!selectedOrder) return;
-    setOrders(prev => prev.map(order => 
-      order.id === selectedOrder.id ? { ...order, status: newStatus } : order
-    ));
-    setSelectedOrder({ ...selectedOrder, status: newStatus });
-    setShowModal(false);
+  const handleUpdateStatus = async () => {
+    if (!selectedOrder || !newStatus) return;
+    
+    const token = localStorage.getItem('gramika_token');
+    if (!token) {
+      alert('Not authorized');
+      return;
+    }
+
+    setUpdatingOrderId(selectedOrder._id);
+    try {
+      const res = await fetch(`/api/orders/${selectedOrder._id}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(`Failed to update order: ${err.msg || 'Unknown error'}`);
+        return;
+      }
+
+      const updatedOrder = await res.json();
+      
+      // Update local state
+      setOrders(prev =>
+        prev.map(o => (o._id === selectedOrder._id ? updatedOrder : o))
+      );
+      
+      alert(`✅ Order status updated to ${newStatus}`);
+      setShowModal(false);
+      window.dispatchEvent(new Event('orderUpdated'));
+    } catch (err) {
+      console.error('Failed to update status:', err);
+      alert('Could not update order status');
+    } finally {
+      setUpdatingOrderId(null);
+    }
   };
 
   const generateInvoice = (order) => {
     const doc = new jsPDF();
-    doc.text(`Invoice #${order.id}`, 14, 22);
-    doc.text(`Total: ${order.items.reduce((s, i) => s + i.price * i.qty, 0)}`, 14, 32);
-    doc.save(`Invoice_${order.id}.pdf`);
+    doc.text(`Invoice #${(order._id || '').slice(-6).toUpperCase()}`, 14, 22);
+    const itemsText = (order.items || []).map(i => `${i.name} x${i.quantity} @ ₹${i.price}`).join(', ');
+    doc.text(`Items: ${itemsText}`, 14, 32);
+    doc.text(`Total: ₹${order.total || 0}`, 14, 42);
+    doc.save(`Invoice_${order._id}.pdf`);
   };
 
   return (
@@ -107,7 +140,7 @@ const Orders = () => {
           { title: "Total Orders", value: totalOrders },
           { title: "Pending", value: pendingOrders },
           { title: "Delivered", value: deliveredOrders },
-          { title: "Revenue", value: `₹${totalRevenue}` },
+          { title: "Revenue", value: `₹${totalRevenue.toFixed(2)}` },
         ].map((card, i) => (
           <Col md={3} key={i}>
             <Card className="text-center shadow-sm">
@@ -135,90 +168,121 @@ const Orders = () => {
               size="sm"
             >
               <option value="All">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Shipped">Shipped</option>
-              <option value="Delivered">Delivered</option>
+              <option value="pending">Pending</option>
+              <option value="processing">Processing</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
             </Form.Select>
           </Col>
         </Row>
 
-        <Table striped bordered hover responsive className="align-middle">
-          <thead className="table-light">
-            <tr>
-              <th>Order ID</th>
-              <th>Buyer</th>
-              <th>Seller</th>
-              <th>Date</th>
-              <th>Status</th>
-              {/* Added width here to prevent squeezing */}
-              <th className="text-center" style={{ minWidth: "180px" }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredOrders.map(order => (
-              <tr key={order.id}>
-                <td className="fw-bold">#{order.id}</td>
-                <td>{order.buyer}</td>
-                <td>{order.seller}</td>
-                <td>{order.date}</td>
-                <td>
-                  <Badge bg={statusColors[order.status]} className="px-3 py-2 rounded-pill">
-                    {order.status}
-                  </Badge>
-                </td>
-                <td className="text-center">
-                  {/* Flex container fixes the layout */}
-                  <div className="d-flex justify-content-center gap-2">
-                    <Button 
-                      variant="outline-primary" 
-                      size="sm" 
-                      onClick={() => handleViewDetails(order)}
-                      style={{ minWidth: "70px" }}
-                    >
-                      View
-                    </Button>
-                    <Button 
-                      variant="outline-success" 
-                      size="sm" 
-                      onClick={() => generateInvoice(order)}
-                      style={{ minWidth: "70px" }}
-                    >
-                      Invoice
-                    </Button>
-                  </div>
-                </td>
+        {loading ? (
+          <p className="text-center">Loading orders...</p>
+        ) : (
+          <Table striped bordered hover responsive className="align-middle">
+            <thead className="table-light">
+              <tr>
+                <th>Order ID</th>
+                <th>Buyer</th>
+                <th>Items</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th className="text-center" style={{ minWidth: "180px" }}>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="text-center">No orders found</td>
+                </tr>
+              ) : (
+                filteredOrders.map(order => (
+                  <tr key={order._id}>
+                    <td className="fw-bold">#{(order._id || '').slice(-6).toUpperCase()}</td>
+                    <td>{order.user?.name || order.user?.email || 'Unknown'}</td>
+                    <td>{(order.items || []).map(i => `${i.name || 'N/A'} x${i.quantity}`).join(', ')}</td>
+                    <td>₹{order.total || 0}</td>
+                    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      <Badge bg={statusColors[order.status] || 'secondary'} className="px-3 py-2 rounded-pill" style={{ textTransform: 'capitalize' }}>
+                        {order.status || 'pending'}
+                      </Badge>
+                    </td>
+                    <td className="text-center">
+                      <div className="d-flex justify-content-center gap-2">
+                        <Button 
+                          variant="outline-primary" 
+                          size="sm" 
+                          onClick={() => handleViewDetails(order)}
+                          style={{ minWidth: "70px" }}
+                        >
+                          View
+                        </Button>
+                        <Button 
+                          variant="outline-success" 
+                          size="sm" 
+                          onClick={() => generateInvoice(order)}
+                          style={{ minWidth: "70px" }}
+                        >
+                          Invoice
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        )}
       </Card>
 
       {/* MODAL */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg" centered>
         <Modal.Header closeButton>
-          <Modal.Title>Order Details #{selectedOrder?.id}</Modal.Title>
+          <Modal.Title>Order Details #{selectedOrder?._id && (selectedOrder._id).slice(-6).toUpperCase()}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedOrder && (
             <Form>
-               <Row className="mb-3">
-                 <Col md={6}><p><strong>Buyer:</strong> {selectedOrder.buyer}</p></Col>
-                 <Col md={6}><p><strong>Status:</strong> {selectedOrder.status}</p></Col>
-               </Row>
-               <Form.Group>
-                 <Form.Label>Update Status</Form.Label>
-                 <Form.Select value={newStatus} onChange={(e) => setNewStatus(e.target.value)}>
-                   <option>Pending</option>
-                   <option>Shipped</option>
-                   <option>Delivered</option>
-                 </Form.Select>
-               </Form.Group>
+              <Row className="mb-3">
+                <Col md={6}><p><strong>Buyer:</strong> {selectedOrder.user?.name || selectedOrder.user?.email || 'Unknown'}</p></Col>
+                <Col md={6}><p><strong>Current Status:</strong> <span style={{ textTransform: 'capitalize' }}>{selectedOrder.status || 'pending'}</span></p></Col>
+              </Row>
+              <Row className="mb-3">
+                <Col md={12}><p><strong>Items:</strong> {(selectedOrder.items || []).map(i => `${i.name} x${i.quantity}`).join(', ')}</p></Col>
+              </Row>
+              <Row className="mb-3">
+                <Col md={12}><p><strong>Total Amount:</strong> ₹{selectedOrder.total || 0}</p></Col>
+              </Row>
+              <Row className="mb-3">
+                <Col md={12}><p><strong>Address:</strong> {selectedOrder.address || 'N/A'}</p></Col>
+              </Row>
+              <Form.Group>
+                <Form.Label>Update Status</Form.Label>
+                <Form.Select 
+                  value={newStatus} 
+                  onChange={(e) => setNewStatus(e.target.value)}
+                  disabled={updatingOrderId === selectedOrder._id}
+                >
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </Form.Select>
+              </Form.Group>
             </Form>
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
-          <Button variant="primary" onClick={handleUpdateStatus}>Update</Button>
+          <Button variant="secondary" onClick={() => setShowModal(false)} disabled={updatingOrderId === selectedOrder?._id}>Close</Button>
+          <Button 
+            variant="primary" 
+            onClick={handleUpdateStatus}
+            disabled={updatingOrderId === selectedOrder?._id}
+          >
+            {updatingOrderId === selectedOrder?._id ? 'Updating...' : 'Update Status'}
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>

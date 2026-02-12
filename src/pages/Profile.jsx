@@ -363,9 +363,8 @@ export default function ProfilePage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          seller: user.seller
-        })
+        // send seller object directly (backend expects seller fields at root)
+        body: JSON.stringify(user.seller)
       });
       
       if (res.ok) {
@@ -374,6 +373,13 @@ export default function ProfilePage() {
     } catch (error) {
       console.error('Error updating seller info:', error);
     }
+  };
+
+  // Derive a user-friendly filename from stored GridFS filename
+  const getDisplayFilename = (storedName) => {
+    if (!storedName) return '';
+    // storedName format: <userId>_aadhar|license_<timestamp>_<originalname>
+    return storedName.replace(/^.*?_(?:aadhar|license)_[0-9]+_/, '');
   };
 
   const saveSellerInfo = async (e) => {
@@ -782,7 +788,7 @@ export default function ProfilePage() {
                     <div className="seller-value file-display">
                       {user.seller?.licenseFileName ? (
                         <>
-                          <span className="file-name">{user.seller.licenseFileName}</span>
+                          <span className="file-name">{getDisplayFilename(user.seller.licenseFileName)}</span>
                           <span className="file-status uploaded">Uploaded</span>
                         </>
                       ) : (
@@ -795,7 +801,7 @@ export default function ProfilePage() {
                     <div className="seller-value file-display">
                       {user.seller?.aadharFileName ? (
                         <>
-                          <span className="file-name">{user.seller.aadharFileName}</span>
+                          <span className="file-name">{getDisplayFilename(user.seller.aadharFileName)}</span>
                           <span className="file-status uploaded">Uploaded</span>
                         </>
                       ) : (

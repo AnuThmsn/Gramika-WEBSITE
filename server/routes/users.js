@@ -6,6 +6,14 @@ const Seller = require('../models/Seller');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const { auth } = require('../middleware/auth');
+const multer = require('multer');
+const mongoose = require('mongoose');
+
+// Multer memory storage for vendor document uploads (PDF only)
+const upload = multer({ storage: multer.memoryStorage(), fileFilter: (req, file, cb) => {
+  if (file.mimetype === 'application/pdf') cb(null, true);
+  else cb(new Error('Only PDF files are allowed'), false);
+} });
 
 // Admin check middleware
 const adminCheck = async (req, res, next) => {
@@ -20,7 +28,14 @@ const adminCheck = async (req, res, next) => {
 
 // Get current logged-in user
 router.get('/me', auth, async (req, res) => {
-  res.json(req.user);
+  try {
+    const seller = await Seller.findOne({ user: req.user._id });
+    const userObj = req.user.toObject();
+    userObj.seller = seller || null;
+    res.json(userObj);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
 });
 
 // Update profile
@@ -102,8 +117,20 @@ router.get('/admin', auth, adminCheck, async (req, res) => {
 // Create or update seller
 router.post('/seller', auth, async (req, res) => {
   try {
-    const sellerData = req.body;
+    let sellerData = req.body;
     sellerData.user = req.user._id;
+    
+    // Map shopName → name for backward compatibility
+    if (sellerData.shopName && !sellerData.name) {
+      sellerData.name = sellerData.shopName;
+      delete sellerData.shopName;
+    }
+    
+    // Auto-populate businessEmail from user email if not provided
+    if (!sellerData.businessEmail && req.user.email) {
+      sellerData.businessEmail = req.user.email;
+    }
+    
     const seller = await Seller.findOneAndUpdate(
       { user: req.user._id },
       sellerData,
@@ -126,13 +153,123 @@ router.get('/seller/me', auth, async (req, res) => {
   }
 });
 
-// Update my seller
+// Alias: support frontend calling /me/seller (some client code uses this path)
+router.get('/me/seller', auth, async (req, res) => {
+  try {
+    const seller = await Seller.findOne({ user: req.user._id });
+    const userObj = req.user.toObject();
+    userObj.seller = seller || null;
+    res.json(userObj);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+});
+
+// Update my seller (original path)
 router.put('/seller/me', auth, async (req, res) => {
   try {
-    const updates = req.body;
-    const seller = await Seller.findOneAndUpdate({ user: req.user._id }, updates, { new: true, upsert: true });
-    res.json(seller);
+    let updates = req.body || {};
+    // support nested { seller: { ... } } shape from frontend
+    let sellerUpdates = updates.seller ? updates.seller : updates;
+    
+    // Map shopName → name for backward compatibility
+    if (sellerUpdates.shopName && !sellerUpdates.name) {
+      sellerUpdates.name = sellerUpdates.shopName;
+      delete sellerUpdates.shopName;
+    }
+    
+    // Auto-populate businessEmail from user email if not provided
+    if (!sellerUpdates.businessEmail && req.user.email) {
+      sellerUpdates.businessEmail = req.user.email;
+    }
+    
+    const seller = await Seller.findOneAndUpdate({ user: req.user._id }, sellerUpdates, { new: true, upsert: true });
+    // if client asked to set isSeller on user, honor it
+    if (updates.isSeller) {
+      await require('../models/User').findByIdAndUpdate(req.user._id, { isSeller: true });
+    }
+    // return merged user + seller
+    const userObj = req.user.toObject();
+    userObj.seller = seller;
+    res.json(userObj);
   } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+});
+
+// Alias: accept PUT at /me/seller for clients that use that URL
+router.put('/me/seller', auth, async (req, res) => {
+  try {
+    let updates = req.body || {};
+    let sellerUpdates = updates.seller ? updates.seller : updates;
+    
+    // Map shopName → name for backward compatibility
+    if (sellerUpdates.shopName && !sellerUpdates.name) {
+      sellerUpdates.name = sellerUpdates.shopName;
+      delete sellerUpdates.shopName;
+    }
+    
+    // Auto-populate businessEmail from user email if not provided
+    if (!sellerUpdates.businessEmail && req.user.email) {
+      sellerUpdates.businessEmail = req.user.email;
+    }
+    
+    const seller = await Seller.findOneAndUpdate({ user: req.user._id }, sellerUpdates, { new: true, upsert: true });
+    if (updates.isSeller) {
+      await require('../models/User').findByIdAndUpdate(req.user._id, { isSeller: true });
+    }
+    const userObj = req.user.toObject();
+    userObj.seller = seller;
+    res.json(userObj);
+  } catch (err) {
+    res.status(500).json({ msg: err.message });
+  }
+});
+
+// Upload Aadhar PDF for current user (stores in GridFS and updates Seller)
+router.post('/me/seller/aadhar', auth, upload.single('aadhar'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ msg: 'No file uploaded or invalid file type (PDF only)' });
+    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
+    const filename = `${req.user._id}_aadhar_${Date.now()}_${req.file.originalname}`;
+    const uploadStream = bucket.openUploadStream(filename, { contentType: req.file.mimetype });
+    uploadStream.end(req.file.buffer);
+    uploadStream.on('finish', async (file) => {
+      // update Seller doc
+      const seller = await Seller.findOneAndUpdate(
+        { user: req.user._id },
+        { aadharFileName: file.filename, aadharFileId: file._id.toString() },
+        { new: true, upsert: true }
+      );
+      return res.json({ fileName: file.filename, fileId: file._id.toString(), seller });
+    });
+    uploadStream.on('error', (err) => res.status(500).json({ error: err.message }));
+  } catch (err) {
+    console.error('Aadhar upload error:', err);
+    res.status(500).json({ msg: err.message });
+  }
+});
+
+// Upload License PDF for current user (stores in GridFS and updates Seller)
+router.post('/me/seller/license', auth, upload.single('license'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ msg: 'No file uploaded or invalid file type (PDF only)' });
+    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'uploads' });
+    const filename = `${req.user._id}_license_${Date.now()}_${req.file.originalname}`;
+    const uploadStream = bucket.openUploadStream(filename, { contentType: req.file.mimetype });
+    uploadStream.end(req.file.buffer);
+    uploadStream.on('finish', async (file) => {
+      // update Seller doc
+      const seller = await Seller.findOneAndUpdate(
+        { user: req.user._id },
+        { licenseFileName: file.filename, licenseFileId: file._id.toString() },
+        { new: true, upsert: true }
+      );
+      return res.json({ fileName: file.filename, fileId: file._id.toString(), seller });
+    });
+    uploadStream.on('error', (err) => res.status(500).json({ error: err.message }));
+  } catch (err) {
+    console.error('License upload error:', err);
     res.status(500).json({ msg: err.message });
   }
 });

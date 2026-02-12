@@ -287,16 +287,48 @@ const Users = () => {
 
                   <p>
                     <strong>Aadhar:</strong>{" "}
-                    <a href={`/uploads/${fullUserDetails.seller.aadharFileName}`} target="_blank" rel="noreferrer">
-                      View
-                    </a>
+                    {fullUserDetails.seller?.aadharFileId ? (
+                      <a
+                        href={`/api/uploads/id/${fullUserDetails.seller.aadharFileId}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View
+                      </a>
+                    ) : fullUserDetails.seller?.aadharFileName ? (
+                      <a
+                        href={`/api/uploads/file/${encodeURIComponent(fullUserDetails.seller.aadharFileName)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View
+                      </a>
+                    ) : (
+                      <span className="text-muted">Not uploaded</span>
+                    )}
                   </p>
 
                   <p>
                     <strong>License:</strong>{" "}
-                    <a href={`/uploads/${fullUserDetails.seller.licenseFileName}`} target="_blank" rel="noreferrer">
-                      View
-                    </a>
+                    {fullUserDetails.seller?.licenseFileId ? (
+                      <a
+                        href={`/api/uploads/id/${fullUserDetails.seller.licenseFileId}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View
+                      </a>
+                    ) : fullUserDetails.seller?.licenseFileName ? (
+                      <a
+                        href={`/api/uploads/file/${encodeURIComponent(fullUserDetails.seller.licenseFileName)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        View
+                      </a>
+                    ) : (
+                      <span className="text-muted">Not uploaded</span>
+                    )}
                   </p>
 
                   <Badge bg="warning">

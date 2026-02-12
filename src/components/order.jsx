@@ -4,6 +4,7 @@ import './Order.css';
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingOrderId, setUpdatingOrderId] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -29,11 +30,53 @@ const Orders = () => {
     return () => { mounted = false; window.removeEventListener('orderUpdated', onUpdated); };
   }, []);
 
+  const handleStatusChange = async (orderId, newStatus) => {
+    const token = localStorage.getItem('gramika_token');
+    if (!token) {
+      alert('Not authorized');
+      return;
+    }
+
+    setUpdatingOrderId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(`Failed to update order: ${err.msg || 'Unknown error'}`);
+        return;
+      }
+
+      const updatedOrder = await res.json();
+      
+      // Update local state
+      setOrders(prev =>
+        prev.map(o => (o._id === orderId ? updatedOrder : o))
+      );
+
+      alert(`✅ Order status updated to ${newStatus}`);
+      window.dispatchEvent(new Event('orderUpdated'));
+    } catch (err) {
+      console.error('Failed to update status:', err);
+      alert('Could not update order status');
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
   const getStatusClass = (status) => {
     switch (status) {
       case 'delivered': return 'status-delivered';
       case 'pending': return 'status-pending';
       case 'processing': return 'status-processing';
+      case 'cancelled': return 'status-cancelled';
       default: return '';
     }
   };
@@ -43,6 +86,7 @@ const Orders = () => {
       case 'delivered': return '✅';
       case 'pending': return '⏳';
       case 'processing': return '🔄';
+      case 'cancelled': return '❌';
       default: return '';
     }
   };
@@ -84,8 +128,26 @@ const Orders = () => {
                       </span>
                     </td>
                     <td>
-                      <div className="action-buttons">
-                        <button className="btn-view">👁️</button>
+                      <div className="action-buttons" style={{ display: 'flex', gap: '8px', flexDirection: 'column', alignItems: 'center' }}>
+                        <select
+                          value={order.status}
+                          onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                          disabled={updatingOrderId === order._id}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            border: '1px solid #ddd',
+                            fontSize: '14px',
+                            cursor: updatingOrderId === order._id ? 'not-allowed' : 'pointer',
+                            opacity: updatingOrderId === order._id ? 0.6 : 1
+                          }}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="processing">Processing</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                        {updatingOrderId === order._id && <span style={{ fontSize: '12px', color: '#666' }}>Updating...</span>}
                       </div>
                     </td>
                   </tr>

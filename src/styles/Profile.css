@@ -150,14 +150,26 @@
 /* Ensure the value stays small and right-aligned */
 .seller-field.license-inline .seller-value {
   min-width: fit-content;
-  max-width: 180px;
+  max-width: 100%;
   text-align: right;
+  overflow: hidden;
+  word-break: break-word;
+  white-space: normal;
 }
 
 
 .profile-page .seller-display-grid .seller-field.full { grid-column: 1 / -1; }
 .profile-page .seller-display-grid label { font-weight:600; color:#2c4f36; }
 .profile-page .seller-display-grid .seller-value { background:#fafafa; padding:12px 14px; border-radius:10px; border:1px solid #eee; color:#333; min-height:44px; display:flex; align-items:center; }
+
+/* prevent long filenames from overflowing */
+.file-display .file-name, .seller-display-grid .file-name {
+  display: inline-block;
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .profile-page .seller-actions { grid-column:1 / -1; display:flex; gap:12px; justify-content:flex-end; align-items:center; margin-top:8px; }
 .profile-page .edit-seller-btn { padding:10px 16px; border-radius:12px; background:#023b26; border:1px solid #ccc; cursor:pointer; }
