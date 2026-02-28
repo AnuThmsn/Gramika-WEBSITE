@@ -35,7 +35,7 @@ const Orders = () => {
       if (!token) return;
       try {
         setLoading(true);
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/admin`, {
+        const res = await fetch(`${API_BASE}/api/orders/admin`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {

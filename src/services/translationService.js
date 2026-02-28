@@ -9,6 +9,8 @@ const getCacheKey = (text, language) => `${language}:${text}`;
 /**
  * Translate text using backend Google Translate API
  */
+import { API_BASE } from '../config';
+
 export const translateText = async (text, language = 'ml') => {
   if (!text || language === 'en') return text;
 
@@ -20,7 +22,7 @@ export const translateText = async (text, language = 'ml') => {
   }
 
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/translate`, {
+    const response = await fetch(`${API_BASE}/api/translate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, language })
@@ -53,7 +55,7 @@ export const translateBatch = async (texts, language = 'ml') => {
   }
 
   try {
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/translate/batch`, {
+    const response = await fetch(`${API_BASE}/api/translate/batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts, language })

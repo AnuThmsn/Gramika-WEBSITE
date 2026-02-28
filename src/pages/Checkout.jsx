@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { API_BASE } from '../config';
 import { useNavigate } from 'react-router-dom';
 import '../styles/Checkout.css';
 
@@ -16,13 +17,13 @@ export default function CheckoutPage() {
       const token = localStorage.getItem('gramika_token');
       if (!token) { navigate('/login'); return; }
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/carts`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`${API_BASE}/api/carts`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) throw new Error('Failed');
         const data = await res.json();
         setCart(data);
         // load addresses from localStorage or backend
         try {
-          const meRes = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
+          const meRes = await fetch(`${API_BASE}/api/users/me`, { headers: { Authorization: `Bearer ${token}` } });
           if (meRes.ok) {
             const me = await meRes.json();
             // prefer user.seller.address or saved addresses in localStorage
@@ -59,7 +60,7 @@ export default function CheckoutPage() {
       // simulate payment
       await new Promise(r => setTimeout(r, 800));
       const payload = { items, total, address: selectedAddress || newAddress, paymentMethod };
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
+      const res = await fetch(`${API_BASE}/api/orders`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
@@ -69,7 +70,7 @@ export default function CheckoutPage() {
       }
       const created = await res.json();
       // clear cart on server
-      await fetch(`${import.meta.env.VITE_API_URL}/api/carts/clear`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+      await fetch(`${API_BASE}/api/carts/clear`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
       // notify cart updated and navigate to confirmation/my shop orders
       window.dispatchEvent(new Event('cartUpdated'));
       window.dispatchEvent(new Event('orderUpdated'));

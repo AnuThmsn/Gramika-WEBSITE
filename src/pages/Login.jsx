@@ -37,7 +37,7 @@ const isAdminLogin = role === "admin";
 
         if (isLogin) {
           /* ================= LOGIN ================= */
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+          const res = await fetch(`${API_BASE}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -80,7 +80,7 @@ navigate("/profile", { replace: true });
 
         } else {
           /* ================= REGISTER (USER ONLY) ================= */
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+          const res = await fetch(`${API_BASE}/api/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, email, password, phone: mobile, address, pincode })

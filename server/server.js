@@ -30,6 +30,10 @@ app.use("/api/uploads", require("./routes/uploads"));
 // Fallback: serve local filesystem uploads (images) from server/uploads
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
+// additionally expose /uploads directly for any assets stored with plain paths
+// (some old records might reference "/uploads/...")
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // -------------------- Routes --------------------
 
 // simple root test endpoint used by render deployment verification

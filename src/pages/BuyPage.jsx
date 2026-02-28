@@ -6,6 +6,7 @@ import { GiMeatCleaver, GiMilkCarton, GiManualMeatGrinder } from "react-icons/gi
 import { CiSearch } from "react-icons/ci";
 import '../styles/BuyPage.css';
 import { MdReport } from "react-icons/md";
+import { API_BASE, buildImageUrl } from '../config';
 
 function BuyPage() {
   // require login to access Buy page
@@ -23,7 +24,7 @@ function BuyPage() {
     const fetchProducts = async () => {
       try {
         setLoadingProducts(true);
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/public`);
+        const res = await fetch(`${API_BASE}/api/products/public`);
         const data = await res.json();
         if (mounted) setProducts(data);
       } catch (err) {
@@ -42,7 +43,7 @@ function BuyPage() {
   }, []);
   const handleReport = async (productId) => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/public/${productId}/report`, {
+    const res = await fetch(`${API_BASE}/api/products/public/${productId}/report`, {
       method: "PUT"
     });
 
@@ -80,7 +81,7 @@ function BuyPage() {
 
     // 🔍 Verify latest availability
     try {
-      const check = await fetch(`${import.meta.env.VITE_API_URL}/api/products/public/${prodId}`);
+      const check = await fetch(`${API_BASE}/api/products/public/${prodId}`);
       if (check.ok) {
         const p = await check.json();
         if (p.quantity !== undefined && p.quantity < qty) {
@@ -94,7 +95,7 @@ function BuyPage() {
 
     if (token) {
       // 🔐 Logged-in user
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/carts/item`, {
+      const res = await fetch(`${API_BASE}/api/carts/item`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +139,7 @@ function BuyPage() {
           name: product.name,
           price: product.price,
           quantity: qty,
-          image: product.image || product.imageUrl || ""
+          image: buildImageUrl(product.image || product.imageUrl || "")
         });
       }
 
@@ -399,7 +400,7 @@ function BuyPage() {
       })
       .map((item, index) => {
         const isOutOfStock = item.quantity <= 0;
-        const imageSrc = item.imageUrl || item.image || "";
+        const imageSrc = buildImageUrl(item.imageUrl || item.image || "");
 
         return (
           <div

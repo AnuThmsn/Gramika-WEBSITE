@@ -3,6 +3,7 @@ import trial_pic from "../assets/trial_pic.jpg"; // fallback image
 import AddProduct from './addproduct';
 import './Product.css';
 import { CiCirclePlus } from "react-icons/ci";
+import { API_BASE, buildImageUrl } from '../config';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -15,7 +16,7 @@ const Products = () => {
       try {
         const token = localStorage.getItem('gramika_token');
 
-const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
+const res = await fetch(`${API_BASE}/api/products`, {
   headers: {
     Authorization: `Bearer ${token}`
   }
@@ -33,8 +34,8 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
         }
         const normalizeImage = (p) => {
           let img = p.imageUrl || '';
-          // imageUrl should already be absolute from backend
-          return img;
+          if (!img) img = '';
+          return buildImageUrl(img);
         };
 
         const mine = all
@@ -85,7 +86,7 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
       return;
     }
 
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
+    const res = await fetch(`${API_BASE}/api/products/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`

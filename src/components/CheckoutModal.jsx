@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";import { API_BASE } from '../config';
 import "../styles/Checkout.css";
 
 export default function CheckoutModal({ open, onClose, cartItems = [] }) {
@@ -17,7 +17,7 @@ export default function CheckoutModal({ open, onClose, cartItems = [] }) {
 
       try {
         if (token) {
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
+          const res = await fetch(`${API_BASE}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.ok) {
@@ -70,7 +70,7 @@ export default function CheckoutModal({ open, onClose, cartItems = [] }) {
         total
       };
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
+      const res = await fetch(`${API_BASE}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -81,7 +81,7 @@ export default function CheckoutModal({ open, onClose, cartItems = [] }) {
 
       if (!res.ok) throw new Error("Order failed");
 
-      await fetch(`${import.meta.env.VITE_API_URL}/api/carts`, {
+      await fetch(`${API_BASE}/api/carts`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

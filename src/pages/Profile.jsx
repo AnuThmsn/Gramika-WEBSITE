@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { CiEdit } from "react-icons/ci";
 import "../styles/Profile.css";
+import { API_BASE, buildImageUrl } from '../config';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -63,7 +64,7 @@ export default function ProfilePage() {
       }
 
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
+        const res = await fetch(`${API_BASE}/api/users/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -206,7 +207,7 @@ export default function ProfilePage() {
     // Preload sellers list for review dropdown
     (async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/sellers`);
+        const res = await fetch(`${API_BASE}/api/users/sellers`);
         if (!res.ok) return;
         const list = await res.json();
         setSellers(list);
@@ -287,7 +288,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/seller/license`, {
+      const res = await fetch(`${API_BASE}/api/users/me/seller/license`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -325,7 +326,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/seller/aadhar`, {
+      const res = await fetch(`${API_BASE}/api/users/me/seller/aadhar`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -357,7 +358,7 @@ export default function ProfilePage() {
   const updateSellerInfo = async () => {
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/seller`, {
+      const res = await fetch(`${API_BASE}/api/users/me/seller`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -398,7 +399,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/seller`, {
+      const res = await fetch(`${API_BASE}/api/users/me/seller`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -448,7 +449,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/seller/apply`, {
+      const res = await fetch(`${API_BASE}/api/users/me/seller/apply`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -481,7 +482,7 @@ export default function ProfilePage() {
     if (!reviewTarget) return alert('Please select a seller to review');
     
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/reviews`, {
+      const res = await fetch(`${API_BASE}/api/reviews`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json', 
@@ -526,7 +527,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/password`, {
+      const res = await fetch(`${API_BASE}/api/users/me/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -572,7 +573,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
+      const res = await fetch(`${API_BASE}/api/users/me`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -636,7 +637,7 @@ export default function ProfilePage() {
           <div className="profile-header">
             <div className="avatar-container">
               {user.avatar ? (
-                <img src={user.avatar} alt="avatar" className="avatar-img" />
+                <img src={buildImageUrl(user.avatar)} alt="avatar" className="avatar-img" />
               ) : (
                 <FaUserCircle className="avatar-placeholder" />
               )}

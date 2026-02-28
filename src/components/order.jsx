@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { API_BASE } from '../config';
+
 import './Order.css';
 
 const Orders = () => {
@@ -13,7 +15,7 @@ const Orders = () => {
       try {
         const token = localStorage.getItem('gramika_token');
         if (!token) { if (mounted) setOrders([]); return; }
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/seller`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`${API_BASE}/api/orders/seller`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) throw new Error('Failed to load');
         const data = await res.json();
         if (mounted) setOrders(data || []);

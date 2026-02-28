@@ -3,6 +3,7 @@ import CartItem from '../components/CartItem.jsx';
 import '../styles/cart.css';
 import { BsClock } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE, buildImageUrl } from '../config';
 
 const Cart = ({ isOpen, onClose }) => {
   const [cartItems, setCartItems] = useState([]);
@@ -30,7 +31,7 @@ const Cart = ({ isOpen, onClose }) => {
     // Logged-in user - load from database
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/carts`, {
+      const res = await fetch(`${API_BASE}/api/carts`, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Cache-Control': 'no-cache'
@@ -59,7 +60,7 @@ const Cart = ({ isOpen, onClose }) => {
           price: item.priceAt || product.price || 0,
           quantity: item.qty || 1,
           stock: product.quantity || 0,
-          image: product.imageUrl || '/default-product.jpg',
+          image: buildImageUrl(product.imageUrl || product.image || '/default-product.jpg'),
           status: product.status || 'Active',
           productId: product._id || item.product // Keep original product ID
         };
@@ -118,7 +119,7 @@ const Cart = ({ isOpen, onClose }) => {
         prev.map(i => (i.id === id ? { ...i, quantity: newQuantity } : i))
       );
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/carts/item`, {
+      const res = await fetch(`${API_BASE}/api/carts/item`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -161,7 +162,7 @@ const Cart = ({ isOpen, onClose }) => {
 
     // Logged-in user
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/carts/item/${productId}`, {
+      const res = await fetch(`${API_BASE}/api/carts/item/${productId}`, {
         method: 'DELETE',
         headers: { 
           'Authorization': `Bearer ${token}` 

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { API_BASE } from '../config';
+
 
 // This component uploads image to backend (/api/uploads)
 // and creates seller product via POST /api/products/seller
@@ -25,7 +27,7 @@ const AddProduct = ({ onAddProduct, onClose }) => {
       setLoading(true);
       const token = localStorage.getItem("gramika_token");
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/categories`, {
+      const res = await fetch(`${API_BASE}/api/categories`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -105,7 +107,7 @@ const AddProduct = ({ onAddProduct, onClose }) => {
 
       const token = localStorage.getItem("gramika_token");
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/seller`, {
+      const res = await fetch(`${API_BASE}/api/products/seller`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE } from '../config';
+
 import './dashboard.css';
 import { FaBox, FaMoneyBillWave, FaHourglassHalf } from 'react-icons/fa';
 import { MdOutlineShowChart } from 'react-icons/md';
@@ -19,7 +21,7 @@ const Dashboard = () => {
       if (!token) return;
 
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/seller/stats`, {
+        const res = await fetch(`${API_BASE}/api/users/seller/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {

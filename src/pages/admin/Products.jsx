@@ -60,7 +60,7 @@ const Products = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
+        const res = await fetch(`${API_BASE}/api/products`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("gramika_token")}` }
         });
 
@@ -73,7 +73,7 @@ const Products = () => {
           price: p.price,
           stock: p.quantity ?? 0,
           status: normalizeStatus(p.status),
-          image: p.imageUrl || "",
+          image: buildImageUrl(p.imageUrl || ""),
           rejectReason: p.rejectReason || ""
         }));
 
