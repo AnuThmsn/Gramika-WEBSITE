@@ -15,7 +15,19 @@ router.post('/register', async (req, res) => {
     const user = new User({ name, email, password: hash, phone, address, pincode });
     await user.save();
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
-    res.json({ token, user: { id: user._id, email: user.email, name: user.name, phone: user.phone, address: user.address, pincode: user.pincode } });
+    res.json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        name: user.name, 
+        phone: user.phone, 
+        address: user.address, 
+        pincode: user.pincode,
+        isSeller: user.isSeller,
+        seller: { status: user.seller?.status || 'not_seller' }
+      } 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Server error' });
@@ -31,7 +43,17 @@ router.post('/login', async (req, res) => {
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) return res.status(400).json({ msg: 'Invalid credentials' });
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
-    res.json({ token, user: { id: user._id, email: user.email, name: user.name, isAdmin: user.isAdmin } });
+    res.json({ 
+      token, 
+      user: { 
+        id: user._id, 
+        email: user.email, 
+        name: user.name, 
+        isAdmin: user.isAdmin,
+        isSeller: user.isSeller,
+        seller: { status: user.seller?.status || 'not_seller' }
+      } 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: 'Server error' });

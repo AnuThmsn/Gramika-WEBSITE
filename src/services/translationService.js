@@ -20,7 +20,7 @@ export const translateText = async (text, language = 'ml') => {
   }
 
   try {
-    const response = await fetch('/api/translate', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/translate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, language })
@@ -53,7 +53,7 @@ export const translateBatch = async (texts, language = 'ml') => {
   }
 
   try {
-    const response = await fetch('/api/translate/batch', {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/translate/batch`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ texts, language })

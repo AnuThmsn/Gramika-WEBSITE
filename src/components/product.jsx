@@ -33,8 +33,7 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
         }
         const normalizeImage = (p) => {
           let img = p.imageUrl || '';
-          if (img && /^[a-f0-9]{24}$/i.test(img)) img = `/api/uploads/${img}`;
-          if (!img && p.imageGridFsId) img = `/api/uploads/${p.imageGridFsId}`;
+          // imageUrl should already be absolute from backend
           return img;
         };
 
@@ -86,7 +85,7 @@ const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
       return;
     }
 
-    const res = await fetch(`/api/products/${id}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`

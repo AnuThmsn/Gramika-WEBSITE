@@ -30,7 +30,7 @@ const Cart = ({ isOpen, onClose }) => {
     // Logged-in user - load from database
     setLoading(true);
     try {
-      const res = await fetch('/api/carts', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/carts`, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Cache-Control': 'no-cache'
@@ -118,7 +118,7 @@ const Cart = ({ isOpen, onClose }) => {
         prev.map(i => (i.id === id ? { ...i, quantity: newQuantity } : i))
       );
 
-      const res = await fetch('/api/carts/item', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/carts/item`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ const Cart = ({ isOpen, onClose }) => {
 
     // Logged-in user
     try {
-      const res = await fetch(`/api/carts/item/${productId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/carts/item/${productId}`, {
         method: 'DELETE',
         headers: { 
           'Authorization': `Bearer ${token}` 

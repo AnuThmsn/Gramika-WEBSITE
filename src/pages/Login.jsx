@@ -60,6 +60,9 @@ if (!res.ok) {
           localStorage.setItem('gramika_token', data.token);
           localStorage.setItem('gramika_user_id', data.user.id);
           localStorage.setItem('gramika_is_admin', data.user.isAdmin);
+          localStorage.setItem('gramika_is_seller', data.user.isSeller);
+          // Store seller status for shop access (ISSUE 2 FIX)
+          localStorage.setItem('gramika_seller_status', data.user.seller?.status || 'not_seller');
 
           // ADMIN LOGIN FLOW
 if (role === "admin") {
@@ -89,6 +92,8 @@ navigate("/profile", { replace: true });
           localStorage.setItem('gramika_token', data.token);
           localStorage.setItem('gramika_user_id', data.user.id);
           localStorage.setItem('gramika_is_admin', 'false');
+          localStorage.setItem('gramika_is_seller', data.user.isSeller || false);
+          localStorage.setItem('gramika_seller_status', data.user.seller?.status || 'not_seller');
 
           navigate('/profile');
         }

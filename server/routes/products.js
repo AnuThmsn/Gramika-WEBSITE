@@ -74,7 +74,9 @@ router.get("/public/:id", async (req, res) => {
 ====================================================== */
 router.post("/", auth, admin, upload.single("image"), async (req, res) => {
   try {
-    const imageUrl = req.file ? `/api/uploads/${req.file.filename}` : "";
+    // Build full absolute URL for image (production-friendly)
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+    const imageUrl = req.file ? `${baseUrl}/api/uploads/${req.file.filename}` : "";
 
     const product = new Product({
       ...req.body,
@@ -99,7 +101,9 @@ router.post(
   upload.single("image"),
   async (req, res) => {
     try {
-      const imageUrl = req.file ? `/api/uploads/${req.file.filename}` : "";
+      // Build full absolute URL for image (production-friendly)
+      const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
+      const imageUrl = req.file ? `${baseUrl}/api/uploads/${req.file.filename}` : "";
 
       const product = new Product({
         ...req.body,
