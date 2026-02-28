@@ -19,7 +19,7 @@ const Dashboard = () => {
       if (!token) return;
 
       try {
-        const res = await fetch('/api/users/seller/stats', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/seller/stats`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {

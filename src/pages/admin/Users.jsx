@@ -121,7 +121,7 @@ const Users = () => {
       if (!token) return;
 
       try {
-        const res = await fetch("/api/users/admin", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/admin`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

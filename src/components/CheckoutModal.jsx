@@ -17,7 +17,7 @@ export default function CheckoutModal({ open, onClose, cartItems = [] }) {
 
       try {
         if (token) {
-          const res = await fetch("/api/users/me", {
+          const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.ok) {
@@ -70,7 +70,7 @@ export default function CheckoutModal({ open, onClose, cartItems = [] }) {
         total
       };
 
-      const res = await fetch("/api/orders", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -81,7 +81,7 @@ export default function CheckoutModal({ open, onClose, cartItems = [] }) {
 
       if (!res.ok) throw new Error("Order failed");
 
-      await fetch("/api/carts", {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/carts`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

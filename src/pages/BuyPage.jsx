@@ -23,7 +23,7 @@ function BuyPage() {
     const fetchProducts = async () => {
       try {
         setLoadingProducts(true);
-        const res = await fetch('/api/products/public');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/public`);
         const data = await res.json();
         if (mounted) setProducts(data);
       } catch (err) {
@@ -42,7 +42,7 @@ function BuyPage() {
   }, []);
   const handleReport = async (productId) => {
   try {
-    const res = await fetch(`/api/products/public/${productId}/report`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/public/${productId}/report`, {
       method: "PUT"
     });
 
@@ -80,7 +80,7 @@ function BuyPage() {
 
     // 🔍 Verify latest availability
     try {
-      const check = await fetch(`/api/products/public/${prodId}`);
+      const check = await fetch(`${import.meta.env.VITE_API_URL}/api/products/public/${prodId}`);
       if (check.ok) {
         const p = await check.json();
         if (p.quantity !== undefined && p.quantity < qty) {
@@ -94,7 +94,7 @@ function BuyPage() {
 
     if (token) {
       // 🔐 Logged-in user
-      const res = await fetch("/api/carts/item", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/carts/item`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

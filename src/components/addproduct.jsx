@@ -25,7 +25,7 @@ const AddProduct = ({ onAddProduct, onClose }) => {
       setLoading(true);
       const token = localStorage.getItem("gramika_token");
 
-      const res = await fetch("/api/categories", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/categories`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -105,7 +105,7 @@ const AddProduct = ({ onAddProduct, onClose }) => {
 
       const token = localStorage.getItem("gramika_token");
 
-      const res = await fetch("/api/products/seller", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products/seller`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`

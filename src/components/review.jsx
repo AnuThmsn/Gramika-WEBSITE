@@ -26,7 +26,7 @@ const Reviews = ({ sellerId }) => {
                     const data = await res.json();
                     if (mounted) setReviews(data || []);
                 } else {
-                    const res = await fetch('/api/reviews');
+                    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/reviews`);
                     if (res.ok) {
                         const data = await res.json();
                         if (mounted) setReviews(data || []);

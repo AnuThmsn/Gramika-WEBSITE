@@ -15,7 +15,7 @@ const Products = () => {
       try {
         const token = localStorage.getItem('gramika_token');
 
-const res = await fetch('/api/products', {
+const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
   headers: {
     Authorization: `Bearer ${token}`
   }

@@ -63,7 +63,7 @@ export default function ProfilePage() {
       }
 
       try {
-        const res = await fetch('/api/users/me', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -206,7 +206,7 @@ export default function ProfilePage() {
     // Preload sellers list for review dropdown
     (async () => {
       try {
-        const res = await fetch('/api/users/sellers');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/sellers`);
         if (!res.ok) return;
         const list = await res.json();
         setSellers(list);
@@ -287,7 +287,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch('/api/users/me/seller/license', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/seller/license`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -325,7 +325,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch('/api/users/me/seller/aadhar', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/seller/aadhar`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -357,7 +357,7 @@ export default function ProfilePage() {
   const updateSellerInfo = async () => {
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch('/api/users/me/seller', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/seller`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -398,7 +398,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch('/api/users/me/seller', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/seller`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -448,7 +448,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch('/api/users/me/seller/apply', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/seller/apply`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -481,7 +481,7 @@ export default function ProfilePage() {
     if (!reviewTarget) return alert('Please select a seller to review');
     
     try {
-      const res = await fetch('/api/reviews', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/reviews`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json', 
@@ -526,7 +526,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch('/api/users/me/password', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me/password`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -572,7 +572,7 @@ export default function ProfilePage() {
     
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch('/api/users/me', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/me`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

@@ -24,7 +24,7 @@ const Dashboard = () => {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem('gramika_token');
-        const res = await fetch('/api/admin/stats', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/stats`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
         if (!res.ok) throw new Error('Failed to load stats');
         const data = await res.json();
         if (!mounted) return;

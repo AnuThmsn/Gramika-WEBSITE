@@ -60,7 +60,7 @@ const Products = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/products", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/products`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("gramika_token")}` }
         });
 
