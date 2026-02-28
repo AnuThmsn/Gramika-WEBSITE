@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CartItem from '../components/CartItem.jsx';
-import '../styles/Cart.css';
+import '../styles/cart.css';
 import { BsClock } from 'react-icons/bs';
 import { useNavigate } from 'react-router-dom';
 
