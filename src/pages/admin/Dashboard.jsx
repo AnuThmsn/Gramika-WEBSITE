@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [buyerCount, setBuyerCount] = useState(0);
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -40,27 +41,26 @@ const Dashboard = () => {
     };
 
     const fetchRecentOrders = async () => {
+      setOrdersLoading(true);
       try {
         const token = localStorage.getItem('gramika_token');
-        const res = await fetch('/api/orders/admin', { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        // calculate local start/end of today
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+        const end = new Date();
+        end.setHours(23, 59, 59, 999);
+        const query = `?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`;
+        const res = await fetch(`/api/orders/admin${query}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
         if (!res.ok) throw new Error('Failed to load orders');
         const orders = await res.json();
+        console.log('orders today response', orders);
         if (!mounted) return;
-        
-        // Filter orders from today only
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        
-        const todayOrders = orders.filter(o => {
-          const orderDate = new Date(o.createdAt);
-          return orderDate >= today && orderDate < tomorrow;
-        }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        
-        setRecentOrders(todayOrders);
+        const sorted = orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setRecentOrders(sorted);
       } catch (err) {
         console.error('Failed to fetch recent orders', err);
+      } finally {
+        if (mounted) setOrdersLoading(false);
       }
     };
 
@@ -177,7 +177,11 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {recentOrders.length > 0 ? (
+            {ordersLoading ? (
+              <tr>
+                <td colSpan="7" className="text-center">Loading...</td>
+              </tr>
+            ) : recentOrders.length > 0 ? (
               recentOrders.map((order) => (
                 <tr key={order._id}>
                   <td>{order._id.slice(-6).toUpperCase()}</td>
@@ -191,7 +195,7 @@ const Dashboard = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="text-center">No recent orders</td>
+                <td colSpan="7" className="text-center">No orders today</td>
               </tr>
             )}
           </tbody>

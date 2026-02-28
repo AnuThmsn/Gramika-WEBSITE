@@ -16,4 +16,7 @@ const OrderSchema = new mongoose.Schema({
   status: { type: String, default: 'pending' }
 }, { timestamps: true });
 
+// create an index on createdAt to speed up date range queries
+OrderSchema.index({ createdAt: 1 });
+
 module.exports = mongoose.model('Order', OrderSchema);

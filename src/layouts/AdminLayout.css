@@ -1,64 +1,92 @@
+/* ============================================
+   ADMIN LAYOUT - FULLY RESPONSIVE
+   ============================================ */
+
+:root {
+  --admin-sidebar-width: clamp(200px, 20vw, 280px);
+  --admin-navbar-height: clamp(56px, 10vh, 72px);
+  --admin-bg: #f4f6f8;
+  --admin-sidebar-bg: #1a3c22;
+  --admin-sidebar-dark: #143119;
+  --admin-accent: #b19f33;
+  --admin-text-light: #aebdb2;
+  --admin-gap: clamp(12px, 2vw, 24px);
+  --admin-pad: clamp(16px, 2.5vw, 32px);
+}
+
 /* --- GLOBAL LAYOUT --- */
 .admin-container {
   display: flex;
-  flex-direction: column; /* Stack Header on top of Body */
-  height: 100vh;
-  width: 100vw;
-  background-color: #f4f6f8;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  background-color: var(--admin-bg);
   font-family: 'Lato', sans-serif;
   overflow: hidden;
 }
 
 /* --- TOP NAVBAR (Full Width) --- */
 .top-navbar {
-  height: 70px;
+  height: var(--admin-navbar-height);
   background-color: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 19px;
+  padding: 0 clamp(12px, 2vw, 20px);
   border-bottom: 1px solid #e0e0e0;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  z-index: 20; /* Ensure header stays on top */
+  z-index: 20;
   flex-shrink: 0;
+  gap: clamp(12px, 2vw, 20px);
 }
 
 /* Logo Area */
 .navbar-brand {
   display: flex;
   align-items: center;
-  width: 260px; /* Matches sidebar width for alignment */
+  gap: clamp(8px, 1.5vw, 12px);
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .navbar-logo {
-  height: 50px; /* Adjust based on your logo aspect ratio */
+  height: clamp(40px, 6vh, 56px);
   width: auto;
+  max-width: clamp(120px, 15vw, 180px);
 }
 
 /* Navbar Right Side */
 .nav-right {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: clamp(16px, 2.5vw, 32px);
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 0;
 }
 
+/* Search Box */
 .search-box {
   display: flex;
   align-items: center;
   background-color: #f0f2f5;
-  padding: 8px 16px;
-  border-radius: 20px;
-  width: 280px;
+  padding: clamp(6px, 1vw, 10px) clamp(12px, 1.5vw, 16px);
+  border-radius: clamp(16px, 2vw, 20px);
+  width: clamp(200px, 30vw, 320px);
+  min-height: 44px;
+  transition: all 0.2s ease;
 }
 
 .search-box:focus-within {
   background-color: #fff;
-  box-shadow: 0 0 0 1px #1a3c22;
+  box-shadow: 0 0 0 2px #1a3c22;
 }
 
 .search-icon {
   color: #888;
-  margin-right: 10px;
+  margin-right: clamp(6px, 1vw, 10px);
+  flex-shrink: 0;
+  font-size: clamp(14px, 2vw, 18px);
 }
 
 .search-box input {
@@ -67,66 +95,87 @@
   outline: none;
   width: 100%;
   color: #333;
+  font-size: clamp(13px, 1.5vw, 15px);
+  min-width: 0;
 }
 
+/* Profile Section */
 .profile-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(10px, 1.5vw, 12px);
+  flex-shrink: 0;
 }
 
 .admin-name {
   font-weight: 600;
   color: #1a3c22;
-  font-size: 14px;
+  font-size: clamp(12px, 1.4vw, 14px);
+  white-space: nowrap;
 }
 
 .profile-icon-link {
   color: #1a3c22;
-  transition: transform 0.2s;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  cursor: pointer;
+  border-radius: clamp(6px, 1vw, 8px);
 }
 
 .profile-icon-link:hover {
   transform: scale(1.05);
-  color: #b19f33;
+  color: var(--admin-accent);
+  background-color: rgba(26, 60, 34, 0.08);
 }
 
 /* --- BODY LAYOUT (Sidebar + Content) --- */
 .layout-body {
   display: flex;
-  flex: 1; /* Takes remaining height */
-  overflow: hidden; /* Prevents double scrollbars */
+  flex: 1;
+  overflow: hidden;
+  width: 100%;
 }
 
 /* --- SIDEBAR --- */
 .admin-sidebar {
-  width: 260px;
-  background-color: #1a3c22;
+  width: var(--admin-sidebar-width);
+  background-color: var(--admin-sidebar-bg);
   color: #fff;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  overflow-y: auto;
+  max-width: 100%;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  padding: 24px 16px;
-  gap: 8px;
+  padding: clamp(14px, 2vw, 24px) clamp(12px, 1.5vw, 16px);
+  gap: clamp(6px, 1vw, 8px);
   flex-grow: 1;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
+  gap: clamp(10px, 1.5vw, 16px);
+  padding: clamp(10px, 1.5vw, 12px) clamp(12px, 1.5vw, 16px);
   text-decoration: none;
-  color: #aebdb2;
-  font-size: 15px;
+  color: var(--admin-text-light);
+  font-size: clamp(13px, 1.4vw, 15px);
   font-weight: 500;
-  border-radius: 8px;
+  border-radius: clamp(6px, 1vw, 8px);
   transition: all 0.2s ease;
+  min-height: 44px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nav-item:hover {
@@ -135,29 +184,207 @@
 }
 
 .nav-item.active {
-  background-color: #b19f33;
+  background-color: var(--admin-accent);
   color: #fff;
   font-weight: 600;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .icon {
-  font-size: 18px;
+  font-size: clamp(14px, 2vw, 18px);
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 }
 
-/* Footer (Settings) */
+/* Sidebar Footer */
 .sidebar-footer {
-  padding: 16px;
+  padding: clamp(12px, 1.5vw, 16px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: #143119; /* Slightly darker to distinguish footer */
+  background-color: var(--admin-sidebar-dark);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
 /* --- CONTENT AREA --- */
 .content-area {
   flex-grow: 1;
-  padding: 32px;
+  padding: var(--admin-pad);
   overflow-y: auto;
-  background-color: #f4f6f8;
+  overflow-x: hidden;
+  background-color: var(--admin-bg);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet (1024px and below) */
+@media (max-width: 1024px) {
+  :root {
+    --admin-sidebar-width: clamp(160px, 18vw, 240px);
+    --admin-navbar-height: clamp(52px, 8vh, 64px);
+  }
+
+  .search-box {
+    width: clamp(180px, 25vw, 280px);
+  }
+
+  .admin-name {
+    font-size: clamp(11px, 1.3vw, 13px);
+  }
+
+  .nav-item {
+    padding: clamp(8px, 1.2vw, 10px) clamp(10px, 1.2vw, 12px);
+  }
+}
+
+/* Mobile Landscape & Tablet (768px and below) */
+@media (max-width: 768px) {
+  :root {
+    --admin-sidebar-width: 70px;
+    --admin-navbar-height: clamp(48px, 8vh, 56px);
+  }
+
+  .navbar-brand {
+    width: auto;
+  }
+
+  .navbar-logo {
+    height: clamp(36px, 5vh, 44px);
+  }
+
+  .nav-right {
+    gap: clamp(12px, 1.5vw, 16px);
+  }
+
+  .search-box {
+    width: clamp(140px, 20vw, 200px);
+    padding: clamp(6px, 1vw, 8px) clamp(8px, 1.2vw, 12px);
+  }
+
+  .search-icon {
+    margin-right: clamp(4px, 0.8vw, 6px);
+  }
+
+  .admin-name {
+    display: none;
+  }
+
+  /* Collapse sidebar to icon-only on mobile */
+  .admin-sidebar {
+    width: 70px;
+    padding: 0;
+  }
+
+  .sidebar-nav {
+    padding: clamp(12px, 1.5vw, 14px) clamp(6px, 1vw, 8px);
+    gap: clamp(4px, 0.8vw, 6px);
+  }
+
+  .nav-item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: clamp(4px, 0.8vw, 6px);
+    padding: clamp(8px, 1.2vw, 10px) clamp(4px, 0.8vw, 6px);
+    font-size: 10px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    min-height: 60px;
+    justify-content: center;
+  }
+
+  .nav-item .icon {
+    font-size: clamp(16px, 2.5vw, 20px);
+  }
+
+  .sidebar-footer {
+    min-height: auto;
+    padding: clamp(6px, 1vw, 8px);
+  }
+
+  .content-area {
+    padding: clamp(12px, 1.5vw, 16px);
+  }
+}
+
+/* Phone (480px and below) */
+@media (max-width: 480px) {
+  :root {
+    --admin-sidebar-width: 60px;
+    --admin-navbar-height: clamp(44px, 7vh, 48px);
+  }
+
+  .top-navbar {
+    flex-wrap: wrap;
+    padding: clamp(8px, 1.2vw, 10px);
+  }
+
+  .navbar-brand {
+    height: var(--admin-navbar-height);
+    display: flex;
+    align-items: center;
+  }
+
+  .navbar-logo {
+    height: clamp(32px, 4vh, 36px);
+  }
+
+  .nav-right {
+    width: 100%;
+    order: 2;
+    margin-top: clamp(8px, 1.2vw, 10px);
+    gap: clamp(8px, 1.2vw, 12px);
+  }
+
+  .search-box {
+    width: 100%;
+    max-width: clamp(100px, 18vw, 160px);
+    padding: clamp(4px, 0.8vw, 6px) clamp(6px, 1vw, 10px);
+  }
+
+  .search-icon {
+    margin-right: clamp(3px, 0.5vw, 4px);
+  }
+
+  .search-box input {
+    font-size: 12px;
+  }
+
+  .profile-section {
+    gap: clamp(6px, 1vw, 8px);
+  }
+
+  .profile-icon-link {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+
+  .admin-sidebar {
+    width: 60px;
+  }
+
+  .sidebar-nav {
+    padding: clamp(8px, 1.2vw, 10px) clamp(4px, 0.8vw, 6px);
+  }
+
+  .nav-item {
+    min-height: 55px;
+    padding: clamp(6px, 0.8vw, 8px) clamp(2px, 0.5vw, 4px);
+    font-size: 9px;
+  }
+
+  .nav-item .icon {
+    font-size: clamp(14px, 2vw, 16px);
+  }
+
+  .content-area {
+    padding: clamp(8px, 1.2vw, 12px);
+  }
 }

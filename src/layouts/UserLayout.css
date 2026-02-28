@@ -1,21 +1,81 @@
-/* ensure layout leaves room for fixed header and sets a neutral page bg */
+/* ============================================
+   USER LAYOUT - RESPONSIVE
+   ============================================ */
+
+:root {
+  --layout-padding: clamp(12px, 3vw, 24px);
+  --main-bg: #e2e1e1;
+  --main-text: #204229;
+}
+
 .user-layout {
   min-height: 100vh;
-  background: #e2e1e1; /* very light yellow page background */
-  color: #204229;      /* page text dark green by default (override as needed) */
+  background: var(--main-bg);
+  color: var(--main-text);
+  width: 100%;
+  overflow-x: hidden;
 }
 
-/* main content should start below the fixed header */
-
+/* ============================================
+   MAIN CONTENT AREA
+   ============================================ */
 .user-layout main {
-  /* leave space for the fixed header using the shared navbar height variable */
-  
   min-height: calc(100vh - var(--navbar-height));
+  
+  box-sizing: border-box;
+  width: 100%;
+  
 }
 
-
-/* small helper to keep central content width */
+/* ============================================
+   CONTAINER
+   ============================================ */
 .user-layout .container {
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 0 auto;
+  padding: 0 clamp(12px, 2vw, 32px);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+/* Tablet Breakpoint (768px - 1024px) */
+@media (max-width: 1024px) {
+  .user-layout main {
+    padding: clamp(12px, 2.5vw, 20px);
+  }
+
+  .user-layout .container {
+    padding: 0 clamp(12px, 1.5vw, 20px);
+  }
+}
+
+/* Mobile Breakpoint (480px - 767px) */
+@media (max-width: 768px) {
+  .user-layout {
+    background: var(--main-bg);
+  }
+
+  .user-layout main {
+    
+    
+  }
+
+  .user-layout .container {
+    padding: 0 clamp(10px, 1.5vw, 14px);
+  }
+}
+
+/* Phone Breakpoint (320px - 479px) */
+@media (max-width: 480px) {
+  .user-layout main {
+    
+  }
+
+  .user-layout .container {
+    padding: 0 clamp(8px, 1.2vw, 10px);
+  }
 }

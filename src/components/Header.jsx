@@ -12,10 +12,10 @@ const token = localStorage.getItem('gramika_token');
 const sellerStatus = localStorage.getItem('gramika_seller_status');
 const canAccessMyShop = token && sellerStatus === 'verified';
 
-
 function Header({ onCartClick }) {
   const { i18n } = useTranslation();
   const [isLangOpen, setIsLangOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [translations, setTranslations] = useState({
     BUY: 'BUY',
     MY_SHOP: 'MY SHOP',
@@ -80,19 +80,47 @@ function Header({ onCartClick }) {
     return () => window.removeEventListener('resize', setNavHeight);
   }, []);
 
+  // Close mobile menu when navigation happens
+  const handleNavClick = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setIsLangOpen(false);
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Handle cart click - also close mobile menu
+  const handleCartClick = () => {
+    setIsMobileMenuOpen(false);
+    onCartClick();
+  };
+
   return (
     <div ref={navRef} className='navbar'>
       <div className="left-group">
-        <Link to="/">
+        <Link to="/" onClick={handleNavClick}>
           <img className="logo" src="src/assets/logo.png" alt="Logo" />
         </Link>
       </div>
       
+      {/* Desktop Navigation Links */}
       <div className="nav-links">
-        <Link to="/shop">{translations.BUY}</Link>
+        <Link to="/shop" onClick={handleNavClick}>{translations.BUY}</Link>
         <Link
           to={canAccessMyShop ? "/my-shop" : "#"}
-          onClick={e => !canAccessMyShop && e.preventDefault()}
+          onClick={e => {
+            handleNavClick();
+            if (!canAccessMyShop) e.preventDefault();
+          }}
           className={!canAccessMyShop ? "nav-disabled" : ""}
           title={
             !token
@@ -102,16 +130,16 @@ function Header({ onCartClick }) {
         >
           {translations.MY_SHOP}
         </Link>
-        <Link to="/">{translations.ABOUT}</Link>
+        <Link to="/" onClick={handleNavClick}>{translations.ABOUT}</Link>
       </div>
 
       <div className="right-group">
-        
-        {/* --- CUSTOM MODERN DROPDOWN START --- */}
+        {/* Language Selector */}
         <div className="lang-container">
           <button 
             className="lang-btn" 
             onClick={() => setIsLangOpen(!isLangOpen)}
+            aria-label="Change Language"
           >
             <MdLanguage size={20} /> 
             <span className="lang-text">{currentLabel}</span>
@@ -135,24 +163,64 @@ function Header({ onCartClick }) {
             </div>
           )}
         </div>
-        {/* --- CUSTOM DROPDOWN END --- */}
 
-        <div className="cart-icon" onClick={onCartClick}>
-          <BsCart3 size={32} style={{ paddingBottom: '5px' }} /> 
-          <span style={{marginLeft: '5px'}}>{translations.CART}</span>
+        {/* Cart Icon */}
+        <div className="cart-icon" onClick={handleCartClick} title="Open Cart">
+          <BsCart3 size={32} /> 
+          <span>{translations.CART}</span>
         </div>
         
+        {/* Profile Icon */}
         <div className="profile">
           <Link
-  to={isLoggedIn ? "/profile" : "#"}
-  onClick={e => !isLoggedIn && e.preventDefault()}
-  className={!isLoggedIn ? "nav-disabled" : ""}
-  title={!isLoggedIn ? "Login required" : ""}
->
-  <HiUserCircle size={49} className="profile-icon" />
-</Link>
-
+            to={isLoggedIn ? "/profile" : "#"}
+            onClick={e => {
+              handleNavClick();
+              if (!isLoggedIn) e.preventDefault();
+            }}
+            className={!isLoggedIn ? "nav-disabled" : ""}
+            title={!isLoggedIn ? "Login required" : "Open Profile"}
+          >
+            <HiUserCircle className="profile-icon" />
+          </Link>
         </div>
+
+        {/* Hamburger Menu Button (Mobile) */}
+        <button 
+          className={`hamburger-menu ${isMobileMenuOpen ? 'open' : ''}`}
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label="Toggle menu"
+          aria-expanded={isMobileMenuOpen}
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`mobile-menu ${isMobileMenuOpen ? 'active' : ''}`}>
+        <Link to="/shop" className="mobile-menu-item" onClick={handleNavClick}>
+          {translations.BUY}
+        </Link>
+        <Link
+          to={canAccessMyShop ? "/my-shop" : "#"}
+          className={`mobile-menu-item ${!canAccessMyShop ? "disabled" : ""}`}
+          onClick={e => {
+            handleNavClick();
+            if (!canAccessMyShop) e.preventDefault();
+          }}
+          title={
+            !token
+              ? "Login required"
+              : "Only verified sellers can access My Shop"
+          }
+        >
+          {translations.MY_SHOP}
+        </Link>
+        <Link to="/" className="mobile-menu-item" onClick={handleNavClick}>
+          {translations.ABOUT}
+        </Link>
       </div>
     </div>
   );

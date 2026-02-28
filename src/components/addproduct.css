@@ -1,13 +1,31 @@
+/* ============================================
+   ADD PRODUCT FORM - FULLY RESPONSIVE
+   ============================================ */
+
+:root {
+  --form-pad: clamp(20px, 4vw, 45px);
+  --form-margin: clamp(40px, 8vw, 50px);
+  --form-gap: clamp(20px, 3.5vw, 28px);
+  --form-radius: clamp(12px, 2vw, 20px);
+  --input-pad: clamp(12px, 1.5vw, 18px);
+  --label-size: clamp(14px, 1.5vw, 15px);
+  --heading-size: clamp(24px, 5vw, 32px);
+  --file-btn-pad: clamp(6px, 1vw, 16px);
+  --btn-pad: clamp(14px, 2.5vw, 16px);
+}
+
 /* Form Container - centered with padding and shadow */
 .form-container {
   max-width: 600px;
-  margin: 50px auto;
+  margin: var(--form-margin) auto;
   background: #fefefe;
-  border-radius: 20px;
-  padding: 40px 45px;
+  border-radius: var(--form-radius);
+  padding: var(--form-pad);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
   font-family: 'Poppins', sans-serif;
   color: #2f2f2f;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Header */
@@ -15,22 +33,31 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 35px;
+  margin-bottom: var(--form-gap);
+  gap: clamp(12px, 2vw, 16px);
 }
 
 .form-header h2 {
   font-weight: 700;
-  font-size: 2rem;
+  font-size: var(--heading-size);
   color: #4a7023;
+  margin: 0;
 }
 
 .close-btn {
-  font-size: 30px;
+  font-size: clamp(24px, 4vw, 30px);
   border: none;
   background: none;
   cursor: pointer;
   color: #aaa;
   transition: color 0.3s ease;
+  padding: clamp(4px, 1vw, 6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
 }
 
 .close-btn:hover {
@@ -41,8 +68,8 @@
 .product-form label {
   display: block;
   font-weight: 600;
-  margin-bottom: 10px;
-  font-size: 15px;
+  margin-bottom: clamp(6px, 1.2vw, 10px);
+  font-size: var(--label-size);
   color: #444;
 }
 
@@ -53,15 +80,16 @@
 .product-form select,
 .product-form textarea {
   width: 100%;
-  padding: 14px 18px;
-  font-size: 16px;
+  padding: var(--input-pad);
+  font-size: clamp(14px, 1.5vw, 16px);
   border: 2px solid #d1d1d1;
-  border-radius: 12px;
+  border-radius: clamp(8px, 1.5vw, 12px);
   background-color: #fafafa;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   font-family: inherit;
   box-sizing: border-box;
   box-shadow: inset 2px 2px 6px #f0f0f0;
+  min-height: 44px;
 }
 
 .product-form input[type="text"]:focus,
@@ -80,15 +108,16 @@
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23444' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 18px center;
-  background-size: 16px;
+  background-position: right clamp(12px, 2vw, 18px) center;
+  background-size: clamp(14px, 2vw, 16px);
   cursor: pointer;
   color: #555;
+  padding-right: clamp(30px, 5vw, 40px);
 }
 
 .product-form select option {
-  padding: 12px;
-  font-size: 15px;
+  padding: clamp(10px, 1.5vw, 12px);
+  font-size: clamp(14px, 1.5vw, 15px);
   background-color: #fff;
   color: #2f2f2f;
 }
@@ -113,15 +142,17 @@
 /* File Input */
 .product-form input[type="file"] {
   width: 100%;
-  padding: 14px 18px;
-  border-radius: 12px;
+  padding: var(--input-pad);
+  border-radius: clamp(8px, 1.5vw, 12px);
   border: 2px solid #d1d1d1;
   background-color: #fafafa;
   cursor: pointer;
-  font-size: 16px;
+  font-size: clamp(14px, 1.5vw, 16px);
   transition: border-color 0.3s ease;
   box-shadow: inset 2px 2px 6px #f0f0f0;
   color: #555;
+  box-sizing: border-box;
+  min-height: 44px;
 }
 
 .product-form input[type="file"]::-webkit-file-upload-button {
@@ -133,11 +164,11 @@
   display: inline-block;
   background: linear-gradient(90deg, #3e661b, #83a747);
   color: white;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: var(--file-btn-pad) clamp(12px, 2vw, 16px);
+  border-radius: clamp(6px, 1vw, 8px);
+  font-size: clamp(12px, 1.3vw, 14px);
   font-weight: 600;
-  margin-right: 15px;
+  margin-right: clamp(10px, 2vw, 15px);
   cursor: pointer;
 }
 
@@ -163,22 +194,22 @@
 
 /* Form Group */
 .form-group {
-  margin-bottom: 28px;
+  margin-bottom: var(--form-gap);
 }
 
 /* Help text below inputs */
 .product-form .text-muted {
   display: block;
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: clamp(4px, 1vw, 8px);
+  font-size: clamp(12px, 1.3vw, 13px);
   color: #888;
   font-weight: 400;
 }
 
 .product-form .text-danger {
   display: block;
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: clamp(4px, 1vw, 8px);
+  font-size: clamp(12px, 1.3vw, 13px);
   color: #dc3545;
   font-weight: 500;
 }
@@ -189,19 +220,28 @@
   background: linear-gradient(90deg, #3e661b, #83a747);
   color: white;
   border: none;
-  padding: 16px 0;
-  border-radius: 15px;
-  font-size: 20px;
+  padding: var(--btn-pad) 0;
+  border-radius: clamp(12px, 2vw, 15px);
+  font-size: clamp(16px, 2vw, 20px);
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(131, 167, 71, 0.6);
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-  margin-top: 10px;
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  margin-top: clamp(8px, 1.5vw, 10px);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .save-btn:hover {
   background: linear-gradient(90deg, #315115, #5c7a2d);
   box-shadow: 0 10px 30px rgba(92, 122, 45, 0.8);
+  transform: translateY(-2px);
+}
+
+.save-btn:active {
+  transform: translateY(0);
 }
 
 .save-btn:disabled {
@@ -213,88 +253,145 @@
 
 /* Cancel Button */
 .cancel-btn {
-  width: 48%;
   background: #f5f5f5;
   color: #555;
   border: 2px solid #ddd;
-  padding: 14px 0;
-  border-radius: 12px;
-  font-size: 18px;
+  padding: clamp(12px, 2vw, 14px) 0;
+  border-radius: clamp(10px, 1.5vw, 12px);
+  font-size: clamp(16px, 2vw, 18px);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-right: 4%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cancel-btn:hover {
   background: #e9e9e9;
   border-color: #bbb;
   color: #333;
+  transform: translateY(-1px);
+}
+
+.cancel-btn:active {
+  transform: translateY(0);
 }
 
 /* Button Container for Cancel/Add */
 .button-container {
   display: flex;
   justify-content: space-between;
-  gap: 15px;
-  margin-top: 30px;
+  gap: clamp(12px, 2vw, 15px);
+  margin-top: var(--form-gap);
+  flex-wrap: wrap;
 }
 
 .button-container .save-btn {
-  width: 48%;
-  margin: 0;
+  flex: 1;
+  min-width: 120px;
+  margin-top: 0;
+}
+
+.button-container .cancel-btn {
+  flex: 1;
+  min-width: 120px;
 }
 
 /* Image Preview */
 .image-preview {
   display: flex;
-  gap: 16px;
+  gap: clamp(12px, 2vw, 16px);
   flex-wrap: wrap;
-  margin-bottom: 24px;
+  margin-bottom: clamp(16px, 2.5vw, 24px);
 }
 
 .image-preview img {
-  width: 80px;
-  height: 80px;
+  width: clamp(60px, 12vw, 80px);
+  height: clamp(60px, 12vw, 80px);
   object-fit: cover;
-  border-radius: 14px;
+  border-radius: clamp(10px, 1.5vw, 14px);
   border: 3px solid #4a7023;
   box-shadow: 0 4px 14px rgba(74, 112, 35, 0.35);
+  transition: transform 0.2s ease;
 }
 
-/* Responsive */
-@media (max-width: 680px) {
+.image-preview img:hover {
+  transform: scale(1.05);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
   .form-container {
-    padding: 30px 25px;
-    margin: 20px;
+    margin: clamp(20px, 5vw, 40px) clamp(16px, 4vw, 24px);
+    padding: clamp(16px, 3vw, 30px) clamp(16px, 3vw, 25px);
   }
-  
+
+  .form-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .form-header h2 {
-    font-size: 1.6rem;
+    font-size: clamp(20px, 4vw, 26px);
   }
-  
-  .save-btn,
-  .cancel-btn {
-    font-size: 18px;
-    padding: 14px 0;
+
+  .close-btn {
+    align-self: flex-end;
+    margin-top: -8px;
   }
-  
-  .product-form select,
+
+  .button-container {
+    gap: clamp(10px, 1.5vw, 12px);
+  }
+
+  .button-container .save-btn,
+  .button-container .cancel-btn {
+    flex: 1 1 calc(50% - 6px);
+  }
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    margin: clamp(12px, 3vw, 20px) clamp(8px, 2vw, 12px);
+    padding: clamp(14px, 2.5vw, 20px) clamp(12px, 2.5vw, 16px);
+  }
+
+  .form-header h2 {
+    font-size: clamp(18px, 3.5vw, 22px);
+  }
+
   .product-form input[type="text"],
   .product-form input[type="number"],
-  .product-form input[type="file"] {
-    padding: 12px 15px;
-    font-size: 15px;
+  .product-form input[type="date"],
+  .product-form select,
+  .product-form textarea {
+    font-size: clamp(14px, 1.3vw, 15px);
+    padding: clamp(10px, 1.2vw, 12px);
   }
-  
+
   .button-container {
     flex-direction: column;
-    gap: 10px;
+    gap: clamp(8px, 1.2vw, 10px);
   }
-  
+
   .button-container .cancel-btn,
   .button-container .save-btn {
     width: 100%;
-    margin: 0;
+    flex: 0 1 auto;
+  }
+
+  .image-preview {
+    gap: clamp(8px, 1.5vw, 12px);
+    margin-bottom: clamp(12px, 2vw, 16px);
+  }
+
+  .image-preview img {
+    width: clamp(48px, 10vw, 60px);
+    height: clamp(48px, 10vw, 60px);
   }
 }

@@ -69,7 +69,28 @@ exports.getSellerOrders = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find({}).populate('items.product').populate('user', 'name email');
+    // allow optional date range query parameters (ISO string)
+    // example: /api/orders/admin?start=2026-02-28T00:00:00.000Z&end=2026-02-28T23:59:59.999Z
+    // or a shorthand ?today=true which uses server's local timezone boundaries
+    let filter = {};
+
+    if (req.query.start && req.query.end) {
+      const start = new Date(req.query.start);
+      const end = new Date(req.query.end);
+      if (!isNaN(start) && !isNaN(end)) {
+        filter.createdAt = { $gte: start, $lte: end };
+      }
+    } else if (req.query.today === 'true') {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      filter.createdAt = { $gte: start, $lt: end };
+    }
+
+    const orders = await Order.find(filter)
+      .populate('items.product')
+      .populate('user', 'name email');
+
     return res.json(orders);
   } catch (err) {
     console.error('orderController.getAllOrders', err);

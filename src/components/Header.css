@@ -4,200 +4,228 @@
   box-sizing: border-box;
 }
 
-/* Navbar height variable for consistent layout spacing */
+/* ============================================
+   RESPONSIVE CSS VARIABLES
+   ============================================ */
 :root {
-  /* use a fixed pixel navbar height to avoid em-based rounding differences */
-  --navbar-height: 72px;
+  --navbar-height: clamp(56px, 10vh, 80px);
+  --primary-green: #204229;
+  --primary-yellow: #fcb900;
+  --text-dark: #111;
+  --text-light: #716e6e;
+  --border-color: #e0e0e0;
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 10px rgba(0, 0, 0, 0.3);
+  
+  /* Responsive font sizes */
+  --font-nav: clamp(14px, 2vw, 16px);
+  --font-mobile: 14px;
 }
+
 .nav-disabled {
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: auto;
 }
 
+/* ============================================
+   DESKTOP NAVBAR (1440px+)
+   ============================================ */
 .navbar {
   position: fixed;
   top: 0;
   left: 0;
-  overflow: visible !important; 
-  width: 100vw;
+  width: 100%;
+  height: var(--navbar-height);
+  background-color: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #ffffff;
-  box-sizing: border-box;
-  height: var(--navbar-height);
+  padding: 0 2rem;
   z-index: 1000;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  border-bottom: #f7f5f5 solid;
+  box-shadow: var(--shadow-medium);
+  border-bottom: 1px solid #f7f5f5;
+  overflow: visible;
+  box-sizing: border-box;
 }
 
 .left-group {
   display: flex;
   align-items: center;
-}
-
-/* FIXED: Added this to ensure the container doesn't clip the dropdown */
-.right-group {
-  display: flex;
-  align-items: center;
-  overflow: visible; 
-  z-index: 1001; 
-}
-
-.nav-links a {
-  padding: 0px 20px 0px 20px;
+  gap: 1rem;
 }
 
 .logo {
-  height: 3.5em;
+  height: clamp(36px, 8vh, 56px);
+  width: auto;
   padding-bottom: 0.2em;
   will-change: filter;
-  transition: filter 300ms;
-  box-shadow: none;
-  margin-top: -4px;
+  transition: filter 300ms ease;
   position: relative;
   top: -1px;
+  max-width: 100%;
+  object-fit: contain;
 }
-
-/* Ensure content below navbar is not hidden */
-/* remove page-level padding here; layout handles spacing using --navbar-height */
 
 .nav-links {
   display: flex;
-  gap: 25px;
+  gap: clamp(15px, 3vw, 25px);
   font-weight: 500;
-  color: #716e6e;
+  color: var(--text-light);
+  margin: 0;
+  list-style: none;
+  flex: 1;
+  justify-content: center;
 }
 
 .nav-links a {
   text-decoration: none;
-  color: #111;
-  font-size: 16px;
+  color: var(--text-dark);
+  font-size: var(--font-nav);
   font-weight: 600;
   position: relative;
-  transition: color 0.2s ease, transform 0.2s cubic-bezier(.4,2,.3,.7);
+  transition: color 0.2s ease, transform 0.2s cubic-bezier(0.4, 2, 0.3, 0.7);
+  padding: 0.5rem 1rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
 }
 
 .nav-links a:hover {
-  color: #fcb900;
-  transform: translateY(-4px) scale(1.07);
+  color: var(--primary-yellow);
+  transform: translateY(-4px) scale(1.05);
+}
+
+.right-group {
+  display: flex;
+  align-items: center;
+  gap: clamp(12px, 2vw, 16px);
+  overflow: visible;
+  z-index: 1001;
 }
 
 .profile,
 .cart-icon {
-  padding: 0px 20px 0px 20px;
-  margin-top: -5px;
+  padding: 0.5rem 1rem;
   position: relative;
-  top: -1px;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  transition: all 0.2s ease;
 }
 
 .cart-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #204229;
-  border-radius: 20px;
+  background-color: var(--primary-green);
+  border-radius: 1.25rem;
   height: 50.5px;
-  width: 120px;
+  width: clamp(84px, 12vw, 120px);
   font-weight: 600;
-  font-size: 18px;
+  font-size: clamp(14px, 1.5vw, 18px);
   color: #ffffff;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
-  margin-right: 10px;
+  justify-content: center;
+  gap: 0.5rem;
+  white-space: nowrap;
 }
 
 .cart-icon:hover {
-  background-color: #b19f33;
+  background-color: #1a3419;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(32, 66, 41, 0.3);
 }
 
 .cart-icon span {
-  margin-left: 12px;
   font-weight: 800;
-  color: #f9f9f9;
+  margin-left: 0.5rem;
 }
 
 .profile-icon {
-  color: #204229;
+  font-size: clamp(28px, 5vw, 49px);
+  color: var(--primary-green);
   transition: color 0.2s ease;
   cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .profile-icon:hover {
-  color: #b19f33;
-  transform: translateY(-2px);
+  color: #1a3419;
+  transform: scale(1.05);
 }
 
-/* --- Language Selector Container --- */
+/* ============================================
+   LANGUAGE SELECTOR
+   ============================================ */
 .lang-container {
-  position: relative; 
-  margin-right: 25px;
+  position: relative;
   display: flex;
   align-items: center;
+  z-index: 100;
 }
 
-/* The Main Button */
 .lang-btn {
   background: transparent;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px; 
-  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 1.25rem;
+  padding: clamp(6px, 1vw, 10px) clamp(10px, 2vw, 12px);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.4rem;
   cursor: pointer;
-  color: #1a4d2e; 
+  color: #1a4d2e;
   font-weight: 600;
-  font-size: 14px;
+  font-size: clamp(12px, 1.2vw, 14px);
   transition: all 0.3s ease;
+  min-height: 44px;
+  white-space: nowrap;
 }
 
 .lang-btn:hover {
-  background-color: #f0fdf4; 
+  background-color: #f0fdf4;
   border-color: #1a4d2e;
 }
 
-/* Text inside button */
 .lang-text {
-  margin-top: 2px; 
+  margin-top: 0.1rem;
 }
 
-/* Arrow Animation */
 .arrow-icon {
   transition: transform 0.3s ease;
+  font-size: clamp(14px, 2vw, 16px);
 }
+
 .arrow-icon.rotate {
   transform: rotate(180deg);
 }
 
-/* --- The Dropdown Menu --- */
 .lang-dropdown {
   position: absolute;
-  top: 130%; /* Pushes it just below the button */
+  top: calc(100% + 8px);
   right: 0;
   background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); 
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   width: 120px;
   overflow: hidden;
   border: 1px solid #f0f0f0;
   animation: fadeIn 0.2s ease-in-out;
-  
-  /* FIXED: Increased Z-Index to stay above everything else */
-  z-index: 2000 !important; 
+  z-index: 2000;
 }
 
-/* Individual Options */
 .lang-option {
-  padding: 10px 15px;
+  padding: 0.625rem 1rem;
   color: #333;
-  font-size: 14px;
+  font-size: clamp(12px, 1.1vw, 14px);
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s ease;
   text-align: left;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
 }
 
 .lang-option:hover {
@@ -205,42 +233,261 @@
   color: #1a4d2e;
 }
 
-/* Highlight the currently selected language */
 .lang-option.active {
   background-color: #e6f4ea;
   color: #1a4d2e;
   font-weight: bold;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ============================================
+   HAMBURGER MENU (MOBILE)
+   ============================================ */
+.hamburger-menu {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  gap: 5px;
+  min-height: 44px;
+  min-width: 44px;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  z-index: 1001;
 }
 
-/* Responsive adjustments to fit narrow screens */
-@media (max-width: 900px) {
+.hamburger-menu span {
+  width: 24px;
+  height: 2.5px;
+  background-color: var(--text-dark);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  display: block;
+}
+
+.hamburger-menu.open span:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger-menu.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-menu.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(8px, -8px);
+}
+
+/* ============================================
+   MOBILE MENU
+   ============================================ */
+.mobile-menu {
+  position: fixed;
+  top: var(--navbar-height);
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  max-height: calc(100vh - var(--navbar-height));
+  overflow-y: auto;
+  z-index: 999;
+  box-shadow: var(--shadow-medium);
+  display: none;
+  flex-direction: column;
+  animation: slideDown 0.3s ease;
+}
+
+.mobile-menu.active {
+  display: flex;
+}
+
+.mobile-menu-item {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 500;
+  font-size: clamp(14px, 4vw, 16px);
+  transition: all 0.2s ease;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-menu-item:hover {
+  background-color: #f0fdf4;
+  color: #204229;
+  padding-left: 2rem;
+}
+
+.mobile-menu-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   TABLET BREAKPOINT (768px - 1023px)
+   ============================================ */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 0 1.5rem;
+  }
+
   .nav-links {
     gap: 12px;
   }
+
   .nav-links a {
-    padding: 0 10px;
-    font-size: 14px;
+    font-size: 15px;
+    padding: 0.4rem 0.8rem;
   }
-  .logo {
-    height: 44px; /* smaller logo */
-  }
-  .cart-icon {
-    width: 96px;
-    height: 44px;
-    font-size: 14px;
-    border-radius: 16px;
-  }
-  .lang-container { margin-right: 12px; }
 }
 
-@media (max-width: 600px) {
-  .nav-links { display: none; }
-  .logo { height: 40px; }
-  .cart-icon { width: 84px; height: 40px; font-size: 13px; }
-  .profile-icon { width: 36px; height: 36px; }
+/* ============================================
+   LARGE TABLET BREAKPOINT (768px - 1023px)
+   ============================================ */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1rem;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  /* only show icon portion of cart button on smaller screens */
+  .cart-icon {
+    width: 44px;
+    height: 44px;
+    padding: 0.4rem;
+    font-size: 0; /* hide text */
+  }
+  .cart-icon span {
+    display: none;
+  }
+
+  .lang-container {
+    position: relative;
+    margin: 0;
+  }
+
+  .lang-btn {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .lang-text {
+    display: none;
+  }
+
+  .hamburger-menu {
+    display: flex;
+  }
+
+  .right-group {
+    gap: 0.5rem;
+  }
+
+  .cart-icon {
+    width: 50px;
+    height: 44px;
+    border-radius: 8px;
+    font-size: 0;
+  }
+
+  .cart-icon svg {
+    margin: 0;
+  }
+}
+
+/* ============================================
+   MOBILE BREAKPOINT (480px and below)
+   ============================================ */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0 0.75rem;
+    height: clamp(56px, 12vh, 72px);
+  }
+
+  .left-group {
+    gap: 0.5rem;
+  }
+
+  .logo {
+    height: clamp(36px, 8vw, 42px);
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .hamburger-menu {
+    display: flex;
+  }
+
+  .hamburger-menu span {
+    width: 20px;
+    height: 2px;
+  }
+
+  .right-group {
+    gap: 0.25rem;
+  }
+
+  .profile,
+  .cart-icon {
+    padding: 0.4rem;
+    margin: 0;
+  }
+
+  .cart-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    font-size: 0;
+  }
+
+  .profile-icon {
+    font-size: 32px;
+  }
+
+  .lang-container {
+    margin: 0;
+  }
+
+  .lang-btn {
+    padding: 4px 6px;
+    font-size: 11px;
+    border-radius: 12px;
+  }
+
+  .lang-text {
+    display: none;
+  }
+
+  .arrow-icon {
+    display: none;
+  }
 }

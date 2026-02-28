@@ -1,37 +1,1211 @@
-/* ---------------- PROFILE / SELLER / FEEDBACK STYLES ---------------- */
+/* ============================================
+   PROFILE PAGE - FULLY RESPONSIVE
+   ============================================ */
+
+:root {
+  --gramika-green: #1a3c22ff;
+  --gramika-dark: #143119;
+  --profile-bg: #e8e8e8ff;
+  --profile-card: #fff;
+  --profile-text: #333;
+  --profile-muted: #666;
+  --profile-gap: clamp(14px, 2.5vw, 26px);
+  --profile-pad: clamp(12px, 2vw, 24px);
+  --profile-radius: clamp(12px, 1.5vw, 24px);
+  --profile-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+/* ============================================
+   PAGE LAYOUT
+   ============================================ */
 .profile-page {
   min-height: 100vh;
-  background: #e8e8e8ff;
-  font-family: "Lato", sans-serif;
-  padding-bottom: 40px;
+  background: var(--profile-bg);
+  font-family: "Lato", "Helvetica", Arial, sans-serif;
+  color: var(--profile-text);
+  padding-bottom: clamp(32px, 5vh, 40px);
+  padding-top: var(--navbar-height);
 }
 
-.profile-page .profile-wrapper {
-  max-width: 1200px;
+.profile-wrapper {
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 24px;
+  padding: clamp(12px, 2.5vw, 24px);
 }
 
-/* COVER */
-.profile-page .profile-cover {
-  background: #fff;
-  border-radius: 24px;
+/* ============================================
+   COVER & HEADER SECTION
+   ============================================ */
+.profile-cover {
+  background: var(--profile-card);
+  border-radius: var(--profile-radius);
   overflow: hidden;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  box-shadow: var(--profile-shadow);
 }
 
-.profile-page .cover-img {
-  height: 150px;
+.cover-img {
+  height: clamp(100px, 20vh, 150px);
   background: url('/cover-tree.jpg') center/cover no-repeat;
   opacity: 0.85;
 }
 
-/* HEADER ROW */
-.profile-page .profile-header {
+.profile-header {
   display: flex;
-  gap: 20px;
-  padding: 25px;
+  gap: clamp(12px, 2vw, 20px);
+  padding: clamp(16px, 2.5vw, 25px);
   align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+/* Avatar */
+.avatar-container {
+  width: clamp(80px, 12vw, 110px);
+  height: clamp(80px, 12vw, 110px);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: clamp(3px, 1vw, 4px) solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  font-size: clamp(48px, 8vw, 90px);
+  color: var(--gramika-green);
+}
+
+/* Profile Info */
+.profile-main-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.5vw, 12px);
+  flex-wrap: wrap;
+}
+
+.name-row h1 {
+  font-size: clamp(18px, 3.5vw, 26px);
+  font-weight: 700;
+  color: var(--gramika-green);
+  margin: 0;
+  word-break: break-word;
+}
+
+.name-row span {
+  color: var(--profile-muted);
+  font-size: clamp(12px, 1.5vw, 14px);
+}
+
+.bio {
+  margin-top: clamp(6px, 1vw, 8px);
+  font-size: clamp(13px, 1.5vw, 15px);
+  color: var(--profile-text);
+  max-width: 100%;
+  word-break: break-word;
+}
+
+/* Badges */
+.badge-row {
+  margin-top: clamp(8px, 1.5vw, 12px);
+  display: flex;
+  gap: clamp(8px, 1.5vw, 10px);
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.9);
+  padding: clamp(4px, 1vw, 6px) clamp(10px, 1.5vw, 12px);
+  border-radius: 20px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: clamp(12px, 1.3vw, 13px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* Profile Actions */
+.profile-actions {
+  display: flex;
+  gap: clamp(10px, 1.5vw, 12px);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.edit-btn,
+.seller-btn,
+.register-btn,
+.edit-seller-btn,
+.apply-ver-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: clamp(8px, 1vw, 10px) clamp(14px, 2vw, 18px);
+  border-radius: clamp(8px, 1.2vw, 20px);
+  font-size: clamp(12px, 1.4vw, 14px);
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.edit-btn {
+  background: var(--profile-card);
+  color: var(--gramika-green);
+  border: 1px solid #e6e6e6;
+}
+
+.edit-btn:hover {
+  background: #f8f8f8;
+  transform: translateY(-2px);
+}
+
+.seller-btn,
+.register-btn,
+.apply-ver-btn {
+  background: var(--gramika-green);
+  color: white;
+  box-shadow: 0 2px 8px rgba(26, 60, 34, 0.15);
+}
+
+.seller-btn:hover,
+.register-btn:hover,
+.apply-ver-btn:hover {
+  background: var(--gramika-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 60, 34, 0.25);
+}
+
+.apply-ver-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Status Badge */
+.seller-header-controls {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.5vw, 10px);
+}
+
+.seller-status {
+  padding: clamp(6px, 1vw, 8px) clamp(10px, 1.5vw, 14px);
+  border-radius: clamp(6px, 1vw, 20px);
+  font-size: clamp(11px, 1.3vw, 14px);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.seller-status.not_seller {
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid #dee2e6;
+}
+
+.seller-status.pending {
+  background: #ffe8a0;
+  color: #8a6400;
+}
+
+.seller-status.verified {
+  background: #a8f0b0;
+  color: #0f6d27;
+}
+
+/* ============================================
+   PROFILE GRID
+   ============================================ */
+.profile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--profile-gap);
+  margin-top: clamp(16px, 2.5vw, 24px);
+  align-items: start;
+}
+
+/* Cards */
+.card {
+  background: var(--profile-card);
+  padding: var(--profile-pad);
+  border-radius: var(--profile-radius);
+  box-shadow: var(--profile-shadow);
+}
+
+.card h2,
+.card h3 {
+  color: var(--gramika-green);
+  margin: 0 0 clamp(10px, 1.5vw, 12px) 0;
+  font-size: clamp(16px, 2.5vw, 22px);
+}
+
+/* ============================================
+   BUYER SUMMARY / USER DETAILS
+   ============================================ */
+.buyer-summary {
+  width: 100%;
+}
+
+.info-list {
+  margin: clamp(8px, 1.5vw, 12px) 0 0 0;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: clamp(8px, 1.5vw, 10px) 0;
+  border-bottom: 1px solid #f0f0f0;
+  gap: clamp(8px, 1.5vw, 12px);
+  flex-wrap: wrap;
+  font-size: clamp(12px, 1.4vw, 14px);
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item strong {
+  font-weight: 600;
+  color: var(--profile-text);
+}
+
+.sub-title {
+  margin-top: clamp(12px, 2vw, 16px);
+  font-size: clamp(13px, 1.8vw, 15px);
+  font-weight: 700;
+  color: var(--gramika-green);
+}
+
+/* ============================================
+   ADDRESS LIST
+   ============================================ */
+.address-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.5vw, 12px);
+  margin-top: clamp(10px, 1.5vw, 12px);
+}
+
+.address-item {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(10px, 1.5vw, 12px);
+  padding: clamp(12px, 1.8vw, 16px);
+  background: #f8f9fa;
+  border-radius: clamp(8px, 1.5vw, 16px);
+  border-left: 3px solid var(--gramika-green);
+  transition: all 0.2s ease;
+}
+
+.address-item:hover {
+  background: #f0f2f5;
+  transform: translateY(-2px);
+}
+
+.address-icon {
+  color: var(--gramika-green);
+  margin-top: clamp(2px, 0.5vw, 4px);
+  flex-shrink: 0;
+  font-size: clamp(14px, 2vw, 16px);
+}
+
+.address-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.address-details strong {
+  display: block;
+  margin-bottom: clamp(3px, 0.5vw, 4px);
+  color: var(--gramika-green);
+  font-size: clamp(12px, 1.4vw, 14px);
+  word-break: break-word;
+}
+
+.address-details p {
+  margin: 0;
+  color: var(--profile-muted);
+  font-size: clamp(11px, 1.3vw, 13px);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* ============================================
+   ORDERS SECTION
+   ============================================ */
+.orders-section {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.5vw, 12px);
+  margin-top: clamp(10px, 1.5vw, 12px);
+}
+
+.view-orders-btn,
+.go-to-shop-btn {
+  background: var(--gramika-green);
+  color: white;
+  border: none;
+  padding: clamp(10px, 1.5vw, 12px) clamp(16px, 2vw, 20px);
+  border-radius: clamp(8px, 1.2vw, 16px);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: clamp(12px, 1.4vw, 14px);
+  box-shadow: 0 2px 8px rgba(26, 60, 34, 0.15);
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.view-orders-btn:hover,
+.go-to-shop-btn:hover {
+  background: var(--gramika-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(26, 60, 34, 0.25);
+}
+
+/* ============================================
+   SELLER PANEL / INFO CARD
+   ============================================ */
+.seller-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: clamp(10px, 1.5vw, 12px);
+  padding: clamp(12px, 1.8vw, 16px);
+  border-radius: var(--profile-radius);
+}
+
+.seller-panel h3 {
+  margin: 0;
+  color: var(--gramika-green);
+  font-size: clamp(14px, 2vw, 16px);
+}
+
+.seller-panel .muted {
+  color: var(--profile-muted);
+  font-size: clamp(11px, 1.3vw, 13px);
+}
+
+.seller-panel-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: clamp(8px, 1.5vw, 10px);
+}
+
+.seller-info-card {
+  margin-top: clamp(12px, 2vw, 16px);
+  border-radius: var(--profile-radius);
+  padding: var(--profile-pad);
+}
+
+.seller-info-card h2 {
+  color: var(--gramika-green);
+  margin: 0 0 clamp(6px, 1vw, 8px) 0;
+  font-size: clamp(16px, 2.5vw, 22px);
+}
+
+.seller-intro {
+  color: var(--profile-text);
+  margin-bottom: clamp(10px, 1.5vw, 12px);
+  font-size: clamp(12px, 1.4vw, 14px);
+  line-height: 1.5;
+}
+
+/* Seller Display Grid */
+.seller-display-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 1.5vw, 14px) clamp(16px, 2.5vw, 28px);
+  align-items: start;
+}
+
+.seller-field {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 1vw, 6px);
+}
+
+.seller-field.full {
+  grid-column: 1 / -1;
+}
+
+.seller-field label {
+  font-weight: 600;
+  color: #2c4f36;
+  font-size: clamp(12px, 1.4vw, 14px);
+}
+
+.seller-value {
+  background: #fafafa;
+  padding: clamp(8px, 1.5vw, 12px) clamp(10px, 1.5vw, 14px);
+  border-radius: clamp(6px, 1vw, 10px);
+  border: 1px solid #eee;
+  color: var(--profile-text);
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: clamp(12px, 1.4vw, 14px);
+  word-break: break-word;
+}
+
+.file-name {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Seller Actions */
+.seller-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: clamp(10px, 1.5vw, 12px);
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: clamp(8px, 1.5vw, 10px);
+  flex-wrap: wrap;
+}
+
+.edit-seller-btn {
+  padding: clamp(8px, 1vw, 10px) clamp(12px, 1.5vw, 16px);
+  border-radius: clamp(8px, 1.2vw, 12px);
+  background: #6c757d;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: clamp(12px, 1.4vw, 14px);
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.edit-seller-btn:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   SELLER EDIT FORM
+   ============================================ */
+.seller-edit-form {
+  margin-top: clamp(10px, 1.5vw, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.5vw, 12px);
+}
+
+.seller-edit-form .form-row {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 1vw, 6px);
+}
+
+.seller-edit-form .form-row label {
+  font-weight: 600;
+  color: #2c4f36;
+  font-size: clamp(12px, 1.4vw, 14px);
+}
+
+.seller-edit-form input[type="text"],
+.seller-edit-form input[type="email"],
+.seller-edit-form textarea {
+  border: 1px solid #ccc;
+  padding: clamp(8px, 1.5vw, 12px);
+  border-radius: clamp(6px, 1vw, 10px);
+  font-size: clamp(12px, 1.4vw, 14px);
+  font-family: "Lato", sans-serif;
+  min-height: 44px;
+}
+
+.seller-edit-form textarea {
+  min-height: clamp(60px, 15vh, 100px);
+  resize: vertical;
+}
+
+.file-row {
+  display: flex;
+  gap: clamp(10px, 1.5vw, 12px);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.file-row input[type="file"] {
+  cursor: pointer;
+}
+
+.file-row .file-name {
+  color: var(--profile-muted);
+  font-size: clamp(11px, 1.3vw, 13px);
+}
+
+/* Checkboxes */
+.checkbox-grid {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.5vw, 10px);
+  margin-top: clamp(6px, 1vw, 8px);
+}
+
+.checkbox-label {
+  display: flex;
+  gap: clamp(6px, 1vw, 8px);
+  align-items: center;
+  font-size: clamp(12px, 1.4vw, 14px);
+  color: var(--profile-text);
+  cursor: pointer;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  gap: clamp(10px, 1.5vw, 12px);
+  justify-content: flex-end;
+  margin-top: clamp(8px, 1.5vw, 10px);
+  flex-wrap: wrap;
+}
+
+.cancel-btn,
+.save-btn {
+  padding: clamp(8px, 1vw, 10px) clamp(12px, 1.5vw, 16px);
+  border-radius: clamp(8px, 1.2vw, 12px);
+  font-size: clamp(12px, 1.4vw, 14px);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.cancel-btn {
+  background: white;
+  border: 1px solid #ccc;
+  color: var(--profile-text);
+}
+
+.cancel-btn:hover {
+  background: #f8f8f8;
+}
+
+.save-btn {
+  background: var(--gramika-green);
+  border: none;
+  color: white;
+}
+
+.save-btn:hover {
+  background: var(--gramika-dark);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   ACTIVITY SECTION
+   ============================================ */
+.activity-card {
+  margin-top: clamp(14px, 2vw, 24px);
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: clamp(10px, 1.5vw, 12px);
+  flex-wrap: wrap;
+  margin-bottom: clamp(10px, 1.5vw, 12px);
+}
+
+.activity-list {
+  margin: clamp(10px, 1.5vw, 12px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.activity-item {
+  padding: clamp(10px, 1.5vw, 12px) 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: clamp(10px, 1.5vw, 12px);
+  transition: background-color 0.2s ease;
+  flex-wrap: wrap;
+}
+
+.activity-item:hover {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: clamp(10px, 1.5vw, 12px);
+  margin: 0 -8px;
+}
+
+.activity-text {
+  flex: 1;
+  color: var(--profile-text);
+  font-size: clamp(12px, 1.4vw, 14px);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.activity-date {
+  color: var(--profile-muted);
+  white-space: nowrap;
+  font-size: clamp(11px, 1.3vw, 12px);
+}
+
+.show-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 1vw, 6px);
+  background: none;
+  border: 1px solid var(--gramika-green);
+  color: var(--gramika-green);
+  cursor: pointer;
+  padding: clamp(8px, 1vw, 10px) clamp(12px, 1.5vw, 16px);
+  margin-top: clamp(10px, 1.5vw, 12px);
+  font-weight: 500;
+  font-size: clamp(12px, 1.4vw, 14px);
+  border-radius: clamp(8px, 1.2vw, 16px);
+  width: 100%;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.show-more-btn:hover {
+  background: var(--gramika-green);
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   SETTINGS OPTIONS
+   ============================================ */
+.settings-options {
+  margin-top: clamp(10px, 1.5vw, 12px);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(8px, 1.5vw, 12px);
+}
+
+.settings-options button {
+  padding: clamp(10px, 1.5vw, 12px);
+  border-radius: clamp(8px, 1.2vw, 16px);
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: clamp(12px, 1.4vw, 14px);
+  min-height: 44px;
+}
+
+.settings-options button:hover {
+  background: #f3f3f3;
+  transform: translateY(-2px);
+}
+
+.settings-options .danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.settings-options .danger:hover {
+  background: #dc3545;
+  color: white;
+}
+
+/* ============================================
+   FEEDBACK FORM
+   ============================================ */
+.feedback-form {
+  margin-top: clamp(16px, 2.5vw, 24px);
+  padding: var(--profile-pad);
+  border-radius: var(--profile-radius);
+}
+
+.feedback-form h3 {
+  color: var(--gramika-green);
+  margin: 0 0 clamp(10px, 1.5vw, 14px) 0;
+  font-size: clamp(14px, 2vw, 18px);
+}
+
+.feedback-rating label {
+  display: block;
+  margin-bottom: clamp(6px, 1vw, 8px);
+  font-weight: 600;
+  color: var(--profile-text);
+  font-size: clamp(12px, 1.4vw, 14px);
+}
+
+.rating-stars {
+  display: flex;
+  gap: clamp(6px, 1vw, 8px);
+  margin-bottom: clamp(8px, 1.5vw, 10px);
+  justify-content: flex-start;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: clamp(18px, 3vw, 24px);
+  color: #ddd;
+  cursor: pointer;
+  padding: clamp(2px, 0.5vw, 4px);
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.star-btn.active {
+  color: #ffc107;
+  transform: scale(1.1);
+}
+
+.star-btn:hover {
+  color: #ffc107;
+}
+
+.feedback-comment textarea {
+  width: 100%;
+  border: 1px solid #ccc;
+  padding: clamp(8px, 1.5vw, 12px);
+  border-radius: clamp(6px, 1vw, 12px);
+  min-height: clamp(70px, 12vh, 100px);
+  resize: vertical;
+  font-family: "Lato", sans-serif;
+  font-size: clamp(12px, 1.4vw, 14px);
+}
+
+.submit-feedback-btn {
+  margin-top: clamp(10px, 1.5vw, 12px);
+  background: var(--gramika-green);
+  color: white;
+  border: none;
+  padding: clamp(10px, 1.5vw, 12px) clamp(16px, 2.5vw, 22px);
+  border-radius: clamp(8px, 1.2vw, 16px);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: clamp(12px, 1.4vw, 14px);
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.submit-feedback-btn:hover {
+  background: var(--gramika-dark);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   VERIFIED MESSAGE
+   ============================================ */
+.verified-message {
+  padding: clamp(12px, 2vw, 16px);
+  background: #d4edda;
+  border-radius: var(--profile-radius);
+  border-left: 4px solid #28a745;
+  margin-top: clamp(16px, 2.5vw, 24px);
+  margin-bottom: clamp(14px, 2vw, 20px);
+}
+
+.verified-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: clamp(4px, 1vw, 6px) clamp(10px, 1.5vw, 12px);
+  background: #28a745;
+  color: white;
+  border-radius: 20px;
+  font-size: clamp(12px, 1.3vw, 14px);
+  font-weight: 600;
+  margin-bottom: clamp(6px, 1vw, 8px);
+}
+
+.verified-message p {
+  color: #155724;
+  margin: clamp(8px, 1vw, 12px) 0;
+  font-size: clamp(12px, 1.4vw, 14px);
+  line-height: 1.5;
+}
+
+/* ============================================
+   FILE UPLOAD STYLES
+   ============================================ */
+.file-upload-row {
+  margin-bottom: clamp(14px, 2vw, 20px);
+}
+
+.file-upload-wrapper {
+  margin-top: clamp(6px, 1vw, 8px);
+}
+
+.file-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 20px);
+  background: var(--gramika-green);
+  color: white;
+  border-radius: clamp(6px, 1vw, 8px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  border: none;
+  font-size: clamp(12px, 1.4vw, 14px);
+  min-height: 44px;
+}
+
+.file-upload-btn:hover {
+  background: var(--gramika-dark);
+  transform: translateY(-2px);
+}
+
+.file-upload-btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.5vw, 10px);
+  margin-top: clamp(10px, 1.5vw, 12px);
+  padding: clamp(8px, 1.5vw, 10px) clamp(10px, 1.5vw, 14px);
+  background: #f8f9fa;
+  border-radius: clamp(6px, 1vw, 8px);
+  border: 1px dashed #ddd;
+  flex-wrap: wrap;
+}
+
+.file-status {
+  font-size: clamp(11px, 1.3vw, 12px);
+  font-weight: 600;
+  padding: clamp(2px, 0.5vw, 3px) clamp(6px, 1vw, 8px);
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.file-status.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.file-status.uploaded {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.file-status.missing {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* ============================================
+   CATEGORY CHECKBOXES
+   ============================================ */
+.category-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: clamp(8px, 1.5vw, 12px);
+  margin-top: clamp(8px, 1.5vw, 12px);
+}
+
+.category-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1vw, 8px);
+  cursor: pointer;
+  padding: clamp(8px, 1.5vw, 10px) clamp(10px, 1.5vw, 12px);
+  border-radius: clamp(6px, 1vw, 8px);
+  border: 1px solid #ddd;
+  transition: all 0.2s ease;
+  background: #f8f9fa;
+  font-size: clamp(12px, 1.4vw, 14px);
+  min-height: 44px;
+}
+
+.category-checkbox-label:hover {
+  border-color: var(--gramika-green);
+  background: rgba(26, 60, 34, 0.05);
+}
+
+.category-checkbox {
+  display: none;
+}
+
+.category-checkbox-custom {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.category-checkbox:checked + .category-checkbox-custom {
+  background-color: var(--gramika-green);
+  border-color: var(--gramika-green);
+}
+
+.category-checkbox:checked + .category-checkbox-custom::after {
+  content: "✓";
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* ============================================
+   MODAL STYLES
+   ============================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: var(--profile-radius);
+  padding: clamp(16px, 2.5vw, 24px);
+  max-width: 500px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal-content h3 {
+  margin: 0 0 clamp(10px, 1.5vw, 16px) 0;
+  color: var(--gramika-green);
+  font-size: clamp(14px, 2vw, 18px);
+}
+
+.form-group {
+  margin-bottom: clamp(12px, 1.5vw, 16px);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: clamp(4px, 0.8vw, 6px);
+  font-weight: 500;
+  font-size: clamp(12px, 1.4vw, 14px);
+}
+
+.form-group input[type="password"],
+.form-group input[type="text"],
+.form-group input[type="email"] {
+  width: 100%;
+  padding: clamp(8px, 1.5vw, 12px);
+  border: 1px solid #ddd;
+  border-radius: clamp(6px, 1vw, 8px);
+  font-size: clamp(12px, 1.4vw, 14px);
+  min-height: 44px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: clamp(10px, 1.5vw, 12px);
+  justify-content: flex-end;
+  margin-top: clamp(16px, 2.5vw, 24px);
+  flex-wrap: wrap;
+}
+
+.modal-actions button {
+  padding: clamp(8px, 1vw, 10px) clamp(12px, 1.5vw, 16px);
+  border: none;
+  border-radius: clamp(6px, 1vw, 8px);
+  cursor: pointer;
+  font-size: clamp(12px, 1.4vw, 14px);
+  font-weight: 500;
+  min-height: 44px;
+  transition: all 0.2s ease;
+}
+
+.modal-actions button[type="submit"],
+.modal-actions button:last-child {
+  background: #28a745;
+  color: white;
+}
+
+.modal-actions button[type="submit"]:hover,
+.modal-actions button:last-child:hover {
+  background: #218838;
+  transform: translateY(-2px);
+}
+
+.modal-actions button:first-child {
+  background: #6c757d;
+  color: white;
+}
+
+.modal-actions button:first-child:hover {
+  background: #5a6268;
+  transform: translateY(-2px);
+}
+
+.modal-actions button.danger {
+  background: #dc3545;
+  color: white;
+}
+
+.modal-actions button.danger:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet (1024px and below) */
+@media (max-width: 1024px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: clamp(10px, 1.5vw, 12px);
+  }
+
+  .profile-actions {
+    margin-left: 0;
+    justify-content: center;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .seller-display-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-options {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile (768px and below) */
+@media (max-width: 768px) {
+  .profile-wrapper {
+    padding: clamp(10px, 1.5vw, 12px);
+  }
+
+  .profile-header {
+    padding: clamp(12px, 2vw, 16px);
+  }
+
+  .profile-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .edit-btn,
+  .seller-btn,
+  .register-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .card {
+    padding: clamp(10px, 1.5vw, 12px);
+  }
+
+  .profile-grid {
+    gap: clamp(10px, 1.5vw, 12px);
+  }
+
+  .address-list {
+    gap: clamp(8px, 1.2vw, 10px);
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
+  .category-checkbox-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .file-preview {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: 450px;
+  }
+}
+
+/* Phone (480px and below) */
+@media (max-width: 480px) {
+  .profile-wrapper {
+    padding: clamp(8px, 1.2vw, 10px);
+  }
+
+  .profile-header {
+    padding: clamp(10px, 1.5vw, 12px);
+  }
+
+  .name-row {
+    justify-content: center;
+  }
+
+  .card {
+    padding: clamp(8px, 1.2vw, 10px);
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .activity-item:hover {
+    padding: clamp(8px, 1.2vw, 10px);
+    margin: 0 -4px;
+  }
+
+  .settings-options {
+    grid-template-columns: 1fr;
+  }
+
+  .seller-panel-actions {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .modal-content {
+    width: 95%;
+    max-width: 350px;
+  }
 }
 
 /* Avatar */
