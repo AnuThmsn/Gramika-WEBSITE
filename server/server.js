@@ -31,6 +31,12 @@ app.use("/api/uploads", require("./routes/uploads"));
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 // -------------------- Routes --------------------
+
+// simple root test endpoint used by render deployment verification
+app.get('/', (req, res) => {
+  res.send('Gramika Backend is running 🚀');
+});
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/products", require("./routes/products"));
 app.use("/api/orders", require("./routes/orders"));
