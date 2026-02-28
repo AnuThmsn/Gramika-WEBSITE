@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { translateBatch } from '../services/translationService';
 import './Header.css';
+import logo from '../assets/logo.png';
 
 const token = localStorage.getItem('gramika_token');
 const sellerStatus = localStorage.getItem('gramika_seller_status');
@@ -108,7 +109,7 @@ function Header({ onCartClick }) {
     <div ref={navRef} className='navbar'>
       <div className="left-group">
         <Link to="/" onClick={handleNavClick}>
-          <img className="logo" src="src/assets/logo.png" alt="Logo" />
+          <img className="logo" src={logo} alt="Logo" />
         </Link>
       </div>
       
