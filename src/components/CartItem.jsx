@@ -1,6 +1,6 @@
 // src/components/CartItem.js
 import React from 'react';
-import '../styles/Cart.css'; // Import cart specific styles
+import '../styles/cart.css'; // Import cart specific styles (match actual filename)
 
 const CartItem = ({ item, onUpdateQuantity, onRemove }) => {
     const soldOut = (item.stock || 0) <= 0;
