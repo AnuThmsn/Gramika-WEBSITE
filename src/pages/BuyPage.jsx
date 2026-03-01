@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import CategoryButton from '../components/CategoryButton';
 import ProductCard from '../components/ProductCard';
-import { FaCarrot, FaAppleAlt, FaHome } from 'react-icons/fa';
+import { FaCarrot, FaAppleAlt, FaHome, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { GiMeatCleaver, GiMilkCarton, GiManualMeatGrinder } from "react-icons/gi";
 import { CiSearch } from "react-icons/ci";
+import { useNavigate } from 'react-router-dom';
 import '../styles/BuyPage.css';
 import { MdReport } from "react-icons/md";
 import { API_BASE, buildImageUrl } from '../config';
@@ -11,6 +12,7 @@ import { API_BASE, buildImageUrl } from '../config';
 function BuyPage() {
   // require login to access Buy page
  
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortOption, setSortOption] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -66,7 +68,7 @@ function BuyPage() {
     alert("Could not report product");
   }
 };
- const handleAddToCart = async (product) => {
+  const handleAddToCart = async (product) => {
   try {
     // 🚫 Block reported products
     if (product.status === "Reported") {
@@ -75,9 +77,9 @@ function BuyPage() {
     }
 
     const token = localStorage.getItem("gramika_token");
-    const prodId = product._id || product.id;
+    const prodId = product._1 || product._id || product.id;
     // Get the quantity passed from ProductCard (the third parameter in the spread object)
-    const qty = product.quantity || 1;
+    const qty = Number(product.quantity ?? product.qty ?? 1);
 
     // 🔍 Verify latest availability
     try {
@@ -124,6 +126,17 @@ function BuyPage() {
       window.dispatchEvent(new Event("cartUpdated"));
     } else {
       // 🧑 Guest user (localStorage)
+      const normalize = it => {
+        const id = it?.id || it?.product || it?._id;
+        const quantity = Number(it?.quantity ?? it?.qty ?? 1) || 1;
+        return {
+          ...it,
+          id,
+          quantity,
+          stock: Number(it?.stock ?? it?.quantity ?? 0) || 0
+        };
+      };
+
       const saved = JSON.parse(localStorage.getItem("gramika_cart") || "[]");
 
       // Check if product already in cart and update quantity
@@ -131,19 +144,26 @@ function BuyPage() {
         (s) => (s.id || s.product || s._id) === prodId
       );
 
+      // Determine stock when available so cart page can properly enable checkout
+      const stockVal = Number(product.quantity ?? product.qty ?? product.stock ?? 0);
+
       if (existing) {
         existing.quantity = (existing.quantity || 1) + qty;
+        existing.stock = typeof stockVal === 'number' ? stockVal : existing.stock;
       } else {
         saved.push({
           id: prodId,
           name: product.name,
           price: product.price,
           quantity: qty,
+          stock: stockVal,
           image: buildImageUrl(product.image || product.imageUrl || "")
         });
       }
 
-      localStorage.setItem("gramika_cart", JSON.stringify(saved));
+      // normalize all entries before saving
+      const normalized = saved.map(normalize);
+      localStorage.setItem("gramika_cart", JSON.stringify(normalized));
       // ✅ Show success notification
       alert(`✅ ${product.name} (×${qty}) added to cart!`);
       window.dispatchEvent(
@@ -426,6 +446,54 @@ function BuyPage() {
       })
   )}
 </div>
+
+        {/* Navigation Arrows */}
+        <div style={{
+          marginTop: '60px',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '20px',
+          paddingBottom: '40px'
+        }}>
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              padding: '12px 24px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: '#195d2bff',
+              color: 'white',
+              cursor: 'pointer'
+            }}
+            title="Go back to Home"
+          >
+            <FaArrowLeft /> Back to Home
+          </button>
+          <button
+            onClick={() => window.dispatchEvent(new Event('openCart'))}
+            style={{
+              padding: '12px 24px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: '#195d2bff',
+              color: 'white',
+              cursor: 'pointer'
+            }}
+            title="Open Cart"
+          >
+            Go to Cart <FaArrowRight />
+          </button>
+        </div>
     </div>
   );
 }

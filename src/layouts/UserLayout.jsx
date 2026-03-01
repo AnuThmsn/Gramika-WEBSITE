@@ -12,6 +12,13 @@ export default function UserLayout() {
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
+  // allow other components to open the cart via custom event
+  React.useEffect(() => {
+    const handler = () => openCart();
+    window.addEventListener('openCart', handler);
+    return () => window.removeEventListener('openCart', handler);
+  }, []);
+
   const handleProceedToPayment = (total) => {
     // if user is logged in, go to checkout; otherwise open login
     const token = localStorage.getItem('gramika_token');
