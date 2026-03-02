@@ -3,7 +3,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUser, FaLock, FaEnvelope, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
 import 'bootstrap/dist/css/bootstrap.min.css'; 
-import "../styles/Login.css"; 
+import "../styles/Login.css";
+import { API_BASE } from "../config.js"; 
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,6 +19,8 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const role = new URLSearchParams(location.search).get("role") || "user";
+  // allow redirect after login/registration
+  const redirectTo = location.state?.from || new URLSearchParams(location.search).get('from') || null;
 const isAdminLogin = role === "admin";
 
   const handleSubmit = (e) => {
@@ -75,7 +78,11 @@ if (role === "admin") {
 }
 
 // NORMAL USER LOGIN FLOW
-navigate("/profile", { replace: true });
+if (redirectTo) {
+  navigate(redirectTo, { replace: true });
+} else {
+  navigate("/profile", { replace: true });
+}
 
 
         } else {
@@ -95,7 +102,11 @@ navigate("/profile", { replace: true });
           localStorage.setItem('gramika_is_seller', data.user.isSeller || false);
           localStorage.setItem('gramika_seller_status', data.user.seller?.status || 'not_seller');
 
-          navigate('/profile');
+          if (redirectTo) {
+            navigate(redirectTo, { replace: true });
+          } else {
+            navigate('/profile', { replace: true });
+          }
         }
 
       } catch (err) {

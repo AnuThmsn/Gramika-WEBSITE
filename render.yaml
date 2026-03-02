@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: gramika-server
+    runtime: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: MONGO_URI
+        scope: build,runtime
+        sync: false
+      - key: JWT_SECRET
+        scope: build,runtime
+        sync: false
+      - key: PORT
+        value: 5000
+
+  - type: static
+    name: gramika-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://gramika-server.onrender.com

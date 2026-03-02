@@ -120,7 +120,7 @@ export default function ProfilePage() {
           localStorage.removeItem('gramika_token');
           localStorage.removeItem('gramika_user_id');
           localStorage.removeItem('gramika_is_admin');
-          navigate('/login');
+          navigate('/login', { replace: true });
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -596,6 +596,17 @@ export default function ProfilePage() {
     }
   };
 
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      localStorage.removeItem('gramika_token');
+      localStorage.removeItem('gramika_user_id');
+      localStorage.removeItem('gramika_is_admin');
+      localStorage.removeItem('gramika_is_seller');
+      localStorage.removeItem('gramika_seller_status');
+      navigate('/', { replace: true });
+    }
+  };
+
   const handleRegisterSeller = () => {
     // Pre-fill seller info with user info if available
     const initialSellerData = {
@@ -754,6 +765,7 @@ export default function ProfilePage() {
                 <button onClick={() => setShowNotifications(true)}>Notifications</button>
                 <button onClick={() => setShowPrivacy(true)}>Privacy</button>
                 <button className="danger" onClick={() => setShowDeleteAccount(true)}>Delete Account</button>
+                <button className="logout" onClick={handleLogout}>Logout</button>
               </div>
             </div>
           </div>

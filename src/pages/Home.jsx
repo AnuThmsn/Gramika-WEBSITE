@@ -1,7 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { motion } from 'framer-motion';
-import { FaLeaf, FaAppleAlt, FaCheese, FaEgg, FaPhone, FaEnvelope, FaMapMarkerAlt, FaUsers, FaHandshake, FaStore, FaShoppingCart, FaTruck, FaUser, FaUserShield } from 'react-icons/fa';
+import { FaLeaf, FaAppleAlt, FaCheese, FaEgg, FaPhone, FaEnvelope, FaMapMarkerAlt, FaUsers, FaHandshake, FaStore, FaShoppingCart, FaTruck, FaUser, FaUserShield, FaArrowRight } from 'react-icons/fa';
 import React, { useState, useRef, useEffect } from 'react';
 import "../styles/Home.css";
 import Cart from './cart.jsx';
@@ -207,8 +207,13 @@ const Home = () => {
                       <button
                         className="btn btn-outline-danger px-4 py-2"
                         onClick={() => {
-                          localStorage.removeItem('gramika_auth');
-                          window.location.reload();
+                          // clear auth tokens and redirect to home
+                          localStorage.removeItem('gramika_token');
+                          localStorage.removeItem('gramika_user_id');
+                          localStorage.removeItem('gramika_is_admin');
+                          localStorage.removeItem('gramika_is_seller');
+                          localStorage.removeItem('gramika_seller_status');
+                          navigate('/', { replace: true });
                         }}
                       >
                         Logout
@@ -387,6 +392,30 @@ const Home = () => {
               </div>
             </motion.div>
           </div>
+        </div>
+
+        {/* Navigation Arrows */}
+        <div style={{ marginTop: '60px', display: 'flex', justifyContent: 'center', gap: '20px', paddingBottom: '40px' }}>
+          <button
+            onClick={() => navigate('/shop')}
+            className="btn btn-primary-green"
+            style={{
+              padding: '12px 24px',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: '#195d2bff',
+              color: 'white',
+              cursor: 'pointer'
+            }}
+            title="Go to Shop"
+          >
+            Start Shopping <FaArrowRight />
+          </button>
         </div>
       </section>
 

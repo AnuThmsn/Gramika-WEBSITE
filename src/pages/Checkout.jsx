@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { API_BASE } from '../config';
 import { useNavigate } from 'react-router-dom';
+import { FaArrowLeft } from 'react-icons/fa';
 import '../styles/Checkout.css';
 
 export default function CheckoutPage() {
@@ -86,6 +87,31 @@ export default function CheckoutPage() {
 
   return (
     <div className="checkout-page container">
+      <div style={{
+        marginBottom: '20px',
+        display: 'flex',
+        justifyContent: 'flex-start'
+      }}>
+        <button
+          onClick={() => navigate('/cart')}
+          style={{
+            padding: '10px 16px',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            borderRadius: '8px',
+            border: '1px solid #195d2bff',
+            backgroundColor: 'transparent',
+            color: '#195d2bff',
+            cursor: 'pointer'
+          }}
+          title="Go back to cart"
+        >
+          <FaArrowLeft /> Back to Cart
+        </button>
+      </div>
       <h1>Checkout</h1>
       <div className="checkout-grid">
         <div className="checkout-items">
