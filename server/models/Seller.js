@@ -13,7 +13,8 @@ const SellerSchema = new mongoose.Schema({
   licenseFileId: { type: String },
   sellItems: [String],
   category: [String],
-  status: { type: String, enum: ['registered','pending','verified'], default: 'registered' }
+  status: { type: String, enum: ['registered', 'pending', 'verified'], default: 'registered' },
+  flags: { type: Number, default: 0 }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Seller', SellerSchema);

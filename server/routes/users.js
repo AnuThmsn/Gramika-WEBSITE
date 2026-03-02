@@ -10,10 +10,12 @@ const multer = require('multer');
 const mongoose = require('mongoose');
 
 // Multer memory storage for vendor document uploads (PDF only)
-const upload = multer({ storage: multer.memoryStorage(), fileFilter: (req, file, cb) => {
-  if (file.mimetype === 'application/pdf') cb(null, true);
-  else cb(new Error('Only PDF files are allowed'), false);
-} });
+const upload = multer({
+  storage: multer.memoryStorage(), fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') cb(null, true);
+    else cb(new Error('Only PDF files are allowed'), false);
+  }
+});
 
 // Admin check middleware
 const adminCheck = async (req, res, next) => {
@@ -119,18 +121,18 @@ router.post('/seller', auth, async (req, res) => {
   try {
     let sellerData = req.body;
     sellerData.user = req.user._id;
-    
+
     // Map shopName → name for backward compatibility
     if (sellerData.shopName && !sellerData.name) {
       sellerData.name = sellerData.shopName;
       delete sellerData.shopName;
     }
-    
+
     // Auto-populate businessEmail from user email if not provided
     if (!sellerData.businessEmail && req.user.email) {
       sellerData.businessEmail = req.user.email;
     }
-    
+
     const seller = await Seller.findOneAndUpdate(
       { user: req.user._id },
       sellerData,
@@ -158,7 +160,7 @@ router.get('/me/seller', auth, async (req, res) => {
   try {
     const seller = await Seller.findOne({ user: req.user._id });
     const userObj = req.user.toObject();
-    userObj.seller = seller || null;
+    userObj.seller = seller ? seller.toObject() : null;
     res.json(userObj);
   } catch (err) {
     res.status(500).json({ msg: err.message });
@@ -171,18 +173,18 @@ router.put('/seller/me', auth, async (req, res) => {
     let updates = req.body || {};
     // support nested { seller: { ... } } shape from frontend
     let sellerUpdates = updates.seller ? updates.seller : updates;
-    
+
     // Map shopName → name for backward compatibility
     if (sellerUpdates.shopName && !sellerUpdates.name) {
       sellerUpdates.name = sellerUpdates.shopName;
       delete sellerUpdates.shopName;
     }
-    
+
     // Auto-populate businessEmail from user email if not provided
     if (!sellerUpdates.businessEmail && req.user.email) {
       sellerUpdates.businessEmail = req.user.email;
     }
-    
+
     const seller = await Seller.findOneAndUpdate({ user: req.user._id }, sellerUpdates, { new: true, upsert: true });
     // if client asked to set isSeller on user, honor it
     if (updates.isSeller) {
@@ -190,7 +192,7 @@ router.put('/seller/me', auth, async (req, res) => {
     }
     // return merged user + seller
     const userObj = req.user.toObject();
-    userObj.seller = seller;
+    userObj.seller = seller ? seller.toObject() : null;
     res.json(userObj);
   } catch (err) {
     res.status(500).json({ msg: err.message });
@@ -202,24 +204,24 @@ router.put('/me/seller', auth, async (req, res) => {
   try {
     let updates = req.body || {};
     let sellerUpdates = updates.seller ? updates.seller : updates;
-    
+
     // Map shopName → name for backward compatibility
     if (sellerUpdates.shopName && !sellerUpdates.name) {
       sellerUpdates.name = sellerUpdates.shopName;
       delete sellerUpdates.shopName;
     }
-    
+
     // Auto-populate businessEmail from user email if not provided
     if (!sellerUpdates.businessEmail && req.user.email) {
       sellerUpdates.businessEmail = req.user.email;
     }
-    
+
     const seller = await Seller.findOneAndUpdate({ user: req.user._id }, sellerUpdates, { new: true, upsert: true });
     if (updates.isSeller) {
       await require('../models/User').findByIdAndUpdate(req.user._id, { isSeller: true });
     }
     const userObj = req.user.toObject();
-    userObj.seller = seller;
+    userObj.seller = seller ? seller.toObject() : null;
     res.json(userObj);
   } catch (err) {
     res.status(500).json({ msg: err.message });
@@ -307,10 +309,12 @@ router.get('/seller/stats', auth, async (req, res) => {
       { $lookup: { from: 'products', localField: 'items.product', foreignField: '_id', as: 'product' } },
       { $unwind: '$product' },
       { $match: { 'product.seller': sellerId } },
-      { $group: {
-        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
-        sales: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
-      } },
+      {
+        $group: {
+          _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+          sales: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+        }
+      },
       { $sort: { '_id.year': 1, '_id.month': 1 } }
     ]);
 

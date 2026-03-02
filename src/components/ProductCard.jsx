@@ -10,7 +10,9 @@ function ProductCard({
   stock,
   status = "Active",
   reports = 0,
-  onReport
+  onReport,
+  sellerShopName,
+  sellerFlags
 }) {
   const [quantity, setQuantity] = useState(1);
   const [showControls, setShowControls] = useState(false);
@@ -111,6 +113,15 @@ function ProductCard({
         >
           {name}
         </h3>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '8px' }}>
+          <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 600 }}>By: {sellerShopName || "Unknown Seller"}</span>
+          {sellerFlags > 0 && (
+            <span title={`This seller has ${sellerFlags} reported undelivered orders`} style={{ fontSize: '0.8rem', cursor: 'help' }}>
+              🚩 {sellerFlags}
+            </span>
+          )}
+        </div>
 
         <p
           style={{

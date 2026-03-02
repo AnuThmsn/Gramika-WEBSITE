@@ -9,9 +9,7 @@ import { translateBatch } from '../services/translationService';
 import './Header.css';
 import logo from '../assets/logo.png';
 
-const token = localStorage.getItem('gramika_token');
-const sellerStatus = localStorage.getItem('gramika_seller_status');
-const canAccessMyShop = token && sellerStatus === 'verified';
+
 
 function Header({ onCartClick }) {
   const { i18n } = useTranslation();
@@ -25,6 +23,9 @@ function Header({ onCartClick }) {
   });
   const navigate = useNavigate();
   const isLoggedIn = !!localStorage.getItem('gramika_token');
+  const token = localStorage.getItem('gramika_token');
+  const sellerStatus = localStorage.getItem('gramika_seller_status');
+  const canAccessMyShop = token && sellerStatus === 'verified';
 
   // Function to load translations when language changes
   const loadTranslations = async (language) => {
@@ -112,7 +113,7 @@ function Header({ onCartClick }) {
           <img className="logo" src={logo} alt="Logo" />
         </Link>
       </div>
-      
+
       {/* Desktop Navigation Links */}
       <div className="nav-links">
         <Link to="/shop" onClick={handleNavClick}>{translations.BUY}</Link>
@@ -137,26 +138,26 @@ function Header({ onCartClick }) {
       <div className="right-group">
         {/* Language Selector */}
         <div className="lang-container">
-          <button 
-            className="lang-btn" 
+          <button
+            className="lang-btn"
             onClick={() => setIsLangOpen(!isLangOpen)}
             aria-label="Change Language"
           >
-            <MdLanguage size={20} /> 
+            <MdLanguage size={20} />
             <span className="lang-text">{currentLabel}</span>
             <IoIosArrowDown className={`arrow-icon ${isLangOpen ? 'rotate' : ''}`} />
           </button>
 
           {isLangOpen && (
             <div className="lang-dropdown">
-              <div 
-                className={`lang-option ${i18n.language === 'en' ? 'active' : ''}`} 
+              <div
+                className={`lang-option ${i18n.language === 'en' ? 'active' : ''}`}
                 onClick={() => changeLanguage('en')}
               >
                 English
               </div>
-              <div 
-                className={`lang-option ${i18n.language === 'ml' ? 'active' : ''}`} 
+              <div
+                className={`lang-option ${i18n.language === 'ml' ? 'active' : ''}`}
                 onClick={() => changeLanguage('ml')}
               >
                 മലയാളം
@@ -167,10 +168,10 @@ function Header({ onCartClick }) {
 
         {/* Cart Icon */}
         <div className="cart-icon" onClick={handleCartClick} title="Open Cart">
-          <BsCart3 size={32} /> 
+          <BsCart3 size={32} />
           <span>{translations.CART}</span>
         </div>
-        
+
         {/* Profile Icon */}
         <div className="profile">
           <Link
@@ -187,7 +188,7 @@ function Header({ onCartClick }) {
         </div>
 
         {/* Hamburger Menu Button (Mobile) */}
-        <button 
+        <button
           className={`hamburger-menu ${isMobileMenuOpen ? 'open' : ''}`}
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"

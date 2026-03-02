@@ -44,6 +44,12 @@ router.get('/seller', auth, orderController.getSellerOrders);
 // Update order status (seller can update orders with their products)
 router.put('/:id/status', auth, orderController.updateOrderStatus);
 
+// User report order as not reached
+router.put('/:id/report', auth, orderController.reportOrderNotReached);
+
+// Admin flag sellers of an order
+router.put('/:id/flag-seller', auth, adminCheck, orderController.flagOrderSeller);
+
 // Admin update order status (admin can update any order)
 router.put('/:id/status/admin', auth, adminCheck, async (req, res) => {
   try {

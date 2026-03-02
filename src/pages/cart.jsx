@@ -20,7 +20,7 @@ const Cart = ({ isOpen, onClose }) => {
   /* ---------------- LOAD CART ---------------- */
   const loadCart = async () => {
     const token = localStorage.getItem('gramika_token');
-    
+
     if (!token) {
       // Guest user - load from localStorage
       const guestCart = JSON.parse(localStorage.getItem('gramika_cart') || '[]');
@@ -32,12 +32,12 @@ const Cart = ({ isOpen, onClose }) => {
     setLoading(true);
     try {
       const res = await fetch(`${API_BASE}/api/carts`, {
-        headers: { 
+        headers: {
           'Authorization': `Bearer ${token}`,
           'Cache-Control': 'no-cache'
         }
       });
-      
+
       if (!res.ok) {
         if (res.status === 401) {
           // Token expired or invalid
@@ -48,12 +48,13 @@ const Cart = ({ isOpen, onClose }) => {
         }
         throw new Error(`Failed to load cart: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       // Transform database cart items to frontend format
       const mapped = (data.items || []).map(item => {
         const product = item.product || {};
+        const sellerObj = product.seller || {};
         return {
           id: product._id || item.product,
           name: product.name || 'Product',
@@ -62,10 +63,13 @@ const Cart = ({ isOpen, onClose }) => {
           stock: product.quantity || 0,
           image: buildImageUrl(product.imageUrl || product.image || '/default-product.jpg'),
           status: product.status || 'Active',
-          productId: product._id || item.product // Keep original product ID
+          productId: product._id || item.product, // Keep original product ID
+          sellerPhone: sellerObj.seller?.phone || sellerObj.phone || 'N/A',
+          sellerShopName: sellerObj.sellerDetails?.shopName || sellerObj.name || 'Unknown Seller',
+          sellerFlags: sellerObj.sellerDetails?.flags || 0
         };
       }).filter(item => item.id); // Remove items with no ID
-      
+
       setCartItems(mapped);
     } catch (err) {
       console.error('Cart load failed:', err);
@@ -88,9 +92,9 @@ const Cart = ({ isOpen, onClose }) => {
         loadCart();
       }
     };
-    
+
     window.addEventListener('cartUpdated', onUpdated);
-    
+
     return () => {
       window.removeEventListener('cartUpdated', onUpdated);
     };
@@ -99,11 +103,11 @@ const Cart = ({ isOpen, onClose }) => {
   /* ---------------- UPDATE QUANTITY ---------------- */
   const handleUpdateQuantity = async (id, newQuantity) => {
     const token = localStorage.getItem('gramika_token');
-    
+
     if (!token) {
       // Guest user - update localStorage
       const guestCart = JSON.parse(localStorage.getItem('gramika_cart') || '[]');
-      const updatedCart = guestCart.map(item => 
+      const updatedCart = guestCart.map(item =>
         item.id === id ? { ...item, quantity: newQuantity } : item
       );
       localStorage.setItem('gramika_cart', JSON.stringify(updatedCart));
@@ -125,8 +129,8 @@ const Cart = ({ isOpen, onClose }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          product: id, 
+        body: JSON.stringify({
+          product: id,
           qty: newQuantity,
           priceAt: cartItems.find(item => item.id === id)?.price
         })
@@ -149,7 +153,7 @@ const Cart = ({ isOpen, onClose }) => {
   /* ---------------- REMOVE ITEM ---------------- */
   const handleRemove = async (productId) => {
     const token = localStorage.getItem('gramika_token');
-    
+
     if (!token) {
       // Guest user
       const guestCart = JSON.parse(localStorage.getItem('gramika_cart') || '[]');
@@ -164,8 +168,8 @@ const Cart = ({ isOpen, onClose }) => {
     try {
       const res = await fetch(`${API_BASE}/api/carts/item/${productId}`, {
         method: 'DELETE',
-        headers: { 
-          'Authorization': `Bearer ${token}` 
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -199,10 +203,12 @@ const Cart = ({ isOpen, onClose }) => {
     const token = localStorage.getItem('gramika_token');
     if (!token) {
       alert('Please login to proceed to checkout');
+      closeCart();
       navigate('/login');
       return;
     }
 
+    closeCart();
     navigate('/checkout');
   };
 
@@ -262,8 +268,12 @@ const Cart = ({ isOpen, onClose }) => {
             </div>
 
             <div className="cart-footer">
-              <span className="total-amount">₹{grandTotal.toFixed(2)}</span>
-              <button 
+              <div className="total-amount">
+                <span>Grand Total:</span>
+                <span>₹{grandTotal.toFixed(2)}</span>
+              </div>
+              <button
+                className="proceed-button"
                 onClick={handleProceedClick}
                 disabled={cartItems.some(item => (item.stock || 0) <= 0)}
               >

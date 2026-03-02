@@ -20,6 +20,7 @@ import {
   BsExclamationTriangle,
   BsEye
 } from "react-icons/bs";
+import { API_BASE, buildImageUrl } from "../../config";
 
 const Products = () => {
   const [searchParams] = useSearchParams();
@@ -89,7 +90,7 @@ const Products = () => {
   }, []);
 
   const handleApprove = async (id) => {
-    await fetch(`/api/products/${id}`, {
+    await fetch(`${API_BASE}/api/products/${id}`, {
       method: "PUT",
       headers: apiHeaders(),
       body: JSON.stringify({ status: "Active", rejectReason: "" })
@@ -101,7 +102,7 @@ const Products = () => {
   };
 
   const confirmReject = async () => {
-    await fetch(`/api/products/${productToReject}/reject`, {
+    await fetch(`${API_BASE}/api/products/${productToReject}/reject`, {
       method: "PUT",
       headers: apiHeaders()
     });
@@ -119,7 +120,7 @@ const Products = () => {
   };
 
   const confirmReport = async () => {
-    await fetch(`/api/products/${productToReport}`, {
+    await fetch(`${API_BASE}/api/products/${productToReport}`, {
       method: "PUT",
       headers: apiHeaders(),
       body: JSON.stringify({
@@ -142,7 +143,7 @@ const Products = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
-    await fetch(`/api/products/${id}`, {
+    await fetch(`${API_BASE}/api/products/${id}`, {
       method: "DELETE",
       headers: apiHeaders()
     });
@@ -210,91 +211,91 @@ const Products = () => {
       <Card>
         <Table hover responsive>
           <thead>
-  <tr>
-    <th>Item</th>
-    <th>Category</th>   {/* NEW */}
-    <th>Seller</th>
-    <th>Price / Stock</th>
-    <th>Status</th>
-    <th className="text-end">Actions</th>
-  </tr>
-</thead>
+            <tr>
+              <th>Item</th>
+              <th>Category</th>   {/* NEW */}
+              <th>Seller</th>
+              <th>Price / Stock</th>
+              <th>Status</th>
+              <th className="text-end">Actions</th>
+            </tr>
+          </thead>
 
           <tbody>
             {filteredProducts.map((p) => (
               <tr key={p.id}>
                 <td>{p.name}</td>
                 <td>
-  <Badge bg="light" text="dark" className="border">
-    {p.category}
-  </Badge>
-</td>
+                  <Badge bg="light" text="dark" className="border">
+                    {p.category}
+                  </Badge>
+                </td>
                 <td>{p.seller}</td>
-                
+
 
                 <td>₹{p.price} · {p.stock}</td>
                 <td><Badge bg={getStatusColor(p.status)}>{p.status}</Badge></td>
                 <td className="text-end">
-  <div className="d-flex justify-content-end gap-2">
+                  <div className="d-flex justify-content-end gap-2">
 
-    {p.status === "Active" && (
-      <>
-        <Button
-          size="sm"
-          variant="warning"
-          title="Mark as reported"
-          onClick={() => {
-            setProductToReport(p.id);
-            setShowReportModal(true);
-          }}
-        >
-          <BsExclamationTriangle />
-        </Button>
+                    {p.status === "Active" && (
+                      <>
+                        <Button
+                          size="sm"
+                          variant="warning"
+                          title="Mark as reported"
+                          onClick={() => {
+                            setProductToReport(p.id);
+                            setShowReportModal(true);
+                          }}
+                        >
+                          <BsExclamationTriangle />
+                        </Button>
 
-        <Button
-          size="sm"
-          variant="danger"
-          title="Reject product"
-          onClick={() => {
-            setProductToReject(p.id);
-            setShowRejectModal(true);
-          }}
-        >
-          <BsXLg />
-        </Button>
-      </>
-    )}
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          title="Reject product"
+                          onClick={() => {
+                            setProductToReject(p.id);
+                            setShowRejectModal(true);
+                          }}
+                        >
+                          <BsXLg />
+                        </Button>
+                      </>
+                    )}
 
-    {p.status !== "Active" && (
-      <Button
-        size="sm"
-        variant="success"
-        title="Activate product"
-        onClick={() => handleApprove(p.id)}
-      >
-        <BsCheckLg />
-      </Button>
-    )}
+                    {p.status !== "Active" && (
+                      <Button
+                        size="sm"
+                        variant="success"
+                        title="Activate product"
+                        onClick={() => handleApprove(p.id)}
+                      >
+                        <BsCheckLg />
+                      </Button>
+                    )}
 
-    <Button
-      size="sm"
-      variant="outline-danger"
-      title="Delete product"
-      onClick={() => handleDelete(p.id)}
-    >
-      <BsTrash />
-    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline-danger"
+                      title="Delete product"
+                      onClick={() => handleDelete(p.id)}
+                    >
+                      <BsTrash />
+                    </Button>
 
-    <Button
-      size="sm"
-      variant="outline-secondary"
-      title="View details"
-    >
-      <BsEye />
-    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline-secondary"
+                      title="View details"
+                    >
+                      <BsEye />
+                    </Button>
 
-  </div>
-</td>
+                  </div>
+                </td>
 
               </tr>
             ))}

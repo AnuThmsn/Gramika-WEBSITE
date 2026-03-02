@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaUser, FaLock, FaEnvelope, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
-import 'bootstrap/dist/css/bootstrap.min.css'; 
-import "../styles/Login.css"; 
+import 'bootstrap/dist/css/bootstrap.min.css';
+import "../styles/Login.css";
+import { API_BASE } from "../config";
+
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -18,7 +20,7 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const role = new URLSearchParams(location.search).get("role") || "user";
-const isAdminLogin = role === "admin";
+  const isAdminLogin = role === "admin";
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -44,18 +46,18 @@ const isAdminLogin = role === "admin";
           });
 
           let data = {};
-try {
-  data = await res.json();
-} catch {
-  data = {};
-}
+          try {
+            data = await res.json();
+          } catch {
+            data = {};
+          }
 
-if (!res.ok) {
-  alert(data.msg || 'Authentication failed');
-  return;
-}
+          if (!res.ok) {
+            alert(data.msg || 'Authentication failed');
+            return;
+          }
 
-          
+
 
           localStorage.setItem('gramika_token', data.token);
           localStorage.setItem('gramika_user_id', data.user.id);
@@ -65,17 +67,17 @@ if (!res.ok) {
           localStorage.setItem('gramika_seller_status', data.user.seller?.status || 'not_seller');
 
           // ADMIN LOGIN FLOW
-if (role === "admin") {
-  if (!data.user.isAdmin) {
-    alert("You are not authorized as admin");
-    return;
-  }
-  navigate("/admin/dashboard", { replace: true });
-  return;
-}
+          if (role === "admin") {
+            if (!data.user.isAdmin) {
+              alert("You are not authorized as admin");
+              return;
+            }
+            navigate("/admin/dashboard", { replace: true });
+            return;
+          }
 
-// NORMAL USER LOGIN FLOW
-navigate("/profile", { replace: true });
+          // NORMAL USER LOGIN FLOW
+          navigate("/profile", { replace: true });
 
 
         } else {
@@ -116,9 +118,9 @@ navigate("/profile", { replace: true });
         <div className="login-row">
 
           {/* LEFT IMAGE */}
-          <div 
+          <div
             className="image-side"
-            style={{ 
+            style={{
               backgroundImage: "url('https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')"
             }}
           >
@@ -137,11 +139,11 @@ navigate("/profile", { replace: true });
               <h2>{isLogin ? "Welcome Back" : "Join Gramika"}</h2>
             </div>
 
-           <form
-  onSubmit={handleSubmit}
-  className="d-flex flex-column gap-2"
-  style={{ maxWidth: "320px", width: "100%", margin: "0 auto" }}
->
+            <form
+              onSubmit={handleSubmit}
+              className="d-flex flex-column gap-2"
+              style={{ maxWidth: "320px", width: "100%", margin: "0 auto" }}
+            >
 
               {!isLogin && (
                 <>
@@ -200,22 +202,21 @@ navigate("/profile", { replace: true });
                   {isLogin ? "New to Gramika?" : "Already have an account?"}
                 </p>
                 <button
-  type="button"
-  className={`btn btn-link p-0 link-gramika ${
-    isAdminLogin && isLogin ? "disabled-register" : ""
-  }`}
-  onClick={() => {
-    if (isAdminLogin && isLogin) return; // block register for admin
-    setIsLogin(!isLogin);
-  }}
-  title={
-    isAdminLogin && isLogin
-      ? "Admin registration is disabled"
-      : ""
-  }
->
-  {isLogin ? "Register Here" : "Sign In"}
-</button>
+                  type="button"
+                  className={`btn btn-link p-0 link-gramika ${isAdminLogin && isLogin ? "disabled-register" : ""
+                    }`}
+                  onClick={() => {
+                    if (isAdminLogin && isLogin) return; // block register for admin
+                    setIsLogin(!isLogin);
+                  }}
+                  title={
+                    isAdminLogin && isLogin
+                      ? "Admin registration is disabled"
+                      : ""
+                  }
+                >
+                  {isLogin ? "Register Here" : "Sign In"}
+                </button>
 
               </div>
 

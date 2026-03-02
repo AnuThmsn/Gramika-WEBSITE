@@ -118,9 +118,9 @@ exports.updateOrderStatus = async (req, res) => {
     // Check if user is admin or seller with products in this order
     const User = require('../models/User');
     const user = await User.findById(req.user._id);
-    
+
     const isAdmin = user && user.isAdmin;
-    const sellerOwnsProduct = order.items.some(item => 
+    const sellerOwnsProduct = order.items.some(item =>
       item.product && String(item.product.seller) === String(req.user._id)
     );
 
@@ -138,6 +138,66 @@ exports.updateOrderStatus = async (req, res) => {
     return res.json(updatedOrder);
   } catch (err) {
     console.error('orderController.updateOrderStatus', err);
+    return res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+exports.reportOrderNotReached = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await Order.findOne({ _id: orderId, user: req.user._id });
+
+    if (!order) {
+      return res.status(404).json({ msg: 'Order not found' });
+    }
+
+    order.reportedNotReached = true;
+    await order.save();
+
+    return res.json(order);
+  } catch (err) {
+    console.error('orderController.reportOrderNotReached', err);
+    return res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+exports.flagOrderSeller = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await Order.findById(orderId).populate('items.product');
+
+    if (!order) {
+      return res.status(404).json({ msg: 'Order not found' });
+    }
+
+    // A single order could technically contain products from different sellers, 
+    // so we extract all unique sellers from the order products.
+    const sellerIds = new Set();
+    order.items.forEach(item => {
+      if (item.product && item.product.seller) {
+        sellerIds.add(String(item.product.seller));
+      }
+    });
+
+    const SellerModel = require('../models/Seller');
+
+    // Increment flags for all unique sellers involved in this reported order
+    const updatedSellers = [];
+    for (const sellerUserId of sellerIds) {
+      const sellerDoc = await SellerModel.findOneAndUpdate(
+        { user: sellerUserId },
+        { $inc: { flags: 1 } },
+        { new: true }
+      );
+      if (sellerDoc) updatedSellers.push(sellerDoc);
+    }
+
+    // Mark the order as having action taken (optional, but good so we don't flag them infinitely)
+    // we can reset reportedNotReached to false, or keep it true for records. We'll leave it as true.
+
+    return res.json({ msg: 'Sellers flagged successfully', updatedSellers });
+  } catch (err) {
+    console.error('orderController.flagOrderSeller', err);
     return res.status(500).json({ msg: 'Server error' });
   }
 };

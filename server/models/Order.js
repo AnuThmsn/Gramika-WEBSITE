@@ -13,7 +13,8 @@ const OrderSchema = new mongoose.Schema({
   total: { type: Number },
   address: { type: String },
   paymentMethod: { type: String },
-  status: { type: String, default: 'pending' }
+  status: { type: String, default: 'pending' },
+  reportedNotReached: { type: Boolean, default: false }
 }, { timestamps: true });
 
 // create an index on createdAt to speed up date range queries

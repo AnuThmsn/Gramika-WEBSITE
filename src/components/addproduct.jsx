@@ -5,7 +5,14 @@ import { API_BASE } from '../config';
 // This component uploads image to backend (/api/uploads)
 // and creates seller product via POST /api/products/seller
 const AddProduct = ({ onAddProduct, onClose }) => {
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState([
+    "Poultry & Meat",
+    "Vegetables",
+    "Fruits",
+    "Dairy & Beverages",
+    "Bakery & Snacks",
+    "Homemade Essentials"
+  ]);
   const [loading, setLoading] = useState(false);
 
   const [newProduct, setNewProduct] = useState({
@@ -16,47 +23,6 @@ const AddProduct = ({ onAddProduct, onClose }) => {
     imageFile: null,
     imagePreview: ""
   });
-
-  // Fetch categories on mount
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("gramika_token");
-
-      const res = await fetch(`${API_BASE}/api/categories`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setCategories(Array.isArray(data) ? data : []);
-      } else {
-        setDefaultCategories();
-      }
-    } catch (err) {
-      console.error("Failed to fetch categories:", err);
-      setDefaultCategories();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const setDefaultCategories = () => {
-    setCategories([
-      "Poultry & Meat",
-      "Vegetables",
-      "Fruits",
-      "Dairy & Beverages",
-      "Bakery & Snacks",
-      "Homemade Essentials"
-    ]);
-  };
 
   // Handle text inputs
   const handleInputChange = (e) => {

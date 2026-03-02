@@ -10,6 +10,7 @@ import {
   InputGroup,
 } from "react-bootstrap";
 import { ArrowLeftCircle } from "react-bootstrap-icons";
+import { API_BASE, buildImageUrl } from "../../config";
 
 const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -26,7 +27,7 @@ const Users = () => {
     if (!token) return;
 
     try {
-      const res = await fetch(`/api/users/${userId}`, {
+      const res = await fetch(`${API_BASE}/api/users/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -49,7 +50,7 @@ const Users = () => {
     const token = localStorage.getItem("gramika_token");
 
     try {
-      const res = await fetch(`/api/users/seller/${fullUserDetails._id}`, {
+      const res = await fetch(`${API_BASE}/api/users/seller/${fullUserDetails._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -84,7 +85,7 @@ const Users = () => {
     const token = localStorage.getItem("gramika_token");
 
     try {
-      const res = await fetch(`/api/users/seller/${fullUserDetails._id}`, {
+      const res = await fetch(`${API_BASE}/api/users/seller/${fullUserDetails._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -136,10 +137,10 @@ const Users = () => {
               u.seller?.status === "verified"
                 ? "Verified"
                 : u.seller?.status === "pending"
-                ? "Pending"
-                : u.seller?.status === "rejected"
-                ? "Rejected"
-                : "Not Applied",
+                  ? "Pending"
+                  : u.seller?.status === "rejected"
+                    ? "Rejected"
+                    : "Not Applied",
             status: u.isAdmin ? "Admin" : "Active",
           }));
           setUsers(formatted);
@@ -230,10 +231,10 @@ const Users = () => {
                         u.sellerStatus === "Verified"
                           ? "success"
                           : u.sellerStatus === "Pending"
-                          ? "warning"
-                          : u.sellerStatus === "Rejected"
-                          ? "danger"
-                          : "secondary"
+                            ? "warning"
+                            : u.sellerStatus === "Rejected"
+                              ? "danger"
+                              : "secondary"
                       }
                     >
                       {u.sellerStatus}
@@ -289,7 +290,7 @@ const Users = () => {
                     <strong>Aadhar:</strong>{" "}
                     {fullUserDetails.seller?.aadharFileId ? (
                       <a
-                        href={`/api/uploads/id/${fullUserDetails.seller.aadharFileId}`}
+                        href={`${API_BASE}/api/uploads/id/${fullUserDetails.seller.aadharFileId}`}
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -297,7 +298,7 @@ const Users = () => {
                       </a>
                     ) : fullUserDetails.seller?.aadharFileName ? (
                       <a
-                        href={`/api/uploads/file/${encodeURIComponent(fullUserDetails.seller.aadharFileName)}`}
+                        href={`${API_BASE}/api/uploads/file/${encodeURIComponent(fullUserDetails.seller.aadharFileName)}`}
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -312,7 +313,7 @@ const Users = () => {
                     <strong>License:</strong>{" "}
                     {fullUserDetails.seller?.licenseFileId ? (
                       <a
-                        href={`/api/uploads/id/${fullUserDetails.seller.licenseFileId}`}
+                        href={`${API_BASE}/api/uploads/id/${fullUserDetails.seller.licenseFileId}`}
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -320,7 +321,7 @@ const Users = () => {
                       </a>
                     ) : fullUserDetails.seller?.licenseFileName ? (
                       <a
-                        href={`/api/uploads/file/${encodeURIComponent(fullUserDetails.seller.licenseFileName)}`}
+                        href={`${API_BASE}/api/uploads/file/${encodeURIComponent(fullUserDetails.seller.licenseFileName)}`}
                         target="_blank"
                         rel="noreferrer"
                       >

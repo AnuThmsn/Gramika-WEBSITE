@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { FaStar, FaReply, FaFlag } from 'react-icons/fa';
 import './Review.css';
+import { API_BASE } from '../config';
 
 const Reviews = ({ sellerId }) => {
     const [reviews, setReviews] = useState([]);
@@ -22,7 +23,7 @@ const Reviews = ({ sellerId }) => {
             setLoading(true);
             try {
                 if (sellerId) {
-                    const res = await fetch(`/api/reviews/seller/${sellerId}`);
+                    const res = await fetch(`${API_BASE}/api/reviews/seller/${sellerId}`);
                     const data = await res.json();
                     if (mounted) setReviews(data || []);
                 } else {

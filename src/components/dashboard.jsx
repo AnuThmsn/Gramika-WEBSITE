@@ -43,7 +43,33 @@ const Dashboard = () => {
   }, []);
 
   const exportToExcel = () => {
-    alert('Exporting monthly status to Excel...');
+    if (!salesData || salesData.length === 0) {
+      alert('No data available to export');
+      return;
+    }
+
+    const headers = ['Month', 'Sales (INR)'];
+    const csvRows = [headers.join(',')];
+
+    salesData.forEach((data) => {
+      csvRows.push(`"${data.month}",${data.sales}`);
+    });
+
+    csvRows.push('');
+    csvRows.push('Summary,Value');
+    stats.forEach((s) => {
+      csvRows.push(`"${s.label}","${s.value.replace('₹', '')}"`);
+    });
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'monthly_report.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -68,16 +94,19 @@ const Dashboard = () => {
       <div className="card">
         <h3 className="chart-title">Sales Trend (Last 6 Months)</h3>
         <div className="chart-container">
-          {salesData.map((data, index) => (
-            <div key={index} className="chart-bar">
-              <div 
-                className="bar" 
-                style={{height: `${(data.sales / 30000) * 100}%`}}
-              ></div>
-              <div className="bar-label">{data.month}</div>
-              <div className="bar-value">₹{data.sales.toLocaleString()}</div>
-            </div>
-          ))}
+          {(() => {
+            const maxSales = Math.max(...salesData.map(d => d.sales), 100);
+            return salesData.map((data, index) => (
+              <div key={index} className="chart-bar">
+                <div
+                  className="bar"
+                  style={{ height: `${(data.sales / maxSales) * 100}%` }}
+                ></div>
+                <div className="bar-label">{data.month}</div>
+                <div className="bar-value">₹{data.sales.toLocaleString()}</div>
+              </div>
+            ));
+          })()}
         </div>
       </div>
     </div>

@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from "recharts";
+import { API_BASE } from "../../config";
 
 const Dashboard = () => {
   const [totalOrders, setTotalOrders] = useState(0);
@@ -50,7 +51,7 @@ const Dashboard = () => {
         const end = new Date();
         end.setHours(23, 59, 59, 999);
         const query = `?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`;
-        const res = await fetch(`/api/orders/admin${query}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+        const res = await fetch(`${API_BASE}/api/orders/admin${query}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
         if (!res.ok) throw new Error('Failed to load orders');
         const orders = await res.json();
         console.log('orders today response', orders);

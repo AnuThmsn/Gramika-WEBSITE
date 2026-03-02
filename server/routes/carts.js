@@ -9,7 +9,11 @@ router.get("/", auth, async (req, res) => {
     let cart = await Cart.findOne({ user: req.user._id })
       .populate({
         path: "items.product",
-        select: "name price imageUrl quantity status category"
+        select: "name price imageUrl quantity status category seller",
+        populate: {
+          path: "seller",
+          select: "name phone seller"
+        }
       });
 
     if (!cart) {
@@ -19,14 +23,29 @@ router.get("/", auth, async (req, res) => {
 
     // Filter out invalid products (deleted or null)
     const validItems = cart.items.filter(item => item.product);
-    
+
     // If any invalid items were filtered out, update the cart
     if (validItems.length !== cart.items.length) {
       cart.items = validItems;
       await cart.save();
     }
 
-    res.json(cart);
+    let cartObj = cart.toObject();
+    const SellerModel = require("../models/Seller");
+    for (let item of cartObj.items) {
+      if (item.product && item.product.seller && item.product.seller._id) {
+        const s = await SellerModel.findOne({ user: item.product.seller._id }).lean();
+        if (s) {
+          item.product.seller.sellerDetails = {
+            shopName: s.name || s.shopName,
+            flags: s.flags || 0,
+            phone: s.phone
+          };
+        }
+      }
+    }
+
+    res.json(cartObj);
   } catch (err) {
     console.error("Cart fetch error:", err);
     res.status(500).json({ msg: "Server error" });
@@ -87,10 +106,29 @@ router.post("/item", auth, async (req, res) => {
     // Populate product details for response
     await cart.populate({
       path: "items.product",
-      select: "name price imageUrl quantity status category"
+      select: "name price imageUrl quantity status category seller",
+      populate: {
+        path: "seller",
+        select: "name phone seller"
+      }
     });
 
-    res.json(cart);
+    let cartObj = cart.toObject();
+    const SellerModel = require("../models/Seller");
+    for (let item of cartObj.items) {
+      if (item.product && item.product.seller && item.product.seller._id) {
+        const s = await SellerModel.findOne({ user: item.product.seller._id }).lean();
+        if (s) {
+          item.product.seller.sellerDetails = {
+            shopName: s.name || s.shopName,
+            flags: s.flags || 0,
+            phone: s.phone
+          };
+        }
+      }
+    }
+
+    res.json(cartObj);
   } catch (err) {
     console.error("Add to cart error:", err);
     res.status(500).json({ msg: "Server error", error: err.message });
@@ -117,10 +155,29 @@ router.delete("/item/:productId", auth, async (req, res) => {
     // Populate remaining items
     await cart.populate({
       path: "items.product",
-      select: "name price imageUrl quantity status category"
+      select: "name price imageUrl quantity status category seller",
+      populate: {
+        path: "seller",
+        select: "name phone seller"
+      }
     });
 
-    res.json(cart);
+    let cartObj = cart.toObject();
+    const SellerModel = require("../models/Seller");
+    for (let item of cartObj.items) {
+      if (item.product && item.product.seller && item.product.seller._id) {
+        const s = await SellerModel.findOne({ user: item.product.seller._id }).lean();
+        if (s) {
+          item.product.seller.sellerDetails = {
+            shopName: s.name || s.shopName,
+            flags: s.flags || 0,
+            phone: s.phone
+          };
+        }
+      }
+    }
+
+    res.json(cartObj);
   } catch (err) {
     console.error("Remove from cart error:", err);
     res.status(500).json({ msg: "Server error" });

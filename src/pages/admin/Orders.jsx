@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useSearchParams } from 'react-router-dom';
 import { Card, Row, Col, Table, Badge, Button, Modal, Form } from "react-bootstrap";
 import { jsPDF } from "jspdf";
+import { API_BASE } from "../../config";
 
 const Orders = () => {
   const [searchParams] = useSearchParams();
@@ -16,9 +17,9 @@ const Orders = () => {
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
 
   const statusColors = {
-    pending: "warning", 
-    processing: "primary", 
-    delivered: "success", 
+    pending: "warning",
+    processing: "primary",
+    delivered: "success",
     cancelled: "danger"
   };
 
@@ -49,7 +50,7 @@ const Orders = () => {
       }
     };
     fetchOrders();
-    
+
     // Listen for order updates
     const onUpdated = () => fetchOrders();
     window.addEventListener('orderUpdated', onUpdated);
@@ -79,7 +80,7 @@ const Orders = () => {
 
   const handleUpdateStatus = async () => {
     if (!selectedOrder || !newStatus) return;
-    
+
     const token = localStorage.getItem('gramika_token');
     if (!token) {
       alert('Not authorized');
@@ -88,7 +89,7 @@ const Orders = () => {
 
     setUpdatingOrderId(selectedOrder._id);
     try {
-      const res = await fetch(`/api/orders/${selectedOrder._id}/status`, {
+      const res = await fetch(`${API_BASE}/api/orders/${selectedOrder._id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -104,12 +105,12 @@ const Orders = () => {
       }
 
       const updatedOrder = await res.json();
-      
+
       // Update local state
       setOrders(prev =>
         prev.map(o => (o._id === selectedOrder._id ? updatedOrder : o))
       );
-      
+
       alert(`✅ Order status updated to ${newStatus}`);
       setShowModal(false);
       window.dispatchEvent(new Event('orderUpdated'));
@@ -118,6 +119,28 @@ const Orders = () => {
       alert('Could not update order status');
     } finally {
       setUpdatingOrderId(null);
+    }
+  };
+
+  const handleFlagSeller = async () => {
+    if (!selectedOrder) return;
+    if (!window.confirm("Are you sure you want to flag the seller(s) for this reported order?")) return;
+
+    const token = localStorage.getItem('gramika_token');
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${selectedOrder._id}/flag-seller`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        alert("Sellers flagged successfully.");
+      } else {
+        alert("Failed to flag sellers.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error flagging sellers.");
     }
   };
 
@@ -161,9 +184,9 @@ const Orders = () => {
           </Col>
           <Col md={6} className="d-flex justify-content-end gap-2 align-items-center">
             <span className="text-muted">Filter by:</span>
-            <Form.Select 
-              value={filterStatus} 
-              onChange={(e) => setFilterStatus(e.target.value)} 
+            <Form.Select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
               style={{ maxWidth: "200px" }}
               size="sm"
             >
@@ -208,20 +231,27 @@ const Orders = () => {
                       <Badge bg={statusColors[order.status] || 'secondary'} className="px-3 py-2 rounded-pill" style={{ textTransform: 'capitalize' }}>
                         {order.status || 'pending'}
                       </Badge>
+                      {order.reportedNotReached && (
+                        <div className="mt-1">
+                          <Badge bg="danger" className="px-2 rounded-pill">
+                            Reported: Not Reached
+                          </Badge>
+                        </div>
+                      )}
                     </td>
                     <td className="text-center">
                       <div className="d-flex justify-content-center gap-2">
-                        <Button 
-                          variant="outline-primary" 
-                          size="sm" 
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
                           onClick={() => handleViewDetails(order)}
                           style={{ minWidth: "70px" }}
                         >
                           View
                         </Button>
-                        <Button 
-                          variant="outline-success" 
-                          size="sm" 
+                        <Button
+                          variant="outline-success"
+                          size="sm"
                           onClick={() => generateInvoice(order)}
                           style={{ minWidth: "70px" }}
                         >
@@ -247,7 +277,14 @@ const Orders = () => {
             <Form>
               <Row className="mb-3">
                 <Col md={6}><p><strong>Buyer:</strong> {selectedOrder.user?.name || selectedOrder.user?.email || 'Unknown'}</p></Col>
-                <Col md={6}><p><strong>Current Status:</strong> <span style={{ textTransform: 'capitalize' }}>{selectedOrder.status || 'pending'}</span></p></Col>
+                <Col md={6}>
+                  <p><strong>Current Status:</strong> <span style={{ textTransform: 'capitalize' }}>{selectedOrder.status || 'pending'}</span></p>
+                  {selectedOrder.reportedNotReached && (
+                    <Badge bg="danger" className="px-2 py-1 rounded-pill">
+                      Reported: Not Reached
+                    </Badge>
+                  )}
+                </Col>
               </Row>
               <Row className="mb-3">
                 <Col md={12}><p><strong>Items:</strong> {(selectedOrder.items || []).map(i => `${i.name} x${i.quantity}`).join(', ')}</p></Col>
@@ -260,8 +297,8 @@ const Orders = () => {
               </Row>
               <Form.Group>
                 <Form.Label>Update Status</Form.Label>
-                <Form.Select 
-                  value={newStatus} 
+                <Form.Select
+                  value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
                   disabled={updatingOrderId === selectedOrder._id}
                 >
@@ -275,9 +312,14 @@ const Orders = () => {
           )}
         </Modal.Body>
         <Modal.Footer>
+          {selectedOrder?.reportedNotReached && (
+            <Button variant="danger" className="me-auto" onClick={handleFlagSeller}>
+              Flag Seller
+            </Button>
+          )}
           <Button variant="secondary" onClick={() => setShowModal(false)} disabled={updatingOrderId === selectedOrder?._id}>Close</Button>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={handleUpdateStatus}
             disabled={updatingOrderId === selectedOrder?._id}
           >

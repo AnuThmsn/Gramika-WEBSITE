@@ -9,7 +9,7 @@
 .cart-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   z-index: 998;
   opacity: 0;
   visibility: hidden;
@@ -65,12 +65,29 @@
 }
 
 .close-cart {
-  background: none;
+  background: transparent;
   border: none;
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   color: #a1a6a1;
   cursor: pointer;
-  padding: 0;
+  padding: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-cart:hover {
+  background-color: #f0f3f0;
+  color: #1d2d1f;
+  transform: scale(1.05);
+}
+
+.close-cart:active {
+  transform: scale(0.95);
 }
 
 /* ---------------------------
@@ -225,34 +242,46 @@
 
 .cart-footer {
   background: white;
-  padding: 18px 0 5px;
+  padding: 24px 0 10px;
   border-top: 1px solid #e5e8e5;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .total-amount {
   font-size: 1.25rem;
   font-weight: 700;
   color: #0f3d1e;
+  display: flex;
+  justify-content: space-between;
+  /* "Grand Total:   ₹XX" */
+  width: 100%;
 }
 
 /* Proceed Button */
 .proceed-button {
+  width: 100%;
   background: #0f3d1e;
   color: white;
-  padding: 12px 22px;
+  padding: 16px 20px;
   border: none;
-  border-radius: 10px;
-  font-size: 1rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(15, 61, 30, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
 }
 
 .proceed-button:hover {
-  background: #0c3418;
+  background: #0b2e17;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(15, 61, 30, 0.25);
 }
 
 /* ---------------------------
@@ -324,26 +353,26 @@
     right: -100%;
     padding: 20px 16px;
   }
-  
+
   .cart-header h2 {
     font-size: 1.3rem;
   }
-  
+
   .cart-item {
     gap: 12px;
     padding: 12px 0;
   }
-  
+
   .cart-item img {
     width: 60px;
     height: 60px;
   }
-  
+
   .proceed-button {
     padding: 10px 18px;
     font-size: 0.95rem;
   }
-  
+
   .total-amount {
     font-size: 1.15rem;
   }
@@ -358,6 +387,7 @@
     transform: translateX(100%);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -369,6 +399,7 @@
     transform: translateX(0);
     opacity: 1;
   }
+
   to {
     transform: translateX(100%);
     opacity: 0;

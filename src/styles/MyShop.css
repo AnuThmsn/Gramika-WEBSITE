@@ -14,9 +14,9 @@
 .myshop-page-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background-color: #c8c7c7;
-  
+  height: calc(100vh - var(--navbar-height, 60px));
+  /* stretch fully from under navbar */
+  background-color: #f8fdf9;
 }
 
 /* ============================================
@@ -39,7 +39,8 @@
   padding: clamp(12px, 2vw, 20px);
   box-shadow: 2px 0 5px rgba(46, 23, 23, 0.1);
   overflow-y: auto;
-  max-height: calc(100vh - var(--navbar-height));
+  height: 100%;
+  /* Stretch full height of the flex continer */
   flex-shrink: 0;
 }
 
@@ -98,7 +99,7 @@
   padding: var(--content-padding);
   background-color: #f8fdf9;
   overflow-y: auto;
-  max-height: calc(100vh - var(--navbar-height));
+  height: 100%;
   box-sizing: border-box;
 }
 
@@ -255,7 +256,7 @@
 @media (max-width: 768px) {
   .myshop-sidebar {
     width: 100%;
-    max-height: auto;
+    height: auto;
     padding: clamp(10px, 1.5vw, 12px);
     margin-bottom: clamp(12px, 2vw, 16px);
   }
@@ -286,7 +287,7 @@
   }
 
   .myshop-content {
-    max-height: auto;
+    height: auto;
     padding: clamp(12px, 2vw, 16px);
   }
 
@@ -314,7 +315,8 @@
    ============================================ */
 @media (max-width: 480px) {
   .myshop-page-container {
-    min-height: auto;
+    height: auto;
+    min-height: calc(100vh - var(--navbar-height, 60px));
   }
 
   .myshop-sidebar {

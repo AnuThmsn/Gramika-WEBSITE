@@ -23,9 +23,20 @@ router.get("/", auth, async (req, res) => {
       filter.seller = req.user._id;
     }
 
-    const products = await Product.find(filter)
+    let products = await Product.find(filter)
       .populate("seller", "name email")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const SellerModel = require("../models/Seller");
+    for (const p of products) {
+      if (p.seller && p.seller._id) {
+        const s = await SellerModel.findOne({ user: p.seller._id }).lean();
+        if (s) {
+          p.seller.sellerDetails = { shopName: s.name || s.shopName, flags: s.flags || 0 };
+        }
+      }
+    }
 
     res.json(products);
   } catch (err) {
@@ -49,8 +60,20 @@ router.get("/public", async (req, res) => {
       filter.name = { $regex: q, $options: "i" };
     }
 
-    const products = await Product.find(filter)
-      .sort({ createdAt: -1 });
+    let products = await Product.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("seller", "name email")
+      .lean();
+
+    const SellerModel = require("../models/Seller");
+    for (const p of products) {
+      if (p.seller && p.seller._id) {
+        const s = await SellerModel.findOne({ user: p.seller._id }).lean();
+        if (s) {
+          p.seller.sellerDetails = { shopName: s.name || s.shopName, flags: s.flags || 0 };
+        }
+      }
+    }
 
     res.json(products);
   } catch (err) {
@@ -61,10 +84,21 @@ router.get("/public", async (req, res) => {
    GET SINGLE PRODUCT (PUBLIC)
 ====================================================== */
 router.get("/public/:id", async (req, res) => {
-  const product = await Product.findById(req.params.id);
+  let product = await Product.findById(req.params.id)
+    .populate("seller", "name email")
+    .lean();
   if (!product || product.status !== "Active") {
     return res.status(404).json({ msg: "Not available" });
   }
+
+  if (product.seller && product.seller._id) {
+    const SellerModel = require("../models/Seller");
+    const s = await SellerModel.findOne({ user: product.seller._id }).lean();
+    if (s) {
+      product.seller.sellerDetails = { shopName: s.name || s.shopName, flags: s.flags || 0 };
+    }
+  }
+
   res.json(product);
 });
 
@@ -74,9 +108,8 @@ router.get("/public/:id", async (req, res) => {
 ====================================================== */
 router.post("/", auth, admin, upload.single("image"), async (req, res) => {
   try {
-    // Build full absolute URL for image (production-friendly)
-    const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
-    const imageUrl = req.file ? `${baseUrl}/api/uploads/${req.file.filename}` : "";
+    // Store relative path so frontend config.js builds the correct view URL
+    const imageUrl = req.file ? `/api/uploads/${req.file.filename}` : "";
 
     const product = new Product({
       ...req.body,
@@ -101,9 +134,8 @@ router.post(
   upload.single("image"),
   async (req, res) => {
     try {
-      // Build full absolute URL for image (production-friendly)
-      const baseUrl = process.env.BASE_URL || 'http://localhost:5000';
-      const imageUrl = req.file ? `${baseUrl}/api/uploads/${req.file.filename}` : "";
+      // Store relative path so frontend config.js builds the correct view URL
+      const imageUrl = req.file ? `/api/uploads/${req.file.filename}` : "";
 
       const product = new Product({
         ...req.body,

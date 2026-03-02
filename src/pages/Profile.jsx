@@ -73,23 +73,23 @@ export default function ProfilePage() {
         if (res.ok) {
           const userData = await res.json();
           console.log('Fetched user data:', userData); // Debug log
-          
+
           // Ensure category is an array
-          const sellerCategory = Array.isArray(userData.seller?.category) 
-            ? userData.seller.category 
-            : userData.seller?.category 
-              ? [userData.seller.category] 
+          const sellerCategory = Array.isArray(userData.seller?.category)
+            ? userData.seller.category
+            : userData.seller?.category
+              ? [userData.seller.category]
               : [];
-          
+
           // Persist auth & seller info in localStorage
           localStorage.setItem('gramika_user_id', userData._id);
           localStorage.setItem('gramika_is_admin', String(userData.isAdmin || false));
           localStorage.setItem('gramika_is_seller', String(userData.isSeller || false));
-          
+
           // Normalize seller status from single user model
           const sellerStatus = userData.seller?.status || 'not_seller';
           localStorage.setItem('gramika_seller_status', sellerStatus);
-          
+
           // Set complete user state with seller fields - ensure all fields exist
           setUser({
             _id: userData._id || "",
@@ -104,7 +104,7 @@ export default function ProfilePage() {
             isAdmin: userData.isAdmin || false,
             isSeller: userData.isSeller || false,
             seller: {
-              shopName: userData.seller?.shopName || "",
+              shopName: userData.seller?.name || userData.seller?.shopName || "",
               category: sellerCategory,
               businessEmail: userData.seller?.businessEmail || "",
               phone: userData.seller?.phone || "",
@@ -114,6 +114,15 @@ export default function ProfilePage() {
               status: userData.seller?.status || "not_seller"
             }
           });
+
+          // Fetch recent orders
+          const ordersRes = await fetch(`${API_BASE}/api/orders`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (ordersRes.ok) {
+            const ordersData = await ordersRes.json();
+            setRecentOrders(ordersData.slice(0, 3));
+          }
 
         } else {
           // Token invalid, redirect to login
@@ -147,7 +156,7 @@ export default function ProfilePage() {
   const [editingSeller, setEditingSeller] = useState(false);
   const [uploadingLicense, setUploadingLicense] = useState(false);
   const [uploadingAadhar, setUploadingAadhar] = useState(false);
-  
+
   // Account settings modals
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -178,17 +187,14 @@ export default function ProfilePage() {
   // Delete account confirmation
   const [deletePassword, setDeletePassword] = useState('');
 
-  // Activity (sample)
-  const [activity] = useState([
-    { id: 1, text: "Ordered 2 kg of Mangoes", date: "2025-11-01" },
-    { id: 2, text: "Posted a recipe: Apple cinnamon buns", date: "2025-10-12" },
-    { id: 3, text: "Purchased Coconut Oil from Selvi's Farm", date: "2025-09-30" },
-  ]);
-  const [showAllActivity, setShowAllActivity] = useState(false);
-  const displayedActivity = showAllActivity ? activity : activity.slice(0, 3);
-
   // Quick feedback
   const [quickFeedback, setQuickFeedback] = useState({ rating: 5, comment: "" });
+
+  // Recent orders state
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [showOrdersModal, setShowOrdersModal] = useState(false);
+  const [myOrders, setMyOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
 
   // Seller rating and review states
   const [sellerRating, setSellerRating] = useState(null);
@@ -236,7 +242,7 @@ export default function ProfilePage() {
   // --- Handlers ---
   const handleSellerInput = (e) => {
     const { name, value, type, checked } = e.target;
-    
+
     if (name.startsWith("seller.")) {
       const field = name.split(".")[1];
       setUser(prev => ({
@@ -257,7 +263,7 @@ export default function ProfilePage() {
       const newCategories = currentCategories.includes(category)
         ? currentCategories.filter(c => c !== category)
         : [...currentCategories, category];
-      
+
       return {
         ...prev,
         seller: {
@@ -281,11 +287,11 @@ export default function ProfilePage() {
   const handleLicenseUpload = async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    
+
     setUploadingLicense(true);
     const formData = new FormData();
     formData.append('license', file);
-    
+
     const token = localStorage.getItem('gramika_token');
     try {
       const res = await fetch(`${API_BASE}/api/users/me/seller/license`, {
@@ -295,16 +301,13 @@ export default function ProfilePage() {
         },
         body: formData
       });
-      
+
       const data = await res.json();
       console.log('License upload response:', data); // Debug log
-      
+
       if (res.ok) {
         handleSellerFieldChange('licenseFileName', data.fileName || file.name);
         alert("License uploaded successfully!");
-        
-        // Also update the user data in the backend
-        await updateSellerInfo();
       } else {
         alert(data.message || data.msg || "Failed to upload license file");
       }
@@ -319,11 +322,11 @@ export default function ProfilePage() {
   const handleAadharUpload = async (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    
+
     setUploadingAadhar(true);
     const formData = new FormData();
     formData.append('aadhar', file);
-    
+
     const token = localStorage.getItem('gramika_token');
     try {
       const res = await fetch(`${API_BASE}/api/users/me/seller/aadhar`, {
@@ -333,16 +336,13 @@ export default function ProfilePage() {
         },
         body: formData
       });
-      
+
       const data = await res.json();
       console.log('Aadhar upload response:', data); // Debug log
-      
+
       if (res.ok) {
         handleSellerFieldChange('aadharFileName', data.fileName || file.name);
         alert("Aadhar uploaded successfully!");
-        
-        // Also update the user data in the backend
-        await updateSellerInfo();
       } else {
         alert(data.message || data.msg || "Failed to upload Aadhar file");
       }
@@ -354,27 +354,7 @@ export default function ProfilePage() {
     }
   };
 
-  // Helper function to update seller info after file upload
-  const updateSellerInfo = async () => {
-    const token = localStorage.getItem('gramika_token');
-    try {
-      const res = await fetch(`${API_BASE}/api/users/me/seller`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        // send seller object directly (backend expects seller fields at root)
-        body: JSON.stringify(user.seller)
-      });
-      
-      if (res.ok) {
-        console.log('Seller info updated after file upload');
-      }
-    } catch (error) {
-      console.error('Error updating seller info:', error);
-    }
-  };
+
 
   // Derive a user-friendly filename from stored GridFS filename
   const getDisplayFilename = (storedName) => {
@@ -385,18 +365,18 @@ export default function ProfilePage() {
 
   const saveSellerInfo = async (e) => {
     e?.preventDefault();
-    
+
     // Validate required fields
     if (!user.seller.shopName) {
       alert("Please provide Shop Name.");
       return;
     }
-    
+
     if (!user.seller.businessEmail) {
       alert("Please provide Business Email.");
       return;
     }
-    
+
     const token = localStorage.getItem('gramika_token');
     try {
       const res = await fetch(`${API_BASE}/api/users/me/seller`, {
@@ -413,14 +393,14 @@ export default function ProfilePage() {
           isSeller: true
         })
       });
-      
+
       if (res.ok) {
         const updatedUser = await res.json();
         console.log('Seller info saved:', updatedUser); // Debug log
         setUser(updatedUser);
         localStorage.setItem('gramika_is_seller', 'true');
         localStorage.setItem('gramika_seller_status', updatedUser.seller?.status || 'registered');
-        
+
         setEditingSeller(false);
         alert("Seller information saved successfully!");
       } else {
@@ -436,35 +416,39 @@ export default function ProfilePage() {
 
   const applyForVerification = async (e) => {
     e?.preventDefault();
-    
+
     if (!user.seller.shopName) {
       alert("Please provide Shop Name before applying.");
       return;
     }
-    
+
     if (!user.seller.licenseFileName || !user.seller.aadharFileName) {
       alert("Please upload both License and Aadhar files before applying for verification.");
       return;
     }
-    
+
     const token = localStorage.getItem('gramika_token');
     try {
-      const res = await fetch(`${API_BASE}/api/users/me/seller/apply`, {
+      const res = await fetch(`${API_BASE}/api/users/me/seller`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ status: 'pending' })
+        body: JSON.stringify({
+          seller: { ...user.seller, status: 'pending' },
+          isSeller: true
+        })
       });
-      
+
       if (res.ok) {
         const updatedUser = await res.json();
         setUser(updatedUser);
+        localStorage.setItem('gramika_is_seller', 'true');
         localStorage.setItem('gramika_seller_status', 'pending');
-        
+
         setEditingSeller(false);
-        alert("Application sent — status: PENDING.");
+        alert("Application sent — status: PENDING. Your seller details have been saved.");
       } else {
         const error = await res.json();
         alert(error.message || error.msg || "Failed to submit application");
@@ -480,30 +464,30 @@ export default function ProfilePage() {
     const token = localStorage.getItem('gramika_token');
     if (!token) return alert('Please login to submit a review');
     if (!reviewTarget) return alert('Please select a seller to review');
-    
+
     try {
       const res = await fetch(`${API_BASE}/api/reviews`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json', 
-          'Authorization': `Bearer ${token}` 
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          seller: reviewTarget, 
-          rating: reviewRating, 
-          comment: reviewText 
+        body: JSON.stringify({
+          seller: reviewTarget,
+          rating: reviewRating,
+          comment: reviewText
         })
       });
-      
+
       if (!res.ok) throw new Error('Failed to submit review');
       alert('Review submitted — thank you!');
       setReviewText('');
       setReviewRating(5);
       setReviewTarget('');
-      
+
       // Notify any review lists to refresh
-      try { 
-        window.dispatchEvent(new Event('reviewsUpdated')); 
+      try {
+        window.dispatchEvent(new Event('reviewsUpdated'));
       } catch (e) { /* ignore */ }
     } catch (err) {
       console.error(err);
@@ -524,7 +508,7 @@ export default function ProfilePage() {
       alert('New passwords do not match');
       return;
     }
-    
+
     const token = localStorage.getItem('gramika_token');
     try {
       const res = await fetch(`${API_BASE}/api/users/me/password`, {
@@ -538,7 +522,7 @@ export default function ProfilePage() {
           newPassword: passwordData.newPassword
         })
       });
-      
+
       const data = await res.json();
       if (res.ok) {
         alert('Password changed successfully');
@@ -570,7 +554,7 @@ export default function ProfilePage() {
       alert('Please enter your password');
       return;
     }
-    
+
     const token = localStorage.getItem('gramika_token');
     try {
       const res = await fetch(`${API_BASE}/api/users/me`, {
@@ -581,7 +565,7 @@ export default function ProfilePage() {
         },
         body: JSON.stringify({ password: deletePassword })
       });
-      
+
       const data = await res.json();
       if (res.ok) {
         alert('Account deleted successfully');
@@ -596,26 +580,78 @@ export default function ProfilePage() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('gramika_token');
+    localStorage.removeItem('gramika_user_id');
+    localStorage.removeItem('gramika_is_admin');
+    localStorage.removeItem('gramika_is_seller');
+    localStorage.removeItem('gramika_seller_status');
+    navigate('/login');
+  };
+
   const handleRegisterSeller = () => {
-    // Pre-fill seller info with user info if available
-    const initialSellerData = {
-      shopName: "",
-      category: [],
-      businessEmail: user.email || "",
-      phone: user.phone || "",
-      address: user.address || "",
-      licenseFileName: "",
-      aadharFileName: "",
-      status: "registered"
-    };
-    
     setUser(prev => ({
       ...prev,
-      seller: initialSellerData,
+      seller: {
+        shopName: prev.seller?.shopName || "",
+        category: prev.seller?.category || [],
+        businessEmail: prev.seller?.businessEmail || prev.email || "",
+        phone: prev.seller?.phone || prev.phone || "",
+        address: prev.seller?.address || prev.address || "",
+        licenseFileName: prev.seller?.licenseFileName || "",
+        aadharFileName: prev.seller?.aadharFileName || "",
+        status: prev.seller?.status && prev.seller.status !== 'not_seller'
+          ? prev.seller.status
+          : "registered"
+      },
       isSeller: true
     }));
-    
+
     setEditingSeller(true);
+  };
+
+  const handleFetchMyOrders = async () => {
+    setLoadingOrders(true);
+    setShowOrdersModal(true);
+    const token = localStorage.getItem('gramika_token');
+
+    try {
+      const res = await fetch(`${API_BASE}/api/orders`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMyOrders(data || []);
+      } else {
+        alert('Failed to fetch orders');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while fetching orders.');
+    } finally {
+      setLoadingOrders(false);
+    }
+  };
+
+  const handleReportOrderNotReached = async (orderId) => {
+    if (!window.confirm("Are you sure you want to report this order as not reached?")) return;
+
+    const token = localStorage.getItem('gramika_token');
+    try {
+      const res = await fetch(`${API_BASE}/api/orders/${orderId}/report`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        alert('Order reported as not reached. Admin will review the seller.');
+        setMyOrders(prev => prev.map(o => o._id === orderId ? { ...o, reportedNotReached: true } : o));
+      } else {
+        alert('Failed to report order.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while reporting.');
+    }
   };
 
   // Format date for display
@@ -674,8 +710,8 @@ export default function ProfilePage() {
                     {user.seller.status === "pending"
                       ? "Pending"
                       : user.seller.status === "verified"
-                      ? "Verified"
-                      : "Registered"}
+                        ? "Verified"
+                        : "Registered"}
                   </div>
                 </div>
               )}
@@ -699,7 +735,7 @@ export default function ProfilePage() {
                 <div className="info-item">
                   <span>Account Type</span>
                   <strong>
-                    {user.isAdmin ? "Admin" : user.isSeller ? "Seller" : "User"}
+                    {user.isAdmin ? "Admin" : (user.isSeller && user.seller?.status === 'verified') ? "Seller" : "Buyer"}
                   </strong>
                 </div>
               </div>
@@ -746,16 +782,55 @@ export default function ProfilePage() {
               </form>
             </div>
 
-            {/* Account Settings bottom of left */}
-            <div className="card settings-card left-settings">
-              <h3>Account Settings</h3>
-              <div className="settings-options">
-                <button onClick={() => setShowChangePassword(true)}>Change Password</button>
-                <button onClick={() => setShowNotifications(true)}>Notifications</button>
-                <button onClick={() => setShowPrivacy(true)}>Privacy</button>
-                <button className="danger" onClick={() => setShowDeleteAccount(true)}>Delete Account</button>
-              </div>
+            {/* Write a review (select seller) */}
+            <div className="card write-review-card">
+              <h3>Write a Review</h3>
+              <form onSubmit={submitReview}>
+                <div className="form-group">
+                  <label>Select Seller</label>
+                  <select
+                    className="form-select"
+                    value={reviewTarget}
+                    onChange={(e) => setReviewTarget(e.target.value)}
+                  >
+                    <option value="">-- choose seller --</option>
+                    {sellers.map(s => (
+                      <option key={s._id} value={s._id}>
+                        {s.seller?.shopName || s.name || s.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Rating</label>
+                  <select
+                    className="form-select rating-select"
+                    value={reviewRating}
+                    onChange={(e) => setReviewRating(Number(e.target.value))}
+                  >
+                    {[5, 4, 3, 2, 1].map(n => <option key={n} value={n}>{n} star{n > 1 ? 's' : ''}</option>)}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label>Comment</label>
+                  <textarea
+                    className="form-textarea"
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    rows={3}
+                    placeholder="Share your experience..."
+                  />
+                </div>
+
+                <div className="form-actions">
+                  <button type="button" className="cancel-btn" onClick={() => { setReviewText(''); setReviewRating(5); setReviewTarget(''); }}>Clear</button>
+                  <button type="submit" className="save-btn">Submit Review</button>
+                </div>
+              </form>
             </div>
+
           </div>
 
           {/* RIGHT (70%) wide column */}
@@ -764,8 +839,8 @@ export default function ProfilePage() {
             <div className="card seller-info-card">
               <h2>Seller Information</h2>
               <p className="seller-intro">
-                {user.isSeller 
-                  ? "Your seller information. Click Edit to modify." 
+                {user.isSeller
+                  ? "Your seller information. Click Edit to modify."
                   : "Register as a seller to start selling your products."}
               </p>
 
@@ -778,7 +853,7 @@ export default function ProfilePage() {
                   <div className="seller-field full">
                     <label>Categories</label>
                     <div className="seller-value categories-display">
-                      {user.seller?.category && user.seller.category.length > 0 
+                      {user.seller?.category && user.seller.category.length > 0
                         ? user.seller.category.join(", ")
                         : "—"}
                     </div>
@@ -812,9 +887,9 @@ export default function ProfilePage() {
                   </div>
                   <div className="seller-field"><label>Status</label>
                     <div className={`status-badge ${user.seller?.status || 'not_seller'}`}>
-                      {user.seller?.status === 'not_seller' ? 'Not Registered' : 
-                       user.seller?.status === 'registered' ? 'Registered' :
-                       user.seller?.status === 'pending' ? 'Pending Verification' : 'Verified'}
+                      {user.seller?.status === 'not_seller' ? 'Not Registered' :
+                        user.seller?.status === 'registered' ? 'Registered' :
+                          user.seller?.status === 'pending' ? 'Pending Verification' : 'Verified'}
                     </div>
                   </div>
 
@@ -833,9 +908,9 @@ export default function ProfilePage() {
                             disabled={user.seller?.status === "pending" || user.seller?.status === "verified"}
                             title={user.seller?.status === "pending" ? "Application pending" : ""}
                           >
-                            {user.seller?.status === "pending" ? "Pending" : 
-                             user.seller?.status === "verified" ? "Verified" : 
-                             "Apply for Verification"}
+                            {user.seller?.status === "pending" ? "Pending" :
+                              user.seller?.status === "verified" ? "Verified" :
+                                "Apply for Verification"}
                           </button>
                         )}
                       </>
@@ -852,34 +927,34 @@ export default function ProfilePage() {
                   <div className="form-grid">
                     <div className="form-row">
                       <label>Shop Name *</label>
-                      <input 
+                      <input
                         className="form-input"
-                        name="seller.shopName" 
-                        value={user.seller?.shopName || ""} 
-                        onChange={handleSellerInput} 
-                        required 
+                        name="seller.shopName"
+                        value={user.seller?.shopName || ""}
+                        onChange={handleSellerInput}
+                        required
                         placeholder="Enter your shop name"
                       />
                     </div>
                     <div className="form-row">
                       <label>Business Email *</label>
-                      <input 
+                      <input
                         className="form-input"
-                        name="seller.businessEmail" 
-                        value={user.seller?.businessEmail || ""} 
-                        onChange={handleSellerInput} 
-                        type="email" 
-                        required 
+                        name="seller.businessEmail"
+                        value={user.seller?.businessEmail || ""}
+                        onChange={handleSellerInput}
+                        type="email"
+                        required
                         placeholder="business@example.com"
                       />
                     </div>
                     <div className="form-row">
                       <label>Phone</label>
-                      <input 
+                      <input
                         className="form-input"
-                        name="seller.phone" 
-                        value={user.seller?.phone || ""} 
-                        onChange={handleSellerInput} 
+                        name="seller.phone"
+                        value={user.seller?.phone || ""}
+                        onChange={handleSellerInput}
                         placeholder="+91 9876543210"
                       />
                     </div>
@@ -907,11 +982,11 @@ export default function ProfilePage() {
                     </div>
                     <div className="form-row full">
                       <label>Business Address</label>
-                      <textarea 
+                      <textarea
                         className="form-textarea"
-                        name="seller.address" 
-                        value={user.seller?.address || ""} 
-                        onChange={handleSellerInput} 
+                        name="seller.address"
+                        value={user.seller?.address || ""}
+                        onChange={handleSellerInput}
                         rows="3"
                         placeholder="Enter your business address"
                       />
@@ -934,7 +1009,7 @@ export default function ProfilePage() {
                         </label>
                         {user.seller?.licenseFileName && (
                           <div className="file-preview">
-                            <span className="file-name">{user.seller.licenseFileName}</span>
+                            <span className="file-name">{getDisplayFilename(user.seller.licenseFileName)}</span>
                             <span className="file-status success">✓</span>
                           </div>
                         )}
@@ -957,7 +1032,7 @@ export default function ProfilePage() {
                         </label>
                         {user.seller?.aadharFileName && (
                           <div className="file-preview">
-                            <span className="file-name">{user.seller.aadharFileName}</span>
+                            <span className="file-name">{getDisplayFilename(user.seller.aadharFileName)}</span>
                             <span className="file-status success">✓</span>
                           </div>
                         )}
@@ -990,78 +1065,47 @@ export default function ProfilePage() {
               </div>
             )}
 
-            {/* Activity */}
+            {/* Recent Orders Overview */}
             <div className="card activity-card">
               <div className="activity-header">
                 <h3>Recent ORDERS</h3>
                 <span className="muted">Recent</span>
               </div>
               <ul className="activity-list">
-                {displayedActivity.map((it) => (
-                  <li key={it.id} className="activity-item">
-                    <span className="activity-text">{it.text}</span>
-                    <small className="activity-date">{it.date}</small>
+                {recentOrders.length === 0 ? (
+                  <li className="activity-item">
+                    <span className="activity-text" style={{ color: '#666' }}>No recent orders.</span>
                   </li>
-                ))}
+                ) : (
+                  recentOrders.map((order) => (
+                    <li key={order._id} className="activity-item">
+                      <span className="activity-text">
+                        Order #{(order._id || '').slice(-6).toUpperCase()} - ₹{order.total} <br />
+                        <small style={{ color: '#666' }}>
+                          {(order.items || []).map(it => `${it.name || (it.product && it.product.name)} x${it.quantity}`).join(', ')}
+                        </small>
+                      </span>
+                      <small className="activity-date">{new Date(order.createdAt).toLocaleDateString()}</small>
+                    </li>
+                  ))
+                )}
               </ul>
 
               <div className="activity-actions">
-                <button className="outline-btn" onClick={() => navigate("/orders")}>View All Orders</button>
-                {activity.length > 3 && (
-                  <button className="outline-btn" onClick={() => setShowAllActivity(!showAllActivity)}>
-                    {showAllActivity ? "Show Less" : "Show More"}
-                  </button>
-                )}
+                <button className="outline-btn" onClick={handleFetchMyOrders}>View All Orders</button>
               </div>
             </div>
 
-            {/* Write a review (select seller) */}
-            <div className="card write-review-card">
-              <h3>Write a Review</h3>
-              <form onSubmit={submitReview}>
-                <div className="form-group">
-                  <label>Select Seller</label>
-                  <select 
-                    className="form-select"
-                    value={reviewTarget} 
-                    onChange={(e) => setReviewTarget(e.target.value)}
-                  >
-                    <option value="">-- choose seller --</option>
-                    {sellers.map(s => (
-                      <option key={s._id} value={s._id}>
-                        {s.seller?.shopName || s.name || s.email}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Rating</label>
-                  <select 
-                    className="form-select rating-select"
-                    value={reviewRating} 
-                    onChange={(e) => setReviewRating(Number(e.target.value))}
-                  >
-                    {[5,4,3,2,1].map(n => <option key={n} value={n}>{n} star{n>1?'s':''}</option>)}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label>Comment</label>
-                  <textarea 
-                    className="form-textarea"
-                    value={reviewText} 
-                    onChange={(e) => setReviewText(e.target.value)} 
-                    rows={3}
-                    placeholder="Share your experience..."
-                  />
-                </div>
-
-                <div className="form-actions">
-                  <button type="button" className="cancel-btn" onClick={() => { setReviewText(''); setReviewRating(5); setReviewTarget(''); }}>Clear</button>
-                  <button type="submit" className="save-btn">Submit Review</button>
-                </div>
-              </form>
+            {/* Account Settings bottom of right column */}
+            <div className="card settings-card bottom-settings">
+              <h3>Account Settings</h3>
+              <div className="settings-options-horizontal">
+                <button className="outline-btn" onClick={() => setShowChangePassword(true)}>Change Password</button>
+                <button className="outline-btn" onClick={() => setShowNotifications(true)}>Notifications</button>
+                <button className="outline-btn" onClick={() => setShowPrivacy(true)}>Privacy</button>
+                <button className="danger outline-btn" onClick={() => setShowDeleteAccount(true)}>Delete Account</button>
+                <button className="primary-btn logout-btn" onClick={handleLogout}>Logout</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1078,7 +1122,7 @@ export default function ProfilePage() {
                 <input
                   type="password"
                   value={passwordData.currentPassword}
-                  onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                   required
                 />
               </div>
@@ -1087,7 +1131,7 @@ export default function ProfilePage() {
                 <input
                   type="password"
                   value={passwordData.newPassword}
-                  onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                   required
                 />
               </div>
@@ -1096,7 +1140,7 @@ export default function ProfilePage() {
                 <input
                   type="password"
                   value={passwordData.confirmPassword}
-                  onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                   required
                 />
               </div>
@@ -1118,7 +1162,7 @@ export default function ProfilePage() {
                 <input
                   type="checkbox"
                   checked={notifications.email}
-                  onChange={(e) => setNotifications({...notifications, email: e.target.checked})}
+                  onChange={(e) => setNotifications({ ...notifications, email: e.target.checked })}
                 />
                 Email notifications
               </label>
@@ -1128,7 +1172,7 @@ export default function ProfilePage() {
                 <input
                   type="checkbox"
                   checked={notifications.push}
-                  onChange={(e) => setNotifications({...notifications, push: e.target.checked})}
+                  onChange={(e) => setNotifications({ ...notifications, push: e.target.checked })}
                 />
                 Push notifications
               </label>
@@ -1138,7 +1182,7 @@ export default function ProfilePage() {
                 <input
                   type="checkbox"
                   checked={notifications.sms}
-                  onChange={(e) => setNotifications({...notifications, sms: e.target.checked})}
+                  onChange={(e) => setNotifications({ ...notifications, sms: e.target.checked })}
                 />
                 SMS notifications
               </label>
@@ -1160,7 +1204,7 @@ export default function ProfilePage() {
                 <input
                   type="checkbox"
                   checked={privacy.profileVisible}
-                  onChange={(e) => setPrivacy({...privacy, profileVisible: e.target.checked})}
+                  onChange={(e) => setPrivacy({ ...privacy, profileVisible: e.target.checked })}
                 />
                 Make profile visible to other users
               </label>
@@ -1170,7 +1214,7 @@ export default function ProfilePage() {
                 <input
                   type="checkbox"
                   checked={privacy.showEmail}
-                  onChange={(e) => setPrivacy({...privacy, showEmail: e.target.checked})}
+                  onChange={(e) => setPrivacy({ ...privacy, showEmail: e.target.checked })}
                 />
                 Show email address on profile
               </label>
@@ -1180,7 +1224,7 @@ export default function ProfilePage() {
                 <input
                   type="checkbox"
                   checked={privacy.showPhone}
-                  onChange={(e) => setPrivacy({...privacy, showPhone: e.target.checked})}
+                  onChange={(e) => setPrivacy({ ...privacy, showPhone: e.target.checked })}
                 />
                 Show phone number on profile
               </label>
@@ -1210,6 +1254,117 @@ export default function ProfilePage() {
             <div className="modal-actions">
               <button onClick={() => setShowDeleteAccount(false)}>Cancel</button>
               <button className="danger" onClick={handleDeleteAccount}>Delete Account</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Orders Modal */}
+      {showOrdersModal && (
+        <div className="modal-overlay" onClick={() => setShowOrdersModal(false)}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '800px', width: '90%', maxHeight: '80vh', overflowY: 'auto' }}
+          >
+            <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '20px', color: '#1a3c22ff' }}>
+              My Orders
+            </h3>
+
+            {loadingOrders ? (
+              <p style={{ textAlign: 'center', padding: '20px' }}>Loading your orders...</p>
+            ) : myOrders.length === 0 ? (
+              <p style={{ textAlign: 'center', padding: '20px', color: '#666' }}>You haven't placed any orders yet.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {myOrders.map(order => (
+                  <div key={order._id} style={{
+                    border: '1px solid #eee',
+                    borderRadius: '8px',
+                    padding: '15px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    backgroundColor: '#fafafa'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                      <strong>Order #{(order._id || '').slice(-6).toUpperCase()}</strong>
+                      <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '20px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        textTransform: 'capitalize',
+                        backgroundColor: order.status === 'delivered' ? '#d4edda' : order.status === 'cancelled' ? '#f8d7da' : '#fff3cd',
+                        color: order.status === 'delivered' ? '#155724' : order.status === 'cancelled' ? '#721c24' : '#856404'
+                      }}>
+                        {order.status}
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: '14px' }}>
+                      <p style={{ margin: '0 0 5px 0' }}><strong>Date:</strong> {new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p style={{ margin: '0 0 5px 0' }}><strong>Total:</strong> ₹{order.total}</p>
+
+                      <div style={{ marginTop: '10px' }}>
+                        <strong>Items:</strong>
+                        <ul style={{ margin: '5px 0 0 0', paddingLeft: '20px', color: '#555' }}>
+                          {(order.items || []).map((item, idx) => (
+                            <li key={idx}>
+                              {item.name || (item.product && item.product.name) || 'Unknown Item'}
+                              <span style={{ fontWeight: '600', marginLeft: '5px' }}>x{item.quantity}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Report order not reached button */}
+                      {order.status !== 'cancelled' && (
+                        <div style={{ marginTop: '15px', display: 'flex', justifyContent: 'flex-end' }}>
+                          {order.reportedNotReached ? (
+                            <span style={{ color: '#d9534f', fontSize: '13px', fontWeight: 'bold' }}>
+                              ⚠ Reported as not reached
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleReportOrderNotReached(order._id)}
+                              style={{
+                                background: 'transparent',
+                                border: '1px solid #d9534f',
+                                color: '#d9534f',
+                                padding: '6px 12px',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                fontWeight: '600'
+                              }}
+                            >
+                              Report Not Reached
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="modal-actions" style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => setShowOrdersModal(false)}
+                style={{
+                  background: '#1a3c22ff',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
