@@ -188,8 +188,8 @@ const Cart = ({ isOpen, onClose }) => {
 
   /* ---------------- PROCEED TO CHECKOUT ---------------- */
   const handleProceedClick = () => {
-    // Check for sold out items
-    const soldOutItems = cartItems.filter(item => (item.stock || 0) <= 0);
+    // Check for sold out items (allow legacy guest items missing 'stock' to pass frontend validation)
+    const soldOutItems = cartItems.filter(item => item.stock !== undefined && item.stock <= 0);
     if (soldOutItems.length > 0) {
       alert('Your cart contains items that are sold out. Please remove them before proceeding to checkout.');
       return;
