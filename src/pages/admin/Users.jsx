@@ -210,7 +210,7 @@ const Users = () => {
             </Col>
           </Row>
 
-          <Table bordered hover>
+          <Table responsive bordered hover>
             <thead>
               <tr>
                 <th>Name</th>

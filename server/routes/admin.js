@@ -26,11 +26,25 @@ router.get('/stats', auth, admin, async (req, res) => {
 
     const monthly = await Order.aggregate([
       { $match: { createdAt: { $gte: sixMonthsAgo } } },
-      { $group: {
-        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
-        revenue: { $sum: { $ifNull: ['$total', 0] } },
-        orders: { $sum: 1 }
-      } },
+      {
+        $group: {
+          _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+          revenue: { $sum: { $ifNull: ['$total', 0] } },
+          orders: { $sum: 1 }
+        }
+      },
+      { $sort: { '_id.year': 1, '_id.month': 1 } }
+    ]);
+
+    // monthly users for last 6 months
+    const monthlyUsersAgg = await User.aggregate([
+      { $match: { createdAt: { $gte: sixMonthsAgo } } },
+      {
+        $group: {
+          _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
+          users: { $sum: 1 }
+        }
+      },
       { $sort: { '_id.year': 1, '_id.month': 1 } }
     ]);
 
@@ -43,7 +57,13 @@ router.get('/stats', auth, admin, async (req, res) => {
     }
     const monthlyData = months.map(m => {
       const found = monthly.find(x => x._id.year === m.year && x._id.month === m.month);
-      return { label: m.label, revenue: found ? found.revenue : 0, orders: found ? found.orders : 0 };
+      const foundUser = monthlyUsersAgg.find(x => x._id.year === m.year && x._id.month === m.month);
+      return {
+        label: m.label,
+        revenue: found ? found.revenue : 0,
+        orders: found ? found.orders : 0,
+        newUsers: foundUser ? foundUser.users : 0
+      };
     });
 
     // simple profit estimate: no commission, profit = revenue

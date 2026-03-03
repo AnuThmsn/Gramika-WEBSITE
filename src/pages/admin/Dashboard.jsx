@@ -7,6 +7,11 @@ import {
   Legend,
   ResponsiveContainer,
   Tooltip,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
 } from "recharts";
 import { API_BASE } from "../../config";
 
@@ -19,6 +24,7 @@ const Dashboard = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [trendData, setTrendData] = useState([]);
 
   useEffect(() => {
     let mounted = true;
@@ -34,6 +40,7 @@ const Dashboard = () => {
         setSellerCount(data.sellerCount || 0);
         setBuyerCount(data.buyerCount || 0);
         setTotalProducts(data.productCount || 0);
+        setTrendData(data.monthly || []);
       } catch (err) {
         console.error('Failed to fetch admin stats', err);
       } finally {
@@ -131,33 +138,60 @@ const Dashboard = () => {
       </Row>
 
       {/* PIE CHART */}
-      <Row className="mt-4">
-        <Col md={6}>
-          <Card className="p-3 shadow-sm">
+      <Row className="mt-4 gx-3 gy-4">
+        <Col xs={12} lg={6}>
+          <Card className="p-3 shadow-sm h-100">
             <h5>User Type Distribution</h5>
-            {userTypeData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={userTypeData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label
-                  >
-                    {userTypeData.map((entry, index) => (
-                      <Cell key={index} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Legend />
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <p className="text-center text-muted">No user data available</p>
-            )}
+            <div style={{ minHeight: '300px' }}>
+              {userTypeData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={userTypeData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      label
+                    >
+                      {userTypeData.map((entry, index) => (
+                        <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Legend />
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center text-muted">No user data available</p>
+              )}
+            </div>
+          </Card>
+        </Col>
+
+        {/* TREND CHART */}
+        <Col xs={12} lg={6}>
+          <Card className="p-3 shadow-sm h-100">
+            <h5>Monthly Trends</h5>
+            <div style={{ minHeight: '300px' }}>
+              {trendData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="label" />
+                    <YAxis yAxisId="left" />
+                    <YAxis yAxisId="right" orientation="right" />
+                    <Tooltip />
+                    <Legend />
+                    <Line yAxisId="left" type="monotone" dataKey="orders" stroke="#195d2bff" name="Orders Received" strokeWidth={2} />
+                    <Line yAxisId="right" type="monotone" dataKey="newUsers" stroke="#82ca9d" name="New Users" strokeWidth={2} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center text-muted">No trend data available</p>
+              )}
+            </div>
           </Card>
         </Col>
       </Row>

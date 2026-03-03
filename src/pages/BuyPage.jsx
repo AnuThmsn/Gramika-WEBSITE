@@ -138,11 +138,8 @@ function BuyPage() {
             id: prodId,
             name: product.name,
             price: product.price,
-            stock: product.quantity || 0,
             quantity: qty,
-            image: buildImageUrl(product.image || product.imageUrl || ""),
-            sellerShopName: product.seller?.sellerDetails?.shopName || product.seller?.name || "Unknown Seller",
-            sellerFlags: product.seller?.sellerDetails?.flags || 0
+            image: buildImageUrl(product.image || product.imageUrl || "")
           });
         }
 

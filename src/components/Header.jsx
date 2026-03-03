@@ -136,35 +136,7 @@ function Header({ onCartClick }) {
       </div>
 
       <div className="right-group">
-        {/* Language Selector */}
-        <div className="lang-container">
-          <button
-            className="lang-btn"
-            onClick={() => setIsLangOpen(!isLangOpen)}
-            aria-label="Change Language"
-          >
-            <MdLanguage size={20} />
-            <span className="lang-text">{currentLabel}</span>
-            <IoIosArrowDown className={`arrow-icon ${isLangOpen ? 'rotate' : ''}`} />
-          </button>
 
-          {isLangOpen && (
-            <div className="lang-dropdown">
-              <div
-                className={`lang-option ${i18n.language === 'en' ? 'active' : ''}`}
-                onClick={() => changeLanguage('en')}
-              >
-                English
-              </div>
-              <div
-                className={`lang-option ${i18n.language === 'ml' ? 'active' : ''}`}
-                onClick={() => changeLanguage('ml')}
-              >
-                മലയാളം
-              </div>
-            </div>
-          )}
-        </div>
 
         {/* Cart Icon */}
         <div className="cart-icon" onClick={handleCartClick} title="Open Cart">
