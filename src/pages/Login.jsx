@@ -37,6 +37,22 @@ const Login = () => {
           return;
         }
 
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          alert("Please enter a valid email address!");
+          return;
+        }
+
+        // Validate exactly 10-digit phone for Registration
+        if (!isLogin) {
+          const phoneRegex = /^\d{10}$/;
+          if (!phoneRegex.test(mobile)) {
+            alert("Phone number must contain exactly 10 digits!");
+            return;
+          }
+        }
+
         if (isLogin) {
           /* ================= LOGIN ================= */
           const res = await fetch(`${API_BASE}/api/auth/login`, {
