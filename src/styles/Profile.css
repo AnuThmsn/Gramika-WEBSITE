@@ -45,7 +45,7 @@
 
 .cover-img {
   height: clamp(100px, 20vh, 150px);
-  background: url('/cover-tree.jpg') center/cover no-repeat;
+  background: linear-gradient(135deg, #1a3c22 0%, #3e8e41 100%);
   opacity: 0.85;
 }
 

@@ -144,7 +144,7 @@ const Dashboard = () => {
             <h5>User Type Distribution</h5>
             <div style={{ minHeight: '300px' }}>
               {userTypeData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                   <PieChart>
                     <Pie
                       data={userTypeData}
@@ -176,7 +176,7 @@ const Dashboard = () => {
             <h5>Monthly Trends</h5>
             <div style={{ minHeight: '300px' }}>
               {trendData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                   <LineChart data={trendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="label" />

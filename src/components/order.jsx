@@ -41,7 +41,7 @@ const Orders = () => {
 
     setUpdatingOrderId(orderId);
     try {
-      const res = await fetch(`/api/orders/${orderId}/status`, {
+      const res = await fetch(`${API_BASE}/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ const Orders = () => {
       }
 
       const updatedOrder = await res.json();
-      
+
       // Update local state
       setOrders(prev =>
         prev.map(o => (o._id === orderId ? updatedOrder : o))
